@@ -16,7 +16,17 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -158,7 +168,8 @@ fun SettingsScreen(
         integrations = emptyList(),
         groups = if (queryText.isBlank()) settingsGroups else filteredGroups,
         internalGroup = if (queryText.isNotBlank()) internalGroup else null,
-        showPermissionBanner = shouldShowPermissionHint,
+        // WiwyMusic: los permisos se gestionan ahora dentro de Privacidad
+        showPermissionBanner = false,
         showUpdateBanner = hasUpdate,
         latestVersion = latestVersionName,
         isSearchActive = queryText.isNotBlank(),
@@ -182,20 +193,34 @@ fun SettingsScreen(
             if (!showSearchBar) {
                 LargeTopAppBar(
                     title = {
-                        Text(
-                            text = stringResource(R.string.settings),
-                            fontWeight = FontWeight.Bold,
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(
-                            onClick = navController::navigateUp,
-                            onLongClick = navController::backToMain,
-                        ) {
-                            Icon(
-                                painterResource(R.drawable.arrow_back),
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(
+                                painter = painterResource(R.drawable.opentune),
                                 contentDescription = null,
+                                modifier = Modifier.size(40.dp),
                             )
+                            Spacer(Modifier.width(12.dp))
+                            Column {
+                                Row {
+                                    Text(
+                                        "Wiwy",
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 22.sp,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                    Text(
+                                        "Music",
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 22.sp,
+                                        color = Color(0xFFF5791F),
+                                    )
+                                }
+                                Text(
+                                    "v${BuildConfig.VERSION_NAME}",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                         }
                     },
                     actions = {

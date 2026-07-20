@@ -113,6 +113,10 @@ fun PlayerSettings(
         AudioNormalizationKey,
         defaultValue = true
     )
+    val (wifiOnlyDownload, onWifiOnlyDownloadChange) = rememberPreference(
+        com.wiwymusic.constants.WifiOnlyDownloadKey,
+        defaultValue = false
+    )
     val (audioOffload, onAudioOffloadChange) = rememberPreference(
         AudioOffload,
         defaultValue = false
@@ -290,6 +294,14 @@ fun PlayerSettings(
             icon = { Icon(painterResource(R.drawable.volume_up), null) },
             checked = audioNormalization,
             onCheckedChange = onAudioNormalizationChange
+        )
+
+        SwitchPreference(
+            title = { Text("Descargar solo con Wi-Fi") },
+            description = "Pausa las descargas cuando usas datos móviles",
+            icon = { Icon(painterResource(R.drawable.wifi), null) },
+            checked = wifiOnlyDownload,
+            onCheckedChange = onWifiOnlyDownloadChange
         )
     }
 

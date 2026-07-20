@@ -8,6 +8,14 @@
 
 package com.wiwymusic.ui.screens.settings
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -29,6 +37,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -54,6 +63,32 @@ fun PrivacySettings(
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
     val database = LocalDatabase.current
+    val context = LocalContext.current
+
+    val storagePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Manifest.permission.READ_MEDIA_AUDIO
+    } else {
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    }
+    val notificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Manifest.permission.POST_NOTIFICATIONS
+    } else null
+
+    fun isGranted(perm: String) =
+        androidx.core.content.ContextCompat.checkSelfPermission(context, perm) == PackageManager.PERMISSION_GRANTED
+
+    var permsGranted by remember {
+        mutableStateOf(
+            isGranted(storagePermission) && (notificationPermission == null || isGranted(notificationPermission))
+        )
+    }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) {
+        permsGranted = isGranted(storagePermission) &&
+            (notificationPermission == null || isGranted(notificationPermission))
+    }
+
     val (pauseListenHistory, onPauseListenHistoryChange) = rememberPreference(
         key = PauseListenHistoryKey,
         defaultValue = false
@@ -148,6 +183,38 @@ fun PrivacySettings(
                     WindowInsetsSides.Top
                 )
             )
+        )
+
+        PreferenceGroupTitle(
+            title = stringResource(R.string.permissions_title)
+        )
+
+        PreferenceEntry(
+            title = { Text(stringResource(R.string.permissions_title)) },
+            description = if (permsGranted) "Concedidos"
+                else "Toca para permitir almacenamiento y notificaciones",
+            icon = { Icon(painterResource(R.drawable.security), null) },
+            onClick = {
+                val toRequest = buildList {
+                    if (!isGranted(storagePermission)) add(storagePermission)
+                    if (notificationPermission != null && !isGranted(notificationPermission)) {
+                        add(notificationPermission)
+                    }
+                }
+                if (toRequest.isNotEmpty()) {
+                    permissionLauncher.launch(toRequest.toTypedArray())
+                } else {
+                    // Ya concedidos: abre los ajustes del sistema por si quiere revocar
+                    runCatching {
+                        context.startActivity(
+                            Intent(
+                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                Uri.parse("package:${context.packageName}")
+                            )
+                        )
+                    }
+                }
+            },
         )
 
         PreferenceGroupTitle(

@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.RadioButton
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -339,53 +341,26 @@ fun AppearanceSettings(
             title = stringResource(R.string.theme),
         )
 
-        EnumListPreference(
-            title = { Text(stringResource(R.string.dark_theme)) },
-            icon = { Icon(painterResource(R.drawable.dark_mode), null) },
-            selectedValue = darkMode,
-            onValueSelected = onDarkModeChange,
-            valueText = {
-                when (it) {
-                    DarkMode.ON -> stringResource(R.string.dark_theme_on)
-                    DarkMode.OFF -> stringResource(R.string.dark_theme_off)
-                    DarkMode.AUTO -> stringResource(R.string.dark_theme_follow_system)
-                }
-            },
-        )
-
-        PreferenceGroupTitle(
-            title = stringResource(R.string.app_language),
-        )
-
-        PreferenceEntry(
-            title = { Text(stringResource(R.string.app_language)) },
-            subtitle = {
-                Text(
-                    text = if (appLanguage == SYSTEM_DEFAULT) stringResource(R.string.system_default)
-                    else (LanguageCodeToName[appLanguage] ?: appLanguage)
+        listOf(
+            "Claro" to DarkMode.OFF,
+            "Oscuro" to DarkMode.ON,
+            "Sistema" to DarkMode.AUTO,
+        ).forEach { (label, mode) ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onDarkModeChange(mode) }
+                    .padding(horizontal = 20.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                RadioButton(
+                    selected = darkMode == mode,
+                    onClick = { onDarkModeChange(mode) },
                 )
-            },
-            icon = { Icon(painterResource(R.drawable.translate), null) },
-            onClick = {
-                runCatching {
-                    context.startActivity(
-                        Intent(
-                            Settings.ACTION_APP_LOCALE_SETTINGS,
-                            "package:${context.packageName}".toUri()
-                        )
-                    )
-                }.onFailure {
-                    runCatching {
-                        context.startActivity(
-                            Intent(
-                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                                "package:${context.packageName}".toUri()
-                            )
-                        )
-                    }
-                }
+                Spacer(Modifier.width(12.dp))
+                Text(label, style = MaterialTheme.typography.bodyLarge)
             }
-        )
+        }
     }
 
     TopAppBar(

@@ -117,16 +117,9 @@ fun buildSettingsGroups(
                     SettingsItem(
                         icon = painterResource(R.drawable.music_note),
                         title = "Audio",
-                        subtitle = "Calidad y normalización",
+                        subtitle = "Calidad, normalización y descargas",
                         accentColor = orange,
                         onClick = { resetSearch(); navController.navigate("settings/player") },
-                    ),
-                    SettingsItem(
-                        icon = painterResource(R.drawable.download),
-                        title = "Descargas",
-                        subtitle = "Calidad y red",
-                        accentColor = orange,
-                        onClick = { resetSearch(); navController.navigate("settings/downloads") },
                     ),
                 ),
             ),
