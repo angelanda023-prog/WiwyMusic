@@ -1,108 +1,138 @@
 /*
- * WiwyMusic — Actualización OTA in-app.
- * Descarga el APK dentro de la app y lanza el instalador de Android
- * (sin abrir el navegador).
+ * WiwyMusic — Actualización OTA in-app con progreso.
+ * Descarga el APK dentro de la app mostrando el % y lanza el instalador
+ * de Android (nunca abre el navegador).
  */
 
 package com.wiwymusic.utils
 
-import android.app.DownloadManager
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
-import android.net.Uri
-import android.os.Build
-import android.os.Environment
-import android.widget.Toast
-import androidx.core.content.ContextCompat
-import androidx.core.content.getSystemService
+import androidx.core.content.FileProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import java.io.File
+import java.net.HttpURLConnection
+import java.net.URL
+import kotlin.coroutines.coroutineContext
 
 object AppUpdateInstaller {
 
-    private const val APK_MIME = "application/vnd.android.package-archive"
-    private const val FILE_NAME = "WiwyMusic.apk"
-
-    @Volatile
-    private var currentDownloadId: Long = -1L
-
-    /**
-     * Descarga el APK [url] con el DownloadManager del sistema y, al completar,
-     * abre el instalador de paquetes de Android para actualizar la app.
-     */
-    fun downloadAndInstall(context: Context, url: String) {
-        val appContext = context.applicationContext
-        val downloadManager = appContext.getSystemService<DownloadManager>() ?: run {
-            Toast.makeText(appContext, "No se pudo iniciar la descarga", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        // Limpia un archivo previo para no acumular versiones.
-        runCatching {
-            appContext.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-                ?.resolve(FILE_NAME)
-                ?.delete()
-        }
-
-        val request = DownloadManager.Request(Uri.parse(url))
-            .setTitle("WiwyMusic")
-            .setDescription("Descargando actualización…")
-            .setMimeType(APK_MIME)
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            .setDestinationInExternalFilesDir(appContext, Environment.DIRECTORY_DOWNLOADS, FILE_NAME)
-            .setAllowedOverMetered(true)
-            .setAllowedOverRoaming(true)
-
-        val receiver = object : BroadcastReceiver() {
-            override fun onReceive(ctx: Context, intent: Intent) {
-                val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L)
-                if (id != currentDownloadId) return
-                runCatching { appContext.unregisterReceiver(this) }
-                launchInstaller(appContext, downloadManager, id)
-            }
-        }
-
-        val filter = IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            appContext.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
-        } else {
-            @Suppress("UnspecifiedRegisterReceiverFlag")
-            appContext.registerReceiver(receiver, filter)
-        }
-
-        currentDownloadId = downloadManager.enqueue(request)
-        Toast.makeText(appContext, "Descargando actualización…", Toast.LENGTH_SHORT).show()
+    sealed interface State {
+        data object Idle : State
+        /** [progress] 0f..1f, o -1f si el tamaño es desconocido (indeterminado). */
+        data class Downloading(val progress: Float) : State
+        data object Installing : State
+        data class Failed(val message: String) : State
     }
 
-    private fun launchInstaller(context: Context, downloadManager: DownloadManager, id: Long) {
-        // Verifica que la descarga terminó bien.
-        val status = DownloadManager.Query().setFilterById(id).let { query ->
-            downloadManager.query(query)?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
-                } else null
+    private val _state = MutableStateFlow<State>(State.Idle)
+    val state: StateFlow<State> = _state.asStateFlow()
+
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var job: Job? = null
+
+    /** Cierra el diálogo (solo si no hay una descarga en curso). */
+    fun dismiss() {
+        if (_state.value !is State.Downloading) _state.value = State.Idle
+    }
+
+    fun cancel() {
+        job?.cancel()
+        _state.value = State.Idle
+    }
+
+    /** Descarga el APK [url] mostrando progreso y lanza el instalador. */
+    fun downloadAndInstall(context: Context, url: String) {
+        if (_state.value is State.Downloading) return
+        val appContext = context.applicationContext
+        _state.value = State.Downloading(0f)
+        job = scope.launch {
+            try {
+                val apk = downloadApk(appContext, url)
+                _state.value = State.Installing
+                launchInstaller(appContext, apk)
+                delay(1200)
+                _state.value = State.Idle
+            } catch (e: CancellationException) {
+                _state.value = State.Idle
+                throw e
+            } catch (e: Exception) {
+                _state.value = State.Failed(e.message ?: "No se pudo descargar la actualización")
             }
         }
-        if (status != DownloadManager.STATUS_SUCCESSFUL) {
-            Toast.makeText(context, "La descarga de la actualización falló", Toast.LENGTH_LONG).show()
-            return
+    }
+
+    private suspend fun downloadApk(context: Context, url: String): File {
+        val dir = File(context.cacheDir, "update").apply { mkdirs() }
+        val outFile = File(dir, "WiwyMusic.apk")
+        if (outFile.exists()) outFile.delete()
+
+        var current = url
+        var connection: HttpURLConnection
+        var redirects = 0
+        while (true) {
+            connection = (URL(current).openConnection() as HttpURLConnection).apply {
+                instanceFollowRedirects = true
+                connectTimeout = 30_000
+                readTimeout = 30_000
+                setRequestProperty("User-Agent", "WiwyMusic")
+                connect()
+            }
+            val code = connection.responseCode
+            if (code in intArrayOf(301, 302, 303, 307, 308) && redirects < 5) {
+                val loc = connection.getHeaderField("Location")
+                connection.disconnect()
+                if (loc.isNullOrBlank()) throw IllegalStateException("Redirección inválida")
+                current = loc
+                redirects++
+                continue
+            }
+            if (code !in 200..299) {
+                connection.disconnect()
+                throw IllegalStateException("Servidor respondió $code")
+            }
+            break
         }
 
-        val apkUri: Uri? = downloadManager.getUriForDownloadedFile(id)
-        if (apkUri == null) {
-            Toast.makeText(context, "No se encontró el archivo descargado", Toast.LENGTH_LONG).show()
-            return
+        val total = connection.contentLengthLong
+        connection.inputStream.use { input ->
+            outFile.outputStream().use { output ->
+                val buffer = ByteArray(64 * 1024)
+                var downloaded = 0L
+                while (true) {
+                    coroutineContext.ensureActive()
+                    val read = input.read(buffer)
+                    if (read < 0) break
+                    output.write(buffer, 0, read)
+                    downloaded += read
+                    val progress = if (total > 0) (downloaded.toFloat() / total).coerceIn(0f, 1f) else -1f
+                    _state.value = State.Downloading(progress)
+                }
+                output.flush()
+            }
         }
+        connection.disconnect()
 
-        val installIntent = Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(apkUri, APK_MIME)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                Intent.FLAG_GRANT_READ_URI_PERMISSION
+        if (outFile.length() <= 0L) throw IllegalStateException("Descarga vacía")
+        return outFile
+    }
+
+    private fun launchInstaller(context: Context, apk: File) {
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.FileProvider", apk)
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/vnd.android.package-archive")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
         }
-        runCatching {
-            ContextCompat.startActivity(context, installIntent, null)
-        }.onFailure {
-            Toast.makeText(context, "No se pudo abrir el instalador", Toast.LENGTH_LONG).show()
-        }
+        context.startActivity(intent)
     }
 }

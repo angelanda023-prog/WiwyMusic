@@ -1858,6 +1858,9 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.align(Alignment.BottomCenter)
                         )
 
+                        // WiwyMusic: diálogo de progreso de actualización OTA in-app
+                        com.wiwymusic.ui.component.UpdateProgressOverlay()
+
                         if (showAccountDialog) {
                             AccountSettingsDialog(
                                 navController = navController,
