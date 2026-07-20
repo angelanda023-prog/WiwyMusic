@@ -75,7 +75,7 @@ data class UpdateInfo(
 const val GITHUB_OWNER = "angelanda023-prog"
 const val GITHUB_REPO = "WiwyMusic"
 
-private const val APK_ASSET_NAME = "app-universal-release.apk"
+private const val APK_ASSET_NAME = "WiwyMusic.apk"
 private const val NIGHTLY_JSON_URL = "https://pub-2218e6bbd5b948e1b5d882cf4d92086d.r2.dev/update.json"
 
 private data class ReleasesNetworkResult(
