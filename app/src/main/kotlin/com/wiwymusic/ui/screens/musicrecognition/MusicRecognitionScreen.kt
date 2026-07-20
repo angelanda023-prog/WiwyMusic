@@ -108,6 +108,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.border
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -218,7 +220,19 @@ fun MusicRecognitionScreen(
     Scaffold(
         topBar = {
             LargeFlexibleTopAppBar(
-                title = { Text(stringResource(R.string.music_recognition)) },
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(R.drawable.graphic_eq),
+                            contentDescription = null,
+                            tint = Color(0xFFF5791F),
+                            modifier = Modifier.size(28.dp),
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text("Wiwy", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+                        Text("Music", color = Color(0xFFF5791F), fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+                    }
+                },
                 navigationIcon = {
                     Surface(
                         modifier =
@@ -418,6 +432,34 @@ private fun RecognitionListenPane(
                 }
 
                 is MusicRecognitionState.Success -> Unit
+            }
+        }
+
+        // WiwyMusic: botón inferior "Identificar canción" (estado listo)
+        if (state is MusicRecognitionState.Ready) {
+            Spacer(modifier = Modifier.height(28.dp))
+            Row(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(Color(0xFF17171C))
+                    .border(1.5.dp, Color(0xFFF5791F), CircleShape)
+                    .clickable { onStart() }
+                    .padding(horizontal = 34.dp, vertical = 15.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.mic),
+                    contentDescription = null,
+                    tint = Color(0xFFF5791F),
+                    modifier = Modifier.size(22.dp),
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    "Identificar canción",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                )
             }
         }
 
@@ -624,14 +666,14 @@ private suspend fun recordMicPcm16Mono(
 private fun IdleHeader() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = stringResource(R.string.music_recognition),
+            text = "Identificar canción",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = Color.White,
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = stringResource(R.string.music_recognition_tap_to_listen),
+            text = "Escucha la música a tu alrededor",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -877,7 +919,7 @@ private fun ListeningOrb(
     )
 
     val baseColor =
-        if (isProcessing) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary
+        if (isProcessing) MaterialTheme.colorScheme.tertiary else Color(0xFFF5791F)
     val surfaceContainerHigh = MaterialTheme.colorScheme.surfaceContainerHigh
 
     val container =

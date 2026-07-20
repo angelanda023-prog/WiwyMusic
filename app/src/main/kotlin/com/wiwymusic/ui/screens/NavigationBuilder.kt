@@ -106,14 +106,38 @@ fun NavGraphBuilder.navigationBuilder(
     navController: NavHostController,
     scrollBehavior: TopAppBarScrollBehavior,
     latestVersionName: String,
+    onActivateSearch: () -> Unit = {},
 ) {
     composable(Screens.Home.route) {
-        HomeScreen(navController)
+        // WiwyMusic: Inicio con estilo naranja y datos reales
+        WiwyHomeScreen(navController)
+    }
+    composable(Screens.Search.route) {
+        // WiwyMusic: página Buscar completa (cabecera + barra + secciones)
+        WiwySearchLanding(
+            navController = navController,
+            onActivateSearch = onActivateSearch,
+            onSearch = { q ->
+                navController.navigate(
+                    "search/${java.net.URLEncoder.encode(q, "UTF-8")}"
+                )
+            },
+        )
     }
     composable(
         Screens.Library.route,
     ) {
-        LibraryScreen(navController)
+        // WiwyMusic: Biblioteca tipo mockup (Favoritos, Playlists, Álbumes, Artistas, Historial)
+        WiwyLibraryScreen(navController)
+    }
+    composable("library/playlists") {
+        com.wiwymusic.ui.screens.library.LibraryPlaylistsScreen(navController, filterContent = {})
+    }
+    composable("library/albums") {
+        com.wiwymusic.ui.screens.library.LibraryAlbumsScreen(navController, onDeselect = { navController.navigateUp() })
+    }
+    composable("library/artists") {
+        com.wiwymusic.ui.screens.library.LibraryArtistsScreen(navController, onDeselect = { navController.navigateUp() })
     }
     composable("history") {
         HistoryScreen(navController)
@@ -414,7 +438,27 @@ fun NavGraphBuilder.navigationBuilder(
     composable("settings/about") {
         AboutScreen(navController, scrollBehavior)
     }
+    composable("settings/account") {
+        com.wiwymusic.ui.screens.settings.AccountSettings(
+            navController = navController,
+            onClose = { navController.navigateUp() },
+            latestVersionName = com.wiwymusic.BuildConfig.VERSION_NAME,
+        )
+    }
+    composable("settings/downloads") {
+        com.wiwymusic.ui.screens.settings.DownloadsSettings(navController, scrollBehavior)
+    }
+    composable("settings/notifications") {
+        com.wiwymusic.ui.screens.settings.NotificationsSettings(navController, scrollBehavior)
+    }
+    composable("settings/recognize") {
+        com.wiwymusic.ui.screens.settings.RecognizeSongScreen(navController, scrollBehavior)
+    }
     composable(Screens.DownloadQueue.route) {
+        // WiwyMusic: pestaña Descargas tipo mockup (espacio, categorías, calidad, limpiar)
+        WiwyDownloadsScreen(navController)
+    }
+    composable("download_queue_list") {
         DownloadQueueScreen(navController)
     }
     composable("settings/po_token") {

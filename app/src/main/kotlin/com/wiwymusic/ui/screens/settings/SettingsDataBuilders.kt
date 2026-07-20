@@ -95,217 +95,125 @@ fun buildSettingsGroups(
     resetSearch: () -> Unit,
 ): List<SettingsGroup> =
     buildList {
+        val orange = androidx.compose.ui.graphics.Color(0xFFF5791F)
         add(
             SettingsGroup(
-                title = stringResource(R.string.settings_section_ui),
+                title = "CUENTA",
+                items = listOf(
+                    SettingsItem(
+                        icon = painterResource(R.drawable.person),
+                        title = "Mi cuenta",
+                        subtitle = "Gestiona tu perfil y preferencias",
+                        accentColor = orange,
+                        onClick = { resetSearch(); navController.navigate("settings/account") },
+                    ),
+                ),
+            ),
+        )
+        add(
+            SettingsGroup(
+                title = "REPRODUCCIÓN",
+                items = listOf(
+                    SettingsItem(
+                        icon = painterResource(R.drawable.music_note),
+                        title = "Audio",
+                        subtitle = "Calidad de audio y efectos",
+                        accentColor = orange,
+                        onClick = { resetSearch(); navController.navigate("settings/player") },
+                    ),
+                    SettingsItem(
+                        icon = painterResource(R.drawable.tune),
+                        title = "Reproducción",
+                        subtitle = "Comportamiento del reproductor",
+                        accentColor = orange,
+                        onClick = { resetSearch(); navController.navigate("settings/player") },
+                    ),
+                    SettingsItem(
+                        icon = painterResource(R.drawable.download),
+                        title = "Descargas",
+                        subtitle = "Calidad, ubicación y almacenamiento",
+                        accentColor = orange,
+                        onClick = { resetSearch(); navController.navigate("settings/downloads") },
+                    ),
+                    SettingsItem(
+                        icon = painterResource(R.drawable.timer),
+                        title = "Temporizador",
+                        subtitle = "Apagar música automáticamente",
+                        accentColor = orange,
+                        onClick = { resetSearch(); navController.navigate("settings/player") },
+                    ),
+                ),
+            ),
+        )
+        add(
+            SettingsGroup(
+                title = "PERSONALIZACIÓN",
                 items = listOf(
                     SettingsItem(
                         icon = painterResource(R.drawable.palette),
-                        title = stringResource(R.string.appearance),
-                        subtitle = stringResource(R.string.dark_theme),
-                        accentColor = MaterialTheme.colorScheme.primary,
-                        keywords = listOf("theme", "palette", "material you", "dynamic color", "font", "ui"),
+                        title = "Apariencia",
+                        subtitle = "Tema oscuro, colores y más",
+                        accentColor = orange,
+                        onClick = { resetSearch(); navController.navigate("settings/appearance") },
+                    ),
+                    SettingsItem(
+                        icon = painterResource(R.drawable.style),
+                        title = "Interfaz",
+                        subtitle = "Personaliza la experiencia",
+                        accentColor = orange,
                         onClick = { resetSearch(); navController.navigate("settings/appearance") },
                     ),
                 ),
             ),
         )
-
         add(
             SettingsGroup(
-                title = stringResource(R.string.settings_section_player_content),
-                items = listOf(
-                    SettingsItem(
-                        icon = painterResource(R.drawable.play),
-                        title = stringResource(R.string.player_and_audio),
-                        subtitle = stringResource(R.string.audio_quality),
-                        accentColor = MaterialTheme.colorScheme.tertiary,
-                        keywords = listOf("audio", "playback", "volume", "quality", "equalizer", "crossfade"),
-                        onClick = { resetSearch(); navController.navigate("settings/player") },
-                    ),
-                    SettingsItem(
-                        icon = painterResource(R.drawable.language),
-                        title = stringResource(R.string.content),
-                        subtitle = stringResource(R.string.content_language),
-                        accentColor = MaterialTheme.colorScheme.secondary,
-                        keywords = listOf("language", "content", "lyrics", "translation", "region"),
-                        onClick = { resetSearch(); navController.navigate("settings/content") },
-                    ),
-                    SettingsItem(
-                        icon = painterResource(R.drawable.token),
-                        title = stringResource(R.string.po_token_generation),
-                        subtitle = stringResource(R.string.po_token_generation_subtitle),
-                        accentColor = MaterialTheme.colorScheme.tertiary,
-                        keywords = listOf("po token", "token", "web client", "visitor data", "gvs", "player"),
-                        onClick = { resetSearch(); navController.navigate("settings/po_token") },
-                    ),
-                ),
-            ),
-        )
-
-        add(
-            SettingsGroup(
-                title = stringResource(R.string.settings_section_privacy),
+                title = "PRIVACIDAD Y SINCRONIZACIÓN",
                 items = listOf(
                     SettingsItem(
                         icon = painterResource(R.drawable.security),
-                        title = stringResource(R.string.privacy),
-                        subtitle = stringResource(R.string.pause_listen_history),
-                        accentColor = MaterialTheme.colorScheme.error,
-                        keywords = listOf("privacy", "history", "tracking", "security", "permissions"),
+                        title = "Privacidad",
+                        subtitle = "Historial, datos y actividad",
+                        accentColor = orange,
                         onClick = { resetSearch(); navController.navigate("settings/privacy") },
                     ),
-                ),
-            ),
-        )
-
-        add(
-            SettingsGroup(
-                title = stringResource(R.string.settings_section_storage),
-                items = listOf(
                     SettingsItem(
-                        icon = painterResource(R.drawable.storage),
-                        title = stringResource(R.string.storage),
-                        subtitle = stringResource(R.string.cache),
-                        accentColor = MaterialTheme.colorScheme.secondary,
-                        keywords = listOf("storage", "cache", "offline", "downloads", "cleanup"),
-                        onClick = { resetSearch(); navController.navigate("settings/storage") },
-                    ),
-                    SettingsItem(
-                        icon = painterResource(R.drawable.restore),
-                        title = stringResource(R.string.backup_restore),
-                        subtitle = stringResource(R.string.action_backup),
-                        accentColor = MaterialTheme.colorScheme.tertiary,
-                        keywords = listOf("backup", "restore", "import", "export", "migration"),
-                        onClick = { resetSearch(); navController.navigate("settings/backup_restore") },
+                        icon = painterResource(R.drawable.sync),
+                        title = "Sincronización",
+                        subtitle = "Sincroniza tu música en todos tus dispositivos",
+                        accentColor = orange,
+                        onClick = { resetSearch(); navController.navigate("settings/account") },
                     ),
                 ),
             ),
         )
-
         add(
             SettingsGroup(
-                title = stringResource(R.string.integrations),
+                title = "MÁS",
                 items = listOf(
+                    SettingsItem(
+                        icon = painterResource(R.drawable.notifications),
+                        title = "Notificaciones",
+                        subtitle = "Preferencias de notificaciones",
+                        accentColor = orange,
+                        onClick = { resetSearch(); navController.navigate("settings/notifications") },
+                    ),
                     SettingsItem(
                         icon = painterResource(R.drawable.android_auto),
-                        title = stringResource(R.string.android_auto),
-                        subtitle = stringResource(R.string.android_auto_enable_desc),
-                        accentColor = MaterialTheme.colorScheme.primary,
-                        keywords = listOf(
-                            "android auto",
-                            "car",
-                            "automotive",
-                            "vehicle",
-                            "driving"
-                        ),
+                        title = "Android Auto",
+                        subtitle = "Usa WiwyMusic en tu coche",
+                        accentColor = orange,
                         onClick = { resetSearch(); navController.navigate("settings/android_auto") },
                     ),
-                ),
-            ),
-        )
-
-        add(
-            SettingsGroup(
-                title = stringResource(R.string.aod_screen_title),
-                items = listOf(
                     SettingsItem(
-                        icon = painterResource(R.drawable.bedtime),
-                        title = stringResource(R.string.aod_screen_title),
-                        subtitle = stringResource(R.string.aod_screen_title),
-                        accentColor = MaterialTheme.colorScheme.primary,
-                        keywords = listOf("AOD", "Always On Display", "Display"),
-                        onClick = { resetSearch(); navController.navigate("settings/appearance/always_on_display") },
+                        icon = painterResource(R.drawable.info),
+                        title = "Acerca de WiwyMusic",
+                        subtitle = "Versión, ayuda y legal",
+                        showUpdateIndicator = hasUpdate,
+                        accentColor = orange,
+                        onClick = { resetSearch(); navController.navigate("settings/about") },
                     ),
                 ),
-            ),
-        )
-
-        add(
-            SettingsGroup(
-                title = stringResource(R.string.settings_section_system),
-                items = buildList {
-                    if (isAndroid12OrLater) {
-                        add(
-                            SettingsItem(
-                                icon = painterResource(R.drawable.link),
-                                title = stringResource(R.string.default_links),
-                                subtitle = stringResource(R.string.open_supported_links),
-                                accentColor = MaterialTheme.colorScheme.primary,
-                                keywords = listOf("links", "deeplink", "default", "supported links"),
-                                onClick = {
-                                    resetSearch()
-                                    try {
-                                        val intent = Intent(
-                                            Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
-                                            Uri.parse("package:${context.packageName}")
-                                        )
-                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                        context.startActivity(intent)
-                                    } catch (e: Exception) {
-                                        when (e) {
-                                            is ActivityNotFoundException,
-                                            is SecurityException,
-                                            -> {
-                                                Toast.makeText(
-                                                    context,
-                                                    R.string.open_app_settings_error,
-                                                    Toast.LENGTH_LONG,
-                                                ).show()
-                                            }
-                                            else -> {
-                                                Toast.makeText(
-                                                    context,
-                                                    R.string.open_app_settings_error,
-                                                    Toast.LENGTH_LONG,
-                                                ).show()
-                                            }
-                                        }
-                                    }
-                                },
-                            ),
-                        )
-                    }
-                    add(
-                        SettingsItem(
-                            icon = painterResource(R.drawable.experiment),
-                            title = stringResource(R.string.experiment_settings),
-                            subtitle = stringResource(R.string.misc),
-                            accentColor = MaterialTheme.colorScheme.tertiary,
-                            keywords = listOf("experimental", "debug", "developer", "labs", "internal"),
-                            onClick = { resetSearch(); navController.navigate("settings/misc") },
-                        ),
-                    )
-                    add(
-                        SettingsItem(
-                            icon = painterResource(R.drawable.update),
-                            title = stringResource(R.string.updates),
-                            subtitle = if (hasUpdate) {
-                                stringResource(R.string.new_version_available)
-                            } else {
-                                BuildConfig.VERSION_NAME
-                            },
-                            showUpdateIndicator = hasUpdate,
-                            accentColor = if (hasUpdate) {
-                                MaterialTheme.colorScheme.tertiary
-                            } else {
-                                MaterialTheme.colorScheme.primary
-                            },
-                            keywords = listOf("update", "version", "release", "changelog"),
-                            onClick = { resetSearch(); navController.navigate("settings/update") },
-                        ),
-                    )
-                    add(
-                        SettingsItem(
-                            icon = painterResource(R.drawable.info),
-                            title = stringResource(R.string.about),
-                            subtitle = "WiwyMusic",
-                            accentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            keywords = listOf("about", "app info", "license", "contributors"),
-                            onClick = { resetSearch(); navController.navigate("settings/about") },
-                        ),
-                    )
-                },
             ),
         )
     }

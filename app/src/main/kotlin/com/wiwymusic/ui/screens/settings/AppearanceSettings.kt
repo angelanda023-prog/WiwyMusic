@@ -853,6 +853,8 @@ fun AppearanceSettings(
                     LibraryFilter.PLAYLISTS -> stringResource(R.string.playlists)
                     LibraryFilter.LIBRARY -> stringResource(R.string.filter_library)
                     LibraryFilter.SPOTIFY -> stringResource(R.string.spotify)
+                    LibraryFilter.FAVORITES -> stringResource(R.string.filter_favorites)
+                    LibraryFilter.HISTORY -> stringResource(R.string.history)
                 }
             },
             onValueSelected = onDefaultChipChange,

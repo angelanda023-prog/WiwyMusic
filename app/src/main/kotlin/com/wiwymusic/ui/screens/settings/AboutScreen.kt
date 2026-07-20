@@ -214,41 +214,6 @@ fun AboutScreen(
                 HeroCardExpressive(shimmerBrush = shimmerEffect())
             }
 
-            // ── Social card ───────────────────────────────────────────────
-            item(key = "social") {
-                SocialCardExpressive(
-                    links = listOf(
-                        SocialLink(
-                            R.drawable.github,
-                            "https://github.com/Arturo254/OpenTune",
-                            "GitHub"
-                        ),
-                        SocialLink(
-                            R.drawable.telegram,
-                            "https://t.me/opentune_updates",
-                            "Telegram"
-                        ),
-                        SocialLink(
-                            R.drawable.facebook,
-                            "https://www.facebook.com/Arturo254",
-                            "Facebook"
-                        ),
-                        SocialLink(R.drawable.paypal, "https://www.paypal.me/OpenTune", "PayPal"),
-                        SocialLink(
-                            R.drawable.instagram,
-                            "https://www.instagram.com/arturocg.dev/",
-                            "Instagram"
-                        ),
-                        SocialLink(
-                            R.drawable.resource_public,
-                            "https://opentune.netlify.app/",
-                            "Website"
-                        ),
-                    ),
-                    onLinkClick = { uriHandler.openUri(it) },
-                    columns = if (isTablet) 4 else 3,
-                )
-            }
 
             // ── Contributors section header ───────────────────────────────
             item(key = "contributors_header") {
@@ -283,20 +248,12 @@ fun AboutScreen(
                     ) { contributor ->
                         ContributorCardExpressive(
                             contributor = contributor,
-                            onClick = { uriHandler.openUri(contributor.profileUrl) },
+                            onClick = { },
                         )
                     }
                 }
             }
 
-            // ── License footer ────────────────────────────────────────────
-            item(key = "license") {
-                LicenseFooterExpressive(
-                    onLicenseClick = {
-                        uriHandler.openUri("https://github.com/Arturo254/OpenTune/blob/master/LICENSE")
-                    }
-                )
-            }
 
             // ── Bottom spacer ─────────────────────────────────────────────
             item(key = "bottom_spacer") {
@@ -395,35 +352,12 @@ private fun HeroCardExpressive(shimmerBrush: Brush) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                // App icon with morphing shape
-                Surface(
-                    shape = if (isExpanded) CircleShape else RoundedCornerShape(24.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.size(if (isExpanded) 100.dp else 84.dp),
-                    shadowElevation = if (isExpanded) 12.dp else 4.dp,
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Image(
-                            painter = painterResource(R.drawable.opentune_monochrome),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(
-                                MaterialTheme.colorScheme.onPrimaryContainer,
-                                BlendMode.SrcIn,
-                            ),
-                            modifier = Modifier
-                                .size(if (isExpanded) 68.dp else 56.dp)
-                                .clip(RoundedCornerShape(if (isExpanded) 24.dp else 16.dp)),
-                        )
-                        // Shimmer overlay (solo visible en estado no expandido)
-                        if (!isExpanded) {
-                            Box(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .background(shimmerBrush),
-                            )
-                        }
-                    }
-                }
+                // Logo sin marco (puro)
+                Image(
+                    painter = painterResource(R.drawable.opentune),
+                    contentDescription = null,
+                    modifier = Modifier.size(if (isExpanded) 104.dp else 88.dp),
+                )
 
                 // App name (animated)
                 AnimatedVisibility(
@@ -438,7 +372,7 @@ private fun HeroCardExpressive(shimmerBrush: Brush) {
                     )
                 ) {
                     Text(
-                        text = stringResource(R.string.app_name),
+                        text = "WiwyMusic",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Black,
                         color = MaterialTheme.colorScheme.primary,
@@ -448,35 +382,11 @@ private fun HeroCardExpressive(shimmerBrush: Brush) {
 
                 if (!isExpanded) {
                     Text(
-                        text = stringResource(R.string.app_name),
+                        text = "WiwyMusic",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
-                }
-
-                // Version badges
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    VersionBadgeExpressive(
-                        text = "v${BuildConfig.VERSION_NAME}",
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                    VersionBadgeExpressive(
-                        text = "#${BuildConfig.VERSION_CODE}",
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                    )
-                    if (BuildConfig.DEBUG) {
-                        VersionBadgeExpressive(
-                            text = "DEBUG",
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                            contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                        )
-                    }
                 }
 
                 HorizontalDivider(
@@ -521,8 +431,8 @@ private fun DeveloperInfoExpressive() {
             color = MaterialTheme.colorScheme.tertiaryContainer,
             modifier = Modifier.size(44.dp),
         ) {
-            AsyncImage(
-                model = "https://avatars.githubusercontent.com/u/87346871?v=4",
+            Image(
+                painter = painterResource(R.drawable.dev_avatar),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -532,15 +442,10 @@ private fun DeveloperInfoExpressive() {
         }
         Column {
             Text(
-                text = "Arturo Cervantes",
+                text = "Wiwyzho Land",
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = "Lead Developer",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -685,16 +590,6 @@ private fun ContributorCardExpressive(
                 )
             }
 
-            // Forward arrow
-            Icon(
-                painter = painterResource(R.drawable.arrow_forward),
-                contentDescription = null,
-                tint = if (isHovered)
-                    MaterialTheme.colorScheme.primary
-                else
-                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                modifier = Modifier.size(20.dp),
-            )
         }
     }
 }

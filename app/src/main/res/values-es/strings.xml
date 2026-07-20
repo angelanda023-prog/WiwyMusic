@@ -698,4 +698,15 @@
     <string name="together_welcome_host_body">Pulsa \"comenzar sesión\", después comparte el enlace de sesión. Mantén WiwyMusic abierto en segundo plano mientras alojas.</string>
     <string name="stream_bypass_proxy">Proxy de derivación para transmisiones</string>
     <string name="stream_bypass_proxy_desc">Utiliza tu dirección IP directa para la reproducción de transmisiones y evita las incompatibilidades de IP</string>
+    <string name="filter_favorites">Favoritos</string>
+    <string name="wm_downloads">Descargas</string>
+    <string name="wm_downloads_storage_desc">Gestiona la caché y la ubicación de almacenamiento</string>
+    <string name="wm_notifications">Notificaciones</string>
+    <string name="wm_open_system_notifications">Abrir ajustes de notificaciones del sistema</string>
+    <string name="wm_notifications_desc">Gestiona las notificaciones de WiwyMusic desde el sistema</string>
+    <string name="wm_recognize">Reconocer canción</string>
+    <string name="wm_recognize_desc">Identifica la canción que suena a tu alrededor</string>
+    <string name="wm_recognize_soon">Función en desarrollo</string>
+    <string name="wm_search_hint">Buscar canciones, artistas, álbumes…</string>
+    <string name="contributors">Contribuidores</string>
 </resources>

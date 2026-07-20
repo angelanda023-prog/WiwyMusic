@@ -37,6 +37,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -246,6 +247,7 @@ import com.wiwymusic.ui.screens.buildLoginRoute
 import com.wiwymusic.ui.screens.musicrecognition.MusicRecognitionRoute
 import com.wiwymusic.ui.screens.navigationBuilder
 import com.wiwymusic.ui.screens.search.LocalSearchScreen
+import com.wiwymusic.ui.screens.WiwySearchContent
 import com.wiwymusic.ui.screens.search.OnlineSearchScreen
 import com.wiwymusic.ui.screens.settings.DarkMode
 import com.wiwymusic.ui.screens.settings.DiscordPresenceManager
@@ -981,6 +983,15 @@ class MainActivity : ComponentActivity() {
                             },
                         )
 
+                    // WiwyMusic: al entrar a Inicio/Géneros repone la cabecera flotante
+                    // (evita que quede oculta por el offset heredado del scroll de búsqueda)
+                    LaunchedEffect(navBackStackEntry?.destination?.route) {
+                        val r = navBackStackEntry?.destination?.route
+                        if (r == Screens.Home.route || r == Screens.MoodAndGenres.route) {
+                            searchBarScrollBehavior.state.heightOffset = 0f
+                        }
+                    }
+
                     var previousRoute by rememberSaveable { mutableStateOf<String?>(null) }
 
                     LaunchedEffect(navBackStackEntry) {
@@ -1095,7 +1106,12 @@ class MainActivity : ComponentActivity() {
 
                     LaunchedEffect(navBackStackEntry) {
                         shouldShowTopBar =
-                            !active && navBackStackEntry?.destination?.route in topLevelScreens && navBackStackEntry?.destination?.route != "settings"
+                            !active && navBackStackEntry?.destination?.route in topLevelScreens &&
+                                    navBackStackEntry?.destination?.route != "settings" &&
+                                    // WiwyMusic: Buscar, Biblioteca y Descargas usan su propia cabecera
+                                    navBackStackEntry?.destination?.route != Screens.Search.route &&
+                                    navBackStackEntry?.destination?.route != Screens.Library.route &&
+                                    navBackStackEntry?.destination?.route != Screens.DownloadQueue.route
                     }
 
                     val coroutineScope = rememberCoroutineScope()
@@ -1207,9 +1223,7 @@ class MainActivity : ComponentActivity() {
                                                     playerBottomSheetState.collapse(spring())
                                                 }
 
-                                                if (screen.route == Screens.Search.route) {
-                                                    onActiveChange(true)
-                                                } else if (isSelected) {
+                                                if (isSelected) {
                                                     if(wasPlayerActive) return@NavigationRailItem
 
                                                     navController.currentBackStackEntry?.savedStateHandle?.set("scrollToTop", true)
@@ -1308,7 +1322,7 @@ class MainActivity : ComponentActivity() {
                                                             painter = painterResource(R.drawable.opentune),
                                                             contentDescription = null,
                                                             tint = Color.Unspecified,
-                                                            modifier = Modifier.size(40.dp)
+                                                            modifier = Modifier.size(44.dp)
                                                         )
 
                                                         Text(
@@ -1320,82 +1334,43 @@ class MainActivity : ComponentActivity() {
                                                                     append("Music")
                                                                 }
                                                             },
-                                                            style = MaterialTheme.typography.headlineSmallEmphasized.copy(
+                                                            style = MaterialTheme.typography.titleLarge.copy(
                                                                 fontFamily = googleSans,
                                                                 fontWeight = FontWeight.ExtraBold,
-                                                                fontSize = 21.sp
+                                                                fontSize = 24.sp
                                                             ),
                                                             maxLines = 1,
-                                                            overflow = TextOverflow.Visible,
+                                                            overflow = TextOverflow.Ellipsis,
                                                             softWrap = false
                                                         )
                                                     }
                                                 },
                                                 actions = {
-
-                                                    IconButton(
-                                                        modifier = Modifier.size(40.dp),
-                                                        onClick = { navController.navigate("history") }
+                                                    // WiwyMusic: solo el perfil, en círculo naranja
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .padding(end = 10.dp)
+                                                            .size(42.dp)
+                                                            .clip(CircleShape)
+                                                            .background(Color(0xFFF5791F))
+                                                            .clickable { navController.navigate("settings") },
+                                                        contentAlignment = Alignment.Center,
                                                     ) {
-                                                        Icon(
-                                                            painter = painterResource(R.drawable.history),
-                                                            contentDescription = stringResource(R.string.history),
-                                                            modifier = Modifier.size(22.dp)
-                                                        )
-                                                    }
-
-                                                    IconButton(
-                                                        modifier = Modifier.size(40.dp),
-                                                        onClick = { navController.navigate("stats") }
-                                                    ) {
-                                                        Icon(
-                                                            painter = painterResource(R.drawable.stats),
-                                                            contentDescription = stringResource(R.string.stats),
-                                                            modifier = Modifier.size(22.dp)
-                                                        )
-                                                    }
-
-                                                    IconButton(
-                                                        modifier = Modifier.size(40.dp),
-                                                        onClick = { navController.navigate("new_release") }
-                                                    ) {
-                                                        Icon(
-                                                            painter = painterResource(R.drawable.notifications),
-                                                            contentDescription = stringResource(R.string.new_release_albums),
-                                                            modifier = Modifier.size(22.dp)
-                                                        )
-                                                    }
-
-                                                    IconButton(
-                                                        modifier = Modifier.size(40.dp),
-                                                        onClick = { showAccountDialog = true }
-                                                    ) {
-                                                        BadgedBox(
-                                                            badge = {
-                                                                if (!Updater.isSameVersion(
-                                                                        latestVersionName,
-                                                                        BuildConfig.VERSION_NAME
-                                                                    )
-                                                                ) {
-                                                                    Badge()
-                                                                }
-                                                            }
-                                                        ) {
-                                                            if (accountImageUrl != null) {
-                                                                AsyncImage(
-                                                                    model = accountImageUrl,
-                                                                    contentDescription = stringResource(R.string.account),
-                                                                    modifier = Modifier
-                                                                        .size(30.dp)
-                                                                        .clip(CircleShape)
-                                                                )
-                                                            } else {
-                                                                Icon(
-                                                                    painter = painterResource(R.drawable.account),
-                                                                    contentDescription = stringResource(R.string.account),
-                                                                    modifier = Modifier.size(24.dp)
-                                                                )
-                                                            }
+                                                        if (accountImageUrl != null) {
+                                                            AsyncImage(
+                                                                model = accountImageUrl,
+                                                                contentDescription = stringResource(R.string.account),
+                                                                modifier = Modifier
+                                                                    .fillMaxSize()
+                                                                    .clip(CircleShape)
+                                                            )
+                                                        } else {
+                                                            Icon(
+                                                                painter = painterResource(R.drawable.person),
+                                                                contentDescription = stringResource(R.string.account),
+                                                                tint = Color.White,
+                                                                modifier = Modifier.size(24.dp)
+                                                            )
                                                         }
                                                     }
                                                 },
@@ -1439,12 +1414,7 @@ class MainActivity : ComponentActivity() {
                                             onActiveChange = onActiveChange,
                                             placeholder = {
                                                 Text(
-                                                    text = stringResource(
-                                                        when (searchSource) {
-                                                            SearchSource.LOCAL -> R.string.search_library
-                                                            SearchSource.ONLINE -> R.string.search_yt_music
-                                                        }
-                                                    ),
+                                                    text = stringResource(R.string.wm_search_hint),
                                                 )
                                             },
                                             leadingIcon = {
@@ -1718,9 +1688,7 @@ class MainActivity : ComponentActivity() {
                                                             true
                                                 },
                                                 onItemClick = { screen, isSelected ->
-                                                    if (screen.route == Screens.Search.route) {
-                                                        onActiveChange(true)
-                                                    } else if (isSelected) {
+                                                    if (isSelected) {
                                                         navController.currentBackStackEntry?.savedStateHandle?.set(
                                                             "scrollToTop",
                                                             true
@@ -1869,7 +1837,8 @@ class MainActivity : ComponentActivity() {
                                     navigationBuilder(
                                         navController,
                                         topAppBarScrollBehavior,
-                                        latestVersionName
+                                        latestVersionName,
+                                        onActivateSearch = { onActiveChange(true) },
                                     )
                                 }
                             }

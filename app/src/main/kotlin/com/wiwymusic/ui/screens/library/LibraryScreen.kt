@@ -59,26 +59,36 @@ fun LibraryScreen(navController: NavController) {
                 ChipsRow(
                     chips =
                     listOf(
+                        // WiwyMusic: orden -> Favoritos, Playlists, Álbumes, Artistas, Historia, Canciones, Spotify
+                        LibraryFilter.FAVORITES to stringResource(R.string.filter_favorites),
                         LibraryFilter.PLAYLISTS to stringResource(R.string.filter_playlists),
-                        LibraryFilter.SONGS to stringResource(R.string.filter_songs),
                         LibraryFilter.ALBUMS to stringResource(R.string.filter_albums),
                         LibraryFilter.ARTISTS to stringResource(R.string.filter_artists),
+                        LibraryFilter.HISTORY to stringResource(R.string.history),
+                        LibraryFilter.SONGS to stringResource(R.string.filter_songs),
                         LibraryFilter.SPOTIFY to stringResource(R.string.spotify)
                     ),
                     currentValue = filterType,
                     onValueUpdate = {
-                        filterType =
-                            if (filterType == it) {
-                                LibraryFilter.LIBRARY
-                            } else {
-                                it
-                            }
+                        when (it) {
+                            // Favoritos e Historia son accesos directos (navegan)
+                            LibraryFilter.FAVORITES -> navController.navigate("auto_playlist/liked")
+                            LibraryFilter.HISTORY -> navController.navigate("history")
+                            else -> filterType =
+                                if (filterType == it) {
+                                    LibraryFilter.LIBRARY
+                                } else {
+                                    it
+                                }
+                        }
                     },
                     icons = mapOf(
+                        LibraryFilter.FAVORITES to R.drawable.favorite,
                         LibraryFilter.PLAYLISTS to R.drawable.queue_music,
-                        LibraryFilter.SONGS to R.drawable.music_note,
                         LibraryFilter.ALBUMS to R.drawable.album,
                         LibraryFilter.ARTISTS to R.drawable.person,
+                        LibraryFilter.HISTORY to R.drawable.history,
+                        LibraryFilter.SONGS to R.drawable.music_note,
                         LibraryFilter.SPOTIFY to R.drawable.spotify_icon
                     ),
                     modifier = Modifier.weight(1f),
@@ -246,6 +256,14 @@ fun LibraryScreen(navController: NavController) {
                     filterContent = filterContent
                 )
             }
+
+            // Accesos directos: navegan desde onValueUpdate, no se renderizan aquí
+            LibraryFilter.FAVORITES,
+            LibraryFilter.HISTORY -> LibraryMixScreen(
+                navController,
+                filterContent,
+                onTabSelected = { filterType = it }
+            )
         }
     }
 }

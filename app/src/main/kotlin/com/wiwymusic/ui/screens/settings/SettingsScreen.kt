@@ -153,8 +153,9 @@ fun SettingsScreen(
     } else null
 
     val contentState = SettingsContentState(
-        quickActions = if (queryText.isBlank()) quickActions else filteredQuickActions,
-        integrations = if (queryText.isBlank()) integrationActions else filteredIntegrations,
+        // WiwyMusic: Ajustes muestra solo la lista curada (sin accesos rapidos ni integraciones)
+        quickActions = emptyList(),
+        integrations = emptyList(),
         groups = if (queryText.isBlank()) settingsGroups else filteredGroups,
         internalGroup = if (queryText.isNotBlank()) internalGroup else null,
         showPermissionBanner = shouldShowPermissionHint,

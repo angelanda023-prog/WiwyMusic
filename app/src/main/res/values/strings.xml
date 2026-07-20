@@ -832,11 +832,21 @@ WiwyMusic will only extract your token, and everything else is stored locally.</
     <string name="token_copied">Token copied to clipboard</string>
     <string name="no_visitor_data">No visitor data available. Tokens cannot be generated.</string>
     <string name="extracting_from_url">Extracting tokens from URL…</string>
-    <string name="contributors">Contributors</string>
+    <string name="contributors">Contribuidores</string>
     <string name="reorder_lyrics_providers_description">Press and hold, then drag to change the priority order</string>
     <string name="reorder_lyrics_providers">Reorder Lyrics Providers</string>
     <string name="lyrics_provider_order">Lyrics Provider Order</string>
     <string name="lyrics_provider_priority">Priority: %1$s</string>
     <string name="select_option">Select</string>
     <string name="enter_value">Enter Value</string>
+    <string name="filter_favorites">Favorites</string>
+    <string name="wm_downloads">Downloads</string>
+    <string name="wm_downloads_storage_desc">Manage cache and storage location</string>
+    <string name="wm_notifications">Notifications</string>
+    <string name="wm_open_system_notifications">Open system notification settings</string>
+    <string name="wm_notifications_desc">Manage WiwyMusic notifications from the system settings</string>
+    <string name="wm_recognize">Recognize song</string>
+    <string name="wm_recognize_desc">Identify the song playing around you</string>
+    <string name="wm_recognize_soon">Coming soon</string>
+    <string name="wm_search_hint">Search songs, artists, albums…</string>
 </resources>

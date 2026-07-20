@@ -56,6 +56,7 @@ sealed class Screens(
     )
 
     companion object {
-        val MainScreens = listOf(Home, Search, MoodAndGenres, Library)
+        // WiwyMusic: nav inferior -> Inicio, Buscar, Biblioteca, Descargas
+        val MainScreens = listOf(Home, Search, Library, DownloadQueue)
     }
 }
