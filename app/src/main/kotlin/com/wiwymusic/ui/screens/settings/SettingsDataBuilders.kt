@@ -102,8 +102,8 @@ fun buildSettingsGroups(
                 items = listOf(
                     SettingsItem(
                         icon = painterResource(R.drawable.person),
-                        title = "Mi cuenta",
-                        subtitle = "Gestiona tu perfil y preferencias",
+                        title = "Cuenta",
+                        subtitle = "Gestiona tu perfil",
                         accentColor = orange,
                         onClick = { resetSearch(); navController.navigate("settings/account") },
                     ),
@@ -117,30 +117,16 @@ fun buildSettingsGroups(
                     SettingsItem(
                         icon = painterResource(R.drawable.music_note),
                         title = "Audio",
-                        subtitle = "Calidad de audio y efectos",
-                        accentColor = orange,
-                        onClick = { resetSearch(); navController.navigate("settings/player") },
-                    ),
-                    SettingsItem(
-                        icon = painterResource(R.drawable.tune),
-                        title = "Reproducción",
-                        subtitle = "Comportamiento del reproductor",
+                        subtitle = "Calidad y normalización",
                         accentColor = orange,
                         onClick = { resetSearch(); navController.navigate("settings/player") },
                     ),
                     SettingsItem(
                         icon = painterResource(R.drawable.download),
                         title = "Descargas",
-                        subtitle = "Calidad, ubicación y almacenamiento",
+                        subtitle = "Calidad y red",
                         accentColor = orange,
                         onClick = { resetSearch(); navController.navigate("settings/downloads") },
-                    ),
-                    SettingsItem(
-                        icon = painterResource(R.drawable.timer),
-                        title = "Temporizador",
-                        subtitle = "Apagar música automáticamente",
-                        accentColor = orange,
-                        onClick = { resetSearch(); navController.navigate("settings/player") },
                     ),
                 ),
             ),
@@ -152,14 +138,7 @@ fun buildSettingsGroups(
                     SettingsItem(
                         icon = painterResource(R.drawable.palette),
                         title = "Apariencia",
-                        subtitle = "Tema oscuro, colores y más",
-                        accentColor = orange,
-                        onClick = { resetSearch(); navController.navigate("settings/appearance") },
-                    ),
-                    SettingsItem(
-                        icon = painterResource(R.drawable.style),
-                        title = "Interfaz",
-                        subtitle = "Personaliza la experiencia",
+                        subtitle = "Tema e idioma",
                         accentColor = orange,
                         onClick = { resetSearch(); navController.navigate("settings/appearance") },
                     ),
@@ -168,28 +147,7 @@ fun buildSettingsGroups(
         )
         add(
             SettingsGroup(
-                title = "PRIVACIDAD Y SINCRONIZACIÓN",
-                items = listOf(
-                    SettingsItem(
-                        icon = painterResource(R.drawable.security),
-                        title = "Privacidad",
-                        subtitle = "Historial, datos y actividad",
-                        accentColor = orange,
-                        onClick = { resetSearch(); navController.navigate("settings/privacy") },
-                    ),
-                    SettingsItem(
-                        icon = painterResource(R.drawable.sync),
-                        title = "Sincronización",
-                        subtitle = "Sincroniza tu música en todos tus dispositivos",
-                        accentColor = orange,
-                        onClick = { resetSearch(); navController.navigate("settings/account") },
-                    ),
-                ),
-            ),
-        )
-        add(
-            SettingsGroup(
-                title = "MÁS",
+                title = "NOTIFICACIONES Y PRIVACIDAD",
                 items = listOf(
                     SettingsItem(
                         icon = painterResource(R.drawable.notifications),
@@ -199,16 +157,37 @@ fun buildSettingsGroups(
                         onClick = { resetSearch(); navController.navigate("settings/notifications") },
                     ),
                     SettingsItem(
-                        icon = painterResource(R.drawable.android_auto),
-                        title = "Android Auto",
-                        subtitle = "Usa WiwyMusic en tu coche",
+                        icon = painterResource(R.drawable.security),
+                        title = "Privacidad",
+                        subtitle = "Historial, datos y actividad",
                         accentColor = orange,
-                        onClick = { resetSearch(); navController.navigate("settings/android_auto") },
+                        onClick = { resetSearch(); navController.navigate("settings/privacy") },
                     ),
+                ),
+            ),
+        )
+        add(
+            SettingsGroup(
+                title = "ALMACENAMIENTO",
+                items = listOf(
+                    SettingsItem(
+                        icon = painterResource(R.drawable.storage),
+                        title = "Almacenamiento",
+                        subtitle = "Liberar espacio",
+                        accentColor = orange,
+                        onClick = { resetSearch(); navController.navigate("settings/storage") },
+                    ),
+                ),
+            ),
+        )
+        add(
+            SettingsGroup(
+                title = "INFORMACIÓN",
+                items = listOf(
                     SettingsItem(
                         icon = painterResource(R.drawable.info),
-                        title = "Acerca de WiwyMusic",
-                        subtitle = "Versión, ayuda y legal",
+                        title = "Acerca de",
+                        subtitle = "Versión y licencias",
                         showUpdateIndicator = hasUpdate,
                         accentColor = orange,
                         onClick = { resetSearch(); navController.navigate("settings/about") },

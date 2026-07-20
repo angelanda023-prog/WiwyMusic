@@ -39,7 +39,7 @@
     <string name="search">Cerca</string>
     <string name="search_yt_music">Cerca su YouTube Musica...</string>
     <string name="search_library">Cerca nella libreria…</string>
-    <string name="filter_library">Biblioteca</string>
+    <string name="filter_library">Playlist</string>
     <string name="filter_liked">Mi è piaciuto</string>
     <string name="filter_downloaded">Scaricato</string>
     <string name="filter_downloaded_full">Scaricato (completo)</string>

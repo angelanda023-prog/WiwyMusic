@@ -8,7 +8,6 @@ package com.wiwymusic.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +25,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -176,23 +174,14 @@ fun WiwyLibraryScreen(navController: NavController) {
                 item { SectionTitle("Playlists inteligentes") }
                 item {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState())
-                            .padding(horizontal = 16.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        SmartCard(R.drawable.favorite, Color(0xFFF25D8E), Color(0x33F25D8E), "Favoritas", "$likedCount canciones") {
-                            navController.navigate("auto_playlist/liked")
-                        }
-                        SmartCard(R.drawable.fire, WiwyOrange, Color(0x33F5791F), "Más escuchadas", "Top 50") {
-                            navController.navigate("top_playlist/50")
-                        }
-                        SmartCard(R.drawable.history, Color(0xFF3FBF5F), Color(0x333FBF5F), "Agregadas recientemente", "$recentCount canciones") {
-                            navController.navigate("history")
-                        }
-                        SmartCard(R.drawable.download, Color(0xFF5C8DF2), Color(0x335C8DF2), "Descargadas", "$downloadedCount canciones") {
+                        SmartCard(R.drawable.download, Color(0xFF5C8DF2), Color(0x335C8DF2), "Descargadas", "$downloadedCount canciones", Modifier.weight(1f)) {
                             navController.navigate("auto_playlist/downloaded")
+                        }
+                        SmartCard(R.drawable.fire, WiwyOrange, Color(0x33F5791F), "Más escuchadas", "Top 50", Modifier.weight(1f)) {
+                            navController.navigate("top_playlist/50")
                         }
                     }
                 }
@@ -336,10 +325,9 @@ private fun PlaylistRow(playlist: Playlist, downloads: Map<String, Download>, on
 }
 
 @Composable
-private fun SmartCard(icon: Int, iconTint: Color, iconBg: Color, title: String, subtitle: String, onClick: () -> Unit) {
+private fun SmartCard(icon: Int, iconTint: Color, iconBg: Color, title: String, subtitle: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Column(
-        modifier = Modifier
-            .width(140.dp)
+        modifier = modifier
             .height(118.dp)
             .clip(RoundedCornerShape(16.dp))
             .border(1.dp, Color(0x1AFFFFFF), RoundedCornerShape(16.dp))

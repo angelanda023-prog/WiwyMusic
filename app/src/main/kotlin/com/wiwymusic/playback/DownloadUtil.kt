@@ -21,6 +21,7 @@ import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadManager
 import androidx.media3.exoplayer.offline.DownloadNotificationHelper
+import androidx.media3.exoplayer.scheduler.Requirements
 import com.wiwymusic.innertube.YouTube
 import com.wiwymusic.innertube.models.YouTubeClient
 import com.wiwymusic.constants.AudioQuality
@@ -36,6 +37,7 @@ import com.wiwymusic.utils.YTPlayerUtils
 import com.wiwymusic.utils.StreamClientUtils
 import com.wiwymusic.utils.enumPreference
 import com.wiwymusic.constants.NetworkMeteredKey
+import com.wiwymusic.constants.WifiOnlyDownloadKey
 import com.wiwymusic.utils.dataStore
 import com.wiwymusic.utils.get
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -213,6 +215,20 @@ constructor(
                 result[cursor.download.request.id] = cursor.download
             }
             downloads.value = result
+        }
+        // WiwyMusic: "Descargar solo con Wi-Fi" — pausa las descargas en redes de uso medido.
+        CoroutineScope(Dispatchers.IO).launch {
+            context.dataStore.data
+                .map { it[WifiOnlyDownloadKey] ?: false }
+                .distinctUntilChanged()
+                .collect { wifiOnly ->
+                    val requirements =
+                        if (wifiOnly) Requirements(Requirements.NETWORK_UNMETERED)
+                        else Requirements(Requirements.NETWORK)
+                    withContext(Dispatchers.Main) {
+                        downloadManager.setRequirements(requirements)
+                    }
+                }
         }
     }
 

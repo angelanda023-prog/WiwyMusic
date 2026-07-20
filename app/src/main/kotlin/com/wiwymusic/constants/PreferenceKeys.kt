@@ -111,6 +111,8 @@ val AudioQualityKey = stringPreferencesKey("audioQuality")
 
 val NetworkMeteredKey = booleanPreferencesKey("networkMetered")
 
+val WifiOnlyDownloadKey = booleanPreferencesKey("wifiOnlyDownload")
+
 enum class AudioQuality {
     AUTO,
     HIGH,

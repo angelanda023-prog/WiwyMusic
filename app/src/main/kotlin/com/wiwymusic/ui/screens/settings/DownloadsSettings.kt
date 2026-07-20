@@ -24,11 +24,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import com.wiwymusic.LocalPlayerAwareWindowInsets
 import com.wiwymusic.R
+import com.wiwymusic.constants.AudioQuality
+import com.wiwymusic.constants.AudioQualityKey
+import com.wiwymusic.constants.WifiOnlyDownloadKey
+import com.wiwymusic.ui.component.EnumListPreference
 import com.wiwymusic.ui.component.IconButton
-import com.wiwymusic.ui.component.PreferenceEntry
-import com.wiwymusic.ui.component.PreferenceGroupTitle
-import com.wiwymusic.ui.screens.Screens
+import com.wiwymusic.ui.component.SwitchPreference
 import com.wiwymusic.ui.utils.backToMain
+import com.wiwymusic.utils.rememberEnumPreference
+import com.wiwymusic.utils.rememberPreference
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,6 +40,9 @@ fun DownloadsSettings(
     navController: NavController,
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
+    val (audioQuality, onAudioQualityChange) = rememberEnumPreference(AudioQualityKey, AudioQuality.AUTO)
+    val (wifiOnly, onWifiOnlyChange) = rememberPreference(WifiOnlyDownloadKey, defaultValue = false)
+
     Column(
         Modifier
             .windowInsetsPadding(
@@ -47,19 +54,27 @@ fun DownloadsSettings(
     ) {
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
 
-        PreferenceGroupTitle(title = stringResource(R.string.wm_downloads))
-
-        PreferenceEntry(
-            title = { Text(stringResource(R.string.download_queue)) },
-            icon = { Icon(painterResource(R.drawable.downloading), null) },
-            onClick = { navController.navigate(Screens.DownloadQueue.route) },
+        EnumListPreference(
+            title = { Text(stringResource(R.string.audio_quality)) },
+            icon = { Icon(painterResource(R.drawable.graphic_eq), null) },
+            selectedValue = audioQuality,
+            onValueSelected = onAudioQualityChange,
+            valueText = {
+                when (it) {
+                    AudioQuality.HIGHEST -> stringResource(R.string.audio_quality_max)
+                    AudioQuality.HIGH -> stringResource(R.string.audio_quality_high)
+                    AudioQuality.AUTO -> stringResource(R.string.audio_quality_auto)
+                    AudioQuality.LOW -> stringResource(R.string.audio_quality_low)
+                }
+            },
         )
 
-        PreferenceEntry(
-            title = { Text(stringResource(R.string.storage)) },
-            description = stringResource(R.string.wm_downloads_storage_desc),
-            icon = { Icon(painterResource(R.drawable.storage), null) },
-            onClick = { navController.navigate("settings/storage") },
+        SwitchPreference(
+            title = { Text("Descargar solo con Wi-Fi") },
+            description = "Pausa las descargas cuando usas datos móviles",
+            icon = { Icon(painterResource(R.drawable.wifi), null) },
+            checked = wifiOnly,
+            onCheckedChange = onWifiOnlyChange,
         )
     }
 

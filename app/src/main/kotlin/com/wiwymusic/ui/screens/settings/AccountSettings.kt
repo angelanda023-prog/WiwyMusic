@@ -269,21 +269,16 @@ fun AccountSettings(
                 )
             }
 
-            // Advanced Section
-            SettingsSection(title = stringResource(R.string.misc)) {
-                SettingsClickableItem(
-                    icon = painterResource(R.drawable.token),
-                    title = when {
-                        !isLoggedIn -> stringResource(R.string.advanced_login)
-                        showToken -> stringResource(R.string.token_shown)
-                        else -> stringResource(R.string.token_hidden)
-                    },
-                    onClick = {
-                        if (!isLoggedIn) showTokenEditor = true
-                        else if (!showToken) showToken = true
-                        else showTokenEditor = true
-                    }
-                )
+            // WiwyMusic: solo mostramos el acceso por token para iniciar sesion.
+            // Con sesion iniciada ocultamos cookies/visitor data/token (InnerTube automatico).
+            if (!isLoggedIn) {
+                SettingsSection {
+                    SettingsClickableItem(
+                        icon = painterResource(R.drawable.token),
+                        title = stringResource(R.string.advanced_login),
+                        onClick = { showTokenEditor = true }
+                    )
+                }
             }
 
             // Settings & Updates Section

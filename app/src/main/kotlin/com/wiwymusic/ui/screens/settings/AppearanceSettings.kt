@@ -51,6 +51,13 @@ import com.wiwymusic.R
 import com.wiwymusic.constants.CanvasSource
 import com.wiwymusic.constants.CanvasSourceKey
 import com.wiwymusic.constants.ChipSortTypeKey
+import android.content.Intent
+import android.provider.Settings
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.net.toUri
+import com.wiwymusic.constants.AppLanguageKey
+import com.wiwymusic.constants.SYSTEM_DEFAULT
+import com.wiwymusic.constants.LanguageCodeToName
 import com.wiwymusic.constants.DarkModeKey
 import com.wiwymusic.constants.DefaultOpenTabKey
 import com.wiwymusic.constants.DynamicThemeKey
@@ -127,6 +134,11 @@ fun AppearanceSettings(
     val (darkMode, onDarkModeChange) = rememberEnumPreference(
         DarkModeKey,
         defaultValue = DarkMode.AUTO
+    )
+    val context = LocalContext.current
+    val (appLanguage, _) = rememberPreference(
+        AppLanguageKey,
+        defaultValue = SYSTEM_DEFAULT
     )
     val (playerDesignStyle, onPlayerDesignStyleChange) = rememberEnumPreference(
         PlayerDesignStyleKey,
@@ -327,46 +339,6 @@ fun AppearanceSettings(
             title = stringResource(R.string.theme),
         )
 
-        SwitchPreference(
-            title = { Text(stringResource(R.string.enable_dynamic_theme)) },
-            icon = { Icon(painterResource(R.drawable.palette), null) },
-            checked = dynamicTheme,
-            onCheckedChange = onDynamicThemeChange,
-        )
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.player_fullscreen)) },
-            icon = { Icon(painterResource(R.drawable.fullscreen), null) },
-            checked = playerFullscreen,
-            onCheckedChange = onPlayerFullscreenChange,
-        )
-
-        SwitchPreference(
-            title = { Text("Haptic feedback") },
-            icon = { Icon(painterResource(R.drawable.haptic), null) },
-            checked = hapticEnabled,
-            onCheckedChange = onHapticEnabledChange,
-        )
-
-        AnimatedVisibility(visible = !dynamicTheme || Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            SwitchPreference(
-                title = { Text(stringResource(R.string.random_theme_on_startup)) },
-                description = stringResource(R.string.random_theme_on_startup_desc),
-                icon = { Icon(painterResource(R.drawable.shuffle), null) },
-                checked = randomThemeOnStartup,
-                onCheckedChange = onRandomThemeOnStartupChange,
-            )
-        }
-
-        AnimatedVisibility(visible = !dynamicTheme || Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            PreferenceEntry(
-                title = { Text(stringResource(R.string.color_palette)) },
-                description = stringResource(R.string.customize_theme_colors),
-                icon = { Icon(painterResource(R.drawable.format_paint), null) },
-                onClick = { navController.navigate("settings/appearance/palette_picker") }
-            )
-        }
-
         EnumListPreference(
             title = { Text(stringResource(R.string.dark_theme)) },
             icon = { Icon(painterResource(R.drawable.dark_mode), null) },
@@ -381,573 +353,38 @@ fun AppearanceSettings(
             },
         )
 
-        AnimatedVisibility(useDarkTheme) {
-            SwitchPreference(
-                title = { Text(stringResource(R.string.pure_black)) },
-                icon = { Icon(painterResource(R.drawable.contrast), null) },
-                checked = pureBlack,
-                onCheckedChange = onPureBlackChange,
-            )
-        }
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.disable_blur)) },
-            description = stringResource(R.string.disable_blur_desc),
-            icon = { Icon(painterResource(R.drawable.blur_off), null) },
-            checked = disableBlur,
-            onCheckedChange = onDisableBlurChange,
-        )
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.use_system_font)) },
-            description = stringResource(R.string.use_system_font_desc),
-            icon = { Icon(painterResource(R.drawable.text_fields), null) },
-            checked = useSystemFont,
-            onCheckedChange = onUseSystemFontChange,
-        )
-
         PreferenceGroupTitle(
-            title = stringResource(R.string.player),
-        )
-
-        EnumListPreference(
-            title = { Text(stringResource(R.string.player_design_style)) },
-            icon = { Icon(painterResource(R.drawable.palette), null) },
-            selectedValue = playerDesignStyle,
-            onValueSelected = onPlayerDesignStyleChange,
-            valueText = {
-                when (it) {
-                    PlayerDesignStyle.V1 -> stringResource(R.string.player_design_v1)
-                    PlayerDesignStyle.V2 -> stringResource(R.string.player_design_v2)
-                    PlayerDesignStyle.V3 -> stringResource(R.string.player_design_v3)
-                    PlayerDesignStyle.V4 -> stringResource(R.string.player_design_v4)
-                    PlayerDesignStyle.V5 -> stringResource(R.string.player_design_v5)
-                    PlayerDesignStyle.V6 -> stringResource(R.string.player_design_v6)
-                    PlayerDesignStyle.V7 -> stringResource(R.string.player_design_v7)
-                    PlayerDesignStyle.V8 -> stringResource(R.string.Apple_Music)
-                }
-            },
-        )
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.new_mini_player_design)) },
-            icon = { Icon(painterResource(R.drawable.nav_bar), null) },
-            checked = useNewMiniPlayerDesign,
-            onCheckedChange = onUseNewMiniPlayerDesignChange,
-        )
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.new_library_design)) },
-            description = stringResource(R.string.new_library_design_description),
-            icon = { Icon(painterResource(R.drawable.grid_view), null) },
-            checked = useNewLibraryDesign,
-            onCheckedChange = onUseNewLibraryDesignChange,
-        )
-
-        EnumListPreference(
-            title = { Text(stringResource(R.string.player_background_style)) },
-            icon = { Icon(painterResource(R.drawable.gradient), null) },
-            selectedValue = playerBackground,
-            onValueSelected = onPlayerBackgroundChange,
-            valueText = {
-                when (it) {
-                    PlayerBackgroundStyle.DEFAULT -> stringResource(R.string.follow_theme)
-                    PlayerBackgroundStyle.GRADIENT -> stringResource(R.string.gradient)
-                        PlayerBackgroundStyle.CUSTOM -> stringResource(R.string.custom)
-                    PlayerBackgroundStyle.BLUR -> stringResource(R.string.player_background_blur)
-                    PlayerBackgroundStyle.COLORING -> stringResource(R.string.coloring)
-                    PlayerBackgroundStyle.BLUR_GRADIENT -> stringResource(R.string.blur_gradient)
-                    PlayerBackgroundStyle.GLOW -> stringResource(R.string.glow)
-                    PlayerBackgroundStyle.GLOW_ANIMATED -> "Glow Animated"
-                }
-            },
-        )
-
-        // When custom background is selected, show a direct link to customize it
-        if (playerBackground == PlayerBackgroundStyle.CUSTOM) {
-            PreferenceEntry(
-                title = { Text(stringResource(R.string.customized_background)) },
-                icon = { Icon(painterResource(R.drawable.image), null) },
-                onClick = { navController.navigate("customize_background") }
-            )
-        }
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.hide_player_thumbnail)) },
-            description = stringResource(R.string.hide_player_thumbnail_desc),
-            icon = { Icon(painterResource(R.drawable.hide_image), null) },
-            checked = hidePlayerThumbnail,
-            onCheckedChange = onHidePlayerThumbnailChange
-        )
-
-        ListPreference(
-            title = { Text("Canvas source") },
-            icon = { Icon(painterResource(R.drawable.motion_photos_on), null) },
-            selectedValue = canvasSource,
-            values = CanvasSource.entries,
-            valueText = { source ->
-                when (source) {
-                    CanvasSource.AUTO -> "Auto"
-                    CanvasSource.APPLE_MUSIC -> "Apple Music"
-                    CanvasSource.CUSTOM -> "Custom by WiwyMusic"
-                    CanvasSource.TIDAL -> "Tidal"
-                }
-            },
-            onValueSelected = setCanvasSource,
-        )
-      
-
-        ThumbnailCornerRadiusSelectorButton(
-            modifier = Modifier.padding(16.dp),
-            onRadiusSelected = { selectedRadius ->
-                Timber.tag("Thumbnail").d("Radius Selector: $selectedRadius")
-            }
-        )
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.crop_thumbnail_to_square)) },
-            description = stringResource(R.string.crop_thumbnail_to_square_desc),
-            icon = { Icon(painterResource(R.drawable.image), null) },
-            checked = cropThumbnailToSquare,
-            onCheckedChange = onCropThumbnailToSquareChange
-        )
-
-
-        EnumListPreference(
-            title = { Text(stringResource(R.string.player_buttons_style)) },
-            icon = { Icon(painterResource(R.drawable.palette), null) },
-            selectedValue = playerButtonsStyle,
-            onValueSelected = onPlayerButtonsStyleChange,
-            valueText = {
-                when (it) {
-                    PlayerButtonsStyle.DEFAULT -> stringResource(R.string.default_style)
-                    PlayerButtonsStyle.SECONDARY -> stringResource(R.string.secondary_color_style)
-                }
-            },
+            title = stringResource(R.string.app_language),
         )
 
         PreferenceEntry(
-            title = { Text(stringResource(R.string.player_slider_style)) },
-            description = sliderStyleLabel(sliderStyle),
-            icon = { Icon(painterResource(R.drawable.sliders), null) },
+            title = { Text(stringResource(R.string.app_language)) },
+            subtitle = {
+                Text(
+                    text = if (appLanguage == SYSTEM_DEFAULT) stringResource(R.string.system_default)
+                    else (LanguageCodeToName[appLanguage] ?: appLanguage)
+                )
+            },
+            icon = { Icon(painterResource(R.drawable.translate), null) },
             onClick = {
-                showSliderOptionDialog = true
-            },
-        )
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.enable_swipe_thumbnail)) },
-            icon = { Icon(painterResource(R.drawable.swipe), null) },
-            checked = swipeThumbnail,
-            onCheckedChange = onSwipeThumbnailChange,
-        )
-
-        AnimatedVisibility(swipeThumbnail) {
-            var showSensitivityDialog by rememberSaveable { mutableStateOf(false) }
-            
-            if (showSensitivityDialog) {
-                var tempSensitivity by remember { mutableFloatStateOf(swipeSensitivity) }
-                
-                DefaultDialog(
-                    onDismiss = { 
-                        tempSensitivity = swipeSensitivity
-                        showSensitivityDialog = false 
-                    },
-                    buttons = {
-                        TextButton(
-                            onClick = { 
-                                tempSensitivity = 0.73f
-                            }
-                        ) {
-                            Text(stringResource(R.string.reset))
-                        }
-                        
-                        Spacer(modifier = Modifier.weight(1f))
-                        
-                        TextButton(
-                            onClick = { 
-                                tempSensitivity = swipeSensitivity
-                                showSensitivityDialog = false 
-                            }
-                        ) {
-                            Text(stringResource(android.R.string.cancel))
-                        }
-                        TextButton(
-                            onClick = { 
-                                onSwipeSensitivityChange(tempSensitivity)
-                                showSensitivityDialog = false 
-                            }
-                        ) {
-                            Text(stringResource(android.R.string.ok))
-                        }
-                    }
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.swipe_sensitivity),
-                            style = MaterialTheme.typography.headlineSmall,
-                            modifier = Modifier.padding(bottom = 16.dp)
+                runCatching {
+                    context.startActivity(
+                        Intent(
+                            Settings.ACTION_APP_LOCALE_SETTINGS,
+                            "package:${context.packageName}".toUri()
                         )
-    
-                        Text(
-                            text = stringResource(R.string.sensitivity_percentage, (tempSensitivity * 100).roundToInt()),
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-    
-                        Slider(
-                            value = tempSensitivity,
-                            onValueChange = { tempSensitivity = it },
-                            valueRange = 0f..1f,
-                            modifier = Modifier.fillMaxWidth()
+                    )
+                }.onFailure {
+                    runCatching {
+                        context.startActivity(
+                            Intent(
+                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                "package:${context.packageName}".toUri()
+                            )
                         )
                     }
                 }
             }
-            
-            PreferenceEntry(
-                title = { Text(stringResource(R.string.swipe_sensitivity)) },
-                description = stringResource(R.string.sensitivity_percentage, (swipeSensitivity * 100).roundToInt()),
-                icon = { Icon(painterResource(R.drawable.tune), null) },
-                onClick = { showSensitivityDialog = true }
-            )
-        }
-
-        PreferenceGroupTitle(
-            title = stringResource(R.string.lyrics),
-        )
-
-        SwitchPreference(
-            title = { Text("Lyrics V2 (Experimental)") },
-            description = "Use the new fluid word-synced lyrics engine",
-            icon = { Icon(painterResource(R.drawable.lyrics), null) },
-            checked = useLyricsV2,
-            onCheckedChange = onUseLyricsV2Change,
-        )
-
-        EnumListPreference(
-            title = { Text(stringResource(R.string.lyrics_text_position)) },
-            icon = { Icon(painterResource(R.drawable.lyrics), null) },
-            selectedValue = lyricsPosition,
-            onValueSelected = onLyricsPositionChange,
-            valueText = {
-                when (it) {
-                    LyricsPosition.LEFT -> stringResource(R.string.left)
-                    LyricsPosition.CENTER -> stringResource(R.string.center)
-                    LyricsPosition.RIGHT -> stringResource(R.string.right)
-                }
-            },
-        )
-
-        EnumListPreference(
-          title = { Text(stringResource(R.string.lyrics_animation_style)) },
-          icon = { Icon(painterResource(R.drawable.animation), null) },
-          selectedValue = lyricsAnimation,
-          onValueSelected = onLyricsAnimationChange,
-          valueText = {
-              when (it) {
-                  LyricsAnimationStyle.NONE -> stringResource(R.string.none)
-                  LyricsAnimationStyle.FADE -> stringResource(R.string.fade)
-                  LyricsAnimationStyle.GLOW -> stringResource(R.string.glow)
-                  LyricsAnimationStyle.SLIDE -> stringResource(R.string.slide)
-                  LyricsAnimationStyle.KARAOKE -> stringResource(R.string.karaoke)
-                  LyricsAnimationStyle.APPLE -> stringResource(R.string.apple_music_style)
-              }
-          }
-        )
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.lyrics_click_change)) },
-            icon = { Icon(painterResource(R.drawable.lyrics), null) },
-            checked = lyricsClick,
-            onCheckedChange = onLyricsClickChange,
-        )
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.lyrics_auto_scroll)) },
-            icon = { Icon(painterResource(R.drawable.lyrics), null) },
-            checked = lyricsScroll,
-            onCheckedChange = onLyricsScrollChange,
-        )
-
-        var showLyricsTextSizeDialog by rememberSaveable { mutableStateOf(false) }
-        
-        if (showLyricsTextSizeDialog) {
-            var tempTextSize by remember { mutableFloatStateOf(lyricsTextSize) }
-            
-            DefaultDialog(
-                onDismiss = { 
-                    tempTextSize = lyricsTextSize
-                    showLyricsTextSizeDialog = false 
-                },
-                buttons = {
-                    TextButton(
-                        onClick = { 
-                            tempTextSize = 24f
-                        }
-                    ) {
-                        Text(stringResource(R.string.reset))
-                    }
-                    
-                    Spacer(modifier = Modifier.weight(1f))
-                    
-                    TextButton(
-                        onClick = { 
-                            tempTextSize = lyricsTextSize
-                            showLyricsTextSizeDialog = false 
-                        }
-                    ) {
-                        Text(stringResource(android.R.string.cancel))
-                    }
-                    TextButton(
-                        onClick = { 
-                            onLyricsTextSizeChange(tempTextSize)
-                            showLyricsTextSizeDialog = false 
-                        }
-                    ) {
-                        Text(stringResource(android.R.string.ok))
-                    }
-                }
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.lyrics_text_size),
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-
-                    Text(
-                        text = "${tempTextSize.roundToInt()} sp",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-
-                    Slider(
-                        value = tempTextSize,
-                        onValueChange = { tempTextSize = it },
-                        valueRange = 16f..36f,
-                        steps = 19,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-        }
-        
-        PreferenceEntry(
-            title = { Text(stringResource(R.string.lyrics_text_size)) },
-            description = "${lyricsTextSize.roundToInt()} sp",
-            icon = { Icon(painterResource(R.drawable.text_fields), null) },
-            onClick = { showLyricsTextSizeDialog = true }
-        )
-        
-        var showLyricsLineSpacingDialog by rememberSaveable { mutableStateOf(false) }
-        
-        if (showLyricsLineSpacingDialog) {
-            var tempLineSpacing by remember { mutableFloatStateOf(lyricsLineSpacing) }
-            
-            DefaultDialog(
-                onDismiss = { 
-                    tempLineSpacing = lyricsLineSpacing
-                    showLyricsLineSpacingDialog = false 
-                },
-                buttons = {
-                    TextButton(
-                        onClick = { 
-                            tempLineSpacing = 1.3f
-                        }
-                    ) {
-                        Text(stringResource(R.string.reset))
-                    }
-                    
-                    Spacer(modifier = Modifier.weight(1f))
-                    
-                    TextButton(
-                        onClick = { 
-                            tempLineSpacing = lyricsLineSpacing
-                            showLyricsLineSpacingDialog = false 
-                        }
-                    ) {
-                        Text(stringResource(android.R.string.cancel))
-                    }
-                    TextButton(
-                        onClick = { 
-                            onLyricsLineSpacingChange(tempLineSpacing)
-                            showLyricsLineSpacingDialog = false 
-                        }
-                    ) {
-                        Text(stringResource(android.R.string.ok))
-                    }
-                }
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.lyrics_line_spacing),
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-
-                    Text(
-                        text = "${String.format("%.1f", tempLineSpacing)}x",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-
-                    Slider(
-                        value = tempLineSpacing,
-                        onValueChange = { tempLineSpacing = it },
-                        valueRange = 1.0f..2.0f,
-                        steps = 19,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-        }
-        
-        PreferenceEntry(
-            title = { Text(stringResource(R.string.lyrics_line_spacing)) },
-            description = "${String.format("%.1f", lyricsLineSpacing)}x",
-            icon = { Icon(painterResource(R.drawable.text_fields), null) },
-            onClick = { showLyricsLineSpacingDialog = true }
-        )
-
-        PreferenceGroupTitle(
-            title = stringResource(R.string.misc),
-        )
-
-        EnumListPreference(
-            title = { Text(stringResource(R.string.default_open_tab)) },
-            icon = { Icon(painterResource(R.drawable.nav_bar), null) },
-            selectedValue = defaultOpenTab,
-            onValueSelected = onDefaultOpenTabChange,
-            valueText = {
-                when (it) {
-                    NavigationTab.HOME -> stringResource(R.string.home)
-                    NavigationTab.SEARCH -> stringResource(R.string.search)
-                    NavigationTab.LIBRARY -> stringResource(R.string.filter_library)
-                }
-            },
-        )
-
-        ListPreference(
-            title = { Text(stringResource(R.string.default_lib_chips)) },
-            icon = { Icon(painterResource(R.drawable.tab), null) },
-            selectedValue = defaultChip,
-            values = listOf(
-                LibraryFilter.LIBRARY, LibraryFilter.PLAYLISTS, LibraryFilter.SONGS,
-                LibraryFilter.ALBUMS, LibraryFilter.ARTISTS
-            ),
-            valueText = {
-                when (it) {
-                    LibraryFilter.SONGS -> stringResource(R.string.songs)
-                    LibraryFilter.ARTISTS -> stringResource(R.string.artists)
-                    LibraryFilter.ALBUMS -> stringResource(R.string.albums)
-                    LibraryFilter.PLAYLISTS -> stringResource(R.string.playlists)
-                    LibraryFilter.LIBRARY -> stringResource(R.string.filter_library)
-                    LibraryFilter.SPOTIFY -> stringResource(R.string.spotify)
-                    LibraryFilter.FAVORITES -> stringResource(R.string.filter_favorites)
-                    LibraryFilter.HISTORY -> stringResource(R.string.history)
-                }
-            },
-            onValueSelected = onDefaultChipChange,
-        )
-
-
-        PreferenceEntry(
-            title = { Text("Always On Display") },
-            description = "Estilos, formas y opciones de personalización",
-            icon = { Icon(painterResource(R.drawable.dark_mode), null) },
-            onClick = { navController.navigate("settings/appearance/always_on_display") }
-        )
-
-        PreferenceEntry(
-            title = { Text("Widget Settings") },
-            description = "Personaliza la apariencia del widget",
-            icon = { Icon(painterResource(R.drawable.buttons), null) },
-            onClick = { navController.navigate("settings/widget") }
-        )
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.show_home_category_chips)) },
-            description = stringResource(R.string.show_home_category_chips_desc),
-            icon = { Icon(painterResource(R.drawable.home_outlined), null) },
-            checked = showHomeCategoryChips,
-            onCheckedChange = onShowHomeCategoryChipsChange,
-        )
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.show_tags_in_library)) },
-            description = stringResource(R.string.show_tags_in_library_desc),
-            icon = { Icon(painterResource(R.drawable.filter_alt), null) },
-            checked = showTagsInLibrary,
-            onCheckedChange = onShowTagsInLibraryChange,
-        )
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.swipe_song_to_add)) },
-            icon = { Icon(painterResource(R.drawable.swipe), null) },
-            checked = swipeToSong,
-            onCheckedChange = onSwipeToSongChange
-        )
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.slim_navbar)) },
-            icon = { Icon(painterResource(R.drawable.nav_bar), null) },
-            checked = slimNav,
-            onCheckedChange = onSlimNavChange
-        )
-
-        EnumListPreference(
-            title = { Text(stringResource(R.string.grid_cell_size)) },
-            icon = { Icon(painterResource(R.drawable.grid_view), null) },
-            selectedValue = gridItemSize,
-            onValueSelected = onGridItemSizeChange,
-            valueText = {
-                when (it) {
-                    GridItemSize.BIG -> stringResource(R.string.big)
-                    GridItemSize.SMALL -> stringResource(R.string.small)
-                }
-            },
-        )
-
-        PreferenceGroupTitle(
-            title = stringResource(R.string.auto_playlists)
-        )
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.show_liked_playlist)) },
-            icon = { Icon(painterResource(R.drawable.favorite), null) },
-            checked = showLikedPlaylist,
-            onCheckedChange = onShowLikedPlaylistChange
-        )
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.show_downloaded_playlist)) },
-            icon = { Icon(painterResource(R.drawable.offline), null) },
-            checked = showDownloadedPlaylist,
-            onCheckedChange = onShowDownloadedPlaylistChange
-        )
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.show_top_playlist)) },
-            icon = { Icon(painterResource(R.drawable.trending_up), null) },
-            checked = showTopPlaylist,
-            onCheckedChange = onShowTopPlaylistChange
-        )
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.show_cached_playlist)) },
-            icon = { Icon(painterResource(R.drawable.cached), null) },
-            checked = showCachedPlaylist,
-            onCheckedChange = onShowCachedPlaylistChange
         )
     }
 
