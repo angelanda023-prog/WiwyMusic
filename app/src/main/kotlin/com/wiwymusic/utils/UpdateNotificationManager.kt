@@ -151,7 +151,13 @@ object UpdateNotificationManager {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val downloadIntent = Intent(Intent.ACTION_VIEW, Uri.parse(Updater.getLatestDownloadUrl()))
+        // WiwyMusic: la actualización se descarga e instala DENTRO de la app,
+        // así que el botón abre la pantalla de actualización (no el navegador).
+        val downloadIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("navigate_to", "settings/update")
+            putExtra("start_update_download", true)
+        }
         val downloadPendingIntent = PendingIntent.getActivity(
             context,
             1,

@@ -184,7 +184,7 @@ fun UpdateScreen(
         pendingUpdateInfo?.let { info ->
             UpdateAvailableDialog(
                 info = info,
-                onDownload    = { showUpdateDialog = false; uriHandler.openUri(info.downloadUrl) },
+                onDownload    = { showUpdateDialog = false; com.wiwymusic.utils.AppUpdateInstaller.downloadAndInstall(context, info.downloadUrl) },
                 onViewRelease = { showUpdateDialog = false; uriHandler.openUri(info.releasePageUrl) },
                 onDismiss     = { showUpdateDialog = false }
             )
@@ -416,7 +416,7 @@ fun UpdateScreen(
                             Spacer(Modifier.height(10.dp))
                             Text(latestHash, style = MaterialTheme.typography.labelMedium, fontFamily = FontFamily.Monospace, color = MaterialTheme.colorScheme.primary)
                             Spacer(Modifier.height(14.dp))
-                            Button(onClick = { uriHandler.openUri(nightlyInstallUrl) }, modifier = Modifier.fillMaxWidth()) {
+                            Button(onClick = { com.wiwymusic.utils.AppUpdateInstaller.downloadAndInstall(context, nightlyInstallUrl) }, modifier = Modifier.fillMaxWidth()) {
                                 Text("Install")
                             }
                         }

@@ -301,7 +301,7 @@ fun AccountSettings(
 
                     UpdateAvailableItem(
                         latestVersion = latestVersionName,
-                        onClick = { uriHandler.openUri(Updater.getLatestDownloadUrl()) }
+                        onClick = { com.wiwymusic.utils.AppUpdateInstaller.downloadAndInstall(context, Updater.getLatestDownloadUrl()) }
                     )
                 }
             }

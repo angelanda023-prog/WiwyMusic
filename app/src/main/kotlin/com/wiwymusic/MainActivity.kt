@@ -118,6 +118,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -508,6 +509,7 @@ class MainActivity : ComponentActivity() {
             val (liquidGlassNavBar) = rememberPreference(LiquidGlassNavBarKey, defaultValue = false)
             val menuState = remember { MenuState() }
             val uriHandler = LocalUriHandler.current
+            val updateContext = LocalContext.current
             val releaseNotesState = remember { mutableStateOf<String?>(null) }
             val updateSheetContent: @Composable ColumnScope.() -> Unit = { // receiver: ColumnScope
                 Text(
@@ -557,7 +559,9 @@ class MainActivity : ComponentActivity() {
                 Button(
                     onClick = {
                         try {
-                            uriHandler.openUri(Updater.getLatestDownloadUrl())
+                            com.wiwymusic.utils.AppUpdateInstaller.downloadAndInstall(
+                                updateContext, Updater.getLatestDownloadUrl()
+                            )
                         } catch (_: Exception) {}
                     },
                     modifier = Modifier.fillMaxWidth(),
