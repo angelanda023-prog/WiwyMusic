@@ -130,6 +130,10 @@ fun NavGraphBuilder.navigationBuilder(
         // WiwyMusic: Biblioteca tipo mockup (Favoritos, Playlists, Álbumes, Artistas, Historial)
         WiwyLibraryScreen(navController)
     }
+    composable(Screens.Favorites.route) {
+        // WiwyMusic: pestaña Favoritos -> canciones que te gustan (auto playlist "liked")
+        AutoPlaylistScreen(navController, scrollBehavior)
+    }
     composable("library/playlists") {
         com.wiwymusic.ui.screens.library.LibraryPlaylistsScreen(navController, filterContent = {})
     }

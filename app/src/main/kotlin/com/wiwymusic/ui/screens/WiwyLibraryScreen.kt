@@ -177,8 +177,8 @@ fun WiwyLibraryScreen(navController: NavController) {
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        SmartCard(R.drawable.download, Color(0xFF5C8DF2), Color(0x335C8DF2), "Descargadas", "$downloadedCount canciones", Modifier.weight(1f)) {
-                            navController.navigate("auto_playlist/downloaded")
+                        SmartCard(R.drawable.download, Color(0xFF5C8DF2), Color(0x335C8DF2), "Descargas", "$downloadedCount canciones", Modifier.weight(1f)) {
+                            navController.navigate("download_queue")
                         }
                         SmartCard(R.drawable.fire, WiwyOrange, Color(0x33F5791F), "Más escuchadas", "Top 50", Modifier.weight(1f)) {
                             navController.navigate("top_playlist/50")

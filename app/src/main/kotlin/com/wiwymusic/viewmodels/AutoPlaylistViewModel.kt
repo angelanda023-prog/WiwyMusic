@@ -55,7 +55,8 @@ constructor(
     savedStateHandle: SavedStateHandle,
     private val syncUtils: SyncUtils,
 ) : ViewModel() {
-    val playlist = savedStateHandle.get<String>("playlist")!!
+    // WiwyMusic: la pestaña Favoritos usa la ruta "favorites" sin argumento -> por defecto "liked".
+    val playlist = savedStateHandle.get<String>("playlist") ?: "liked"
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing = _isRefreshing.asStateFlow()

@@ -67,6 +67,7 @@
     <!-- Album screen -->
     <string name="other_versions">Other versions</string>
     <!-- Playlist -->
+    <string name="wm_favorites">Favoritos</string>
     <string name="liked_songs">Liked songs</string>
     <string name="downloaded_songs">Downloaded songs</string>
     <string name="playlist_is_empty">The playlist is empty</string>

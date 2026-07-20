@@ -48,6 +48,13 @@ sealed class Screens(
         route = "download_queue"
     )
 
+    object Favorites : Screens(
+        titleId = R.string.wm_favorites,
+        iconIdInactive = R.drawable.favorite_border,
+        iconIdActive = R.drawable.favorite_filled,
+        route = "favorites"
+    )
+
     object MoodAndGenres : Screens(
         titleId = R.string.mood_and_genres,
         iconIdInactive = R.drawable.style,
@@ -56,7 +63,7 @@ sealed class Screens(
     )
 
     companion object {
-        // WiwyMusic: nav inferior -> Inicio, Buscar, Biblioteca, Descargas
-        val MainScreens = listOf(Home, Search, Library, DownloadQueue)
+        // WiwyMusic: nav inferior -> Inicio, Buscar, Biblioteca, Favoritos
+        val MainScreens = listOf(Home, Search, Library, Favorites)
     }
 }
