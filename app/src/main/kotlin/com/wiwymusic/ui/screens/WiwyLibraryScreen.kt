@@ -1,12 +1,14 @@
 /*
- * WiwyMusic — Biblioteca (landing tipo mockup, datos reales)
+ * WiwyMusic — Biblioteca / Playlist (landing tipo mockup, datos reales)
  * Basado en OpenTune (GPL-3.0).
  */
 
 package com.wiwymusic.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,15 +17,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -37,26 +40,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
-import coil3.compose.AsyncImage
 import com.wiwymusic.LocalDatabase
+import com.wiwymusic.LocalDownloadUtil
 import com.wiwymusic.LocalPlayerAwareWindowInsets
-import com.wiwymusic.LocalPlayerConnection
 import com.wiwymusic.R
-import com.wiwymusic.constants.AlbumSortType
-import com.wiwymusic.constants.ArtistSortType
 import com.wiwymusic.constants.PlaylistSortType
-import com.wiwymusic.db.entities.Song
-import com.wiwymusic.models.toMediaMetadata
-import com.wiwymusic.playback.queues.YouTubeQueue
+import com.wiwymusic.db.entities.Playlist
 import com.wiwymusic.ui.component.CreatePlaylistDialog
+import com.wiwymusic.ui.component.PlaylistThumbnail
 
 private val WiwyOrange = Color(0xFFF5791F)
 private val WiwyBg = Color(0xFF0A0A0C)
@@ -66,14 +66,14 @@ private val WiwyMuted = Color(0xFF9A9AA2)
 @Composable
 fun WiwyLibraryScreen(navController: NavController) {
     val database = LocalDatabase.current
-    val playerConnection = LocalPlayerConnection.current
+    val downloadUtil = LocalDownloadUtil.current
 
     val likedCount by database.likedSongsCount().collectAsState(initial = 0)
     val playlists by remember { database.playlists(PlaylistSortType.CREATE_DATE, true) }.collectAsState(initial = emptyList())
-    val albums by remember { database.albums(AlbumSortType.CREATE_DATE, true) }.collectAsState(initial = emptyList())
-    val artists by remember { database.artists(ArtistSortType.CREATE_DATE, false) }.collectAsState(initial = emptyList())
     val recentEvents by remember { database.events() }.collectAsState(initial = emptyList())
-    val recentSongs = recentEvents.map { it.song }.distinctBy { it.song.id }.take(8)
+    val downloads by downloadUtil.downloads.collectAsState()
+    val downloadedCount = downloads.values.count { it.state == Download.STATE_COMPLETED }
+    val recentCount = recentEvents.map { it.song.song.id }.distinct().size
 
     var showCreate by remember { mutableStateOf(false) }
     if (showCreate) {
@@ -81,159 +81,288 @@ fun WiwyLibraryScreen(navController: NavController) {
     }
 
     val insets = LocalPlayerAwareWindowInsets.current.asPaddingValues()
-    val statusTop = androidx.compose.foundation.layout.WindowInsets.statusBars
-        .asPaddingValues().calculateTopPadding()
+    val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
-    Column(Modifier.fillMaxSize().background(WiwyBg)) {
-    // Cabecera FIJA
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 20.dp, end = 16.dp, bottom = 12.dp)
-            .padding(top = statusTop + 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text("Biblioteca", color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.weight(1f))
-        Box(
-            modifier = Modifier.size(40.dp).clip(CircleShape).clickable { showCreate = true },
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(painterResource(R.drawable.add), null, tint = Color.White, modifier = Modifier.size(26.dp))
-        }
-        Spacer(Modifier.width(4.dp))
-        Box(
-            modifier = Modifier.size(40.dp).clip(CircleShape).background(WiwyOrange).clickable { navController.navigate("settings") },
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(painterResource(R.drawable.person), null, tint = Color.White, modifier = Modifier.size(22.dp))
-        }
-    }
-
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = insets.calculateBottomPadding() + 24.dp),
-    ) {
-        // Categorías
-        item {
-            CategoryRow(R.drawable.favorite, Color(0xFFF25D7A), Color(0x33F25D7A), "Favoritos", "$likedCount canciones") {
-                navController.navigate("auto_playlist/liked")
-            }
-        }
-        item {
-            CategoryRow(R.drawable.music_note, WiwyOrange, Color(0x33F5791F), "Mis Playlists", "${playlists.size} playlists") {
-                navController.navigate("library/playlists")
-            }
-        }
-        item {
+    Box(Modifier.fillMaxSize().background(WiwyBg)) {
+        Column(Modifier.fillMaxSize()) {
+            // Cabecera FIJA (se mantiene igual)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .clickable { showCreate = true }
-                    .padding(horizontal = 8.dp, vertical = 10.dp),
+                    .padding(start = 20.dp, end = 16.dp, bottom = 12.dp)
+                    .padding(top = statusTop + 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(painterResource(R.drawable.add), null, tint = WiwyOrange, modifier = Modifier.size(24.dp))
-                Spacer(Modifier.width(16.dp))
-                Text("Nueva playlist", color = WiwyOrange, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                Text("Playlist", color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.weight(1f))
+                Box(
+                    modifier = Modifier.size(40.dp).clip(CircleShape).clickable { showCreate = true },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(painterResource(R.drawable.add), null, tint = Color.White, modifier = Modifier.size(26.dp))
+                }
+                Spacer(Modifier.width(4.dp))
+                Box(
+                    modifier = Modifier.size(40.dp).clip(CircleShape).background(WiwyOrange).clickable { navController.navigate("settings") },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(painterResource(R.drawable.person), null, tint = Color.White, modifier = Modifier.size(22.dp))
+                }
             }
-        }
-        item {
-            CategoryRow(R.drawable.album, Color(0xFF3FBF5F), Color(0x333FBF5F), "Álbumes", "${albums.size} álbumes") {
-                navController.navigate("library/albums")
-            }
-        }
-        item {
-            CategoryRow(R.drawable.person, Color(0xFF5C8DF2), Color(0x335C8DF2), "Artistas", "${artists.size} artistas") {
-                navController.navigate("library/artists")
-            }
-        }
-        item {
-            CategoryRow(R.drawable.history, Color(0xFF5C8DF2), Color(0x335C8DF2), "Historial", "Escuchado recientemente") {
-                navController.navigate("history")
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = insets.calculateBottomPadding() + 96.dp),
+            ) {
+                // Subtítulo
+                item {
+                    Text(
+                        "Tus colecciones de música",
+                        color = WiwyMuted,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 14.dp),
+                    )
+                }
+
+                // Nueva playlist / Importar playlist
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        ActionCard(R.drawable.add, "Nueva playlist", Modifier.weight(1f)) { showCreate = true }
+                        ActionCard(R.drawable.download, "Importar playlist", Modifier.weight(1f)) {
+                            navController.navigate("settings/backup_restore")
+                        }
+                    }
+                }
+
+                // Fijadas
+                item { SectionTitle("Fijadas") }
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        PinnedCard(
+                            icon = R.drawable.favorite,
+                            iconTint = Color.White,
+                            iconBg = Color(0x33FFFFFF),
+                            title = "Favoritos",
+                            subtitle = "$likedCount canciones",
+                            background = Brush.horizontalGradient(listOf(Color(0xFFF5791F), Color(0xFFE0325A))),
+                            modifier = Modifier.weight(1f),
+                        ) { navController.navigate("auto_playlist/liked") }
+                        PinnedCard(
+                            icon = R.drawable.history,
+                            iconTint = Color(0xFF8B8BF5),
+                            iconBg = Color(0x338B8BF5),
+                            title = "Escuchadas recientemente",
+                            subtitle = "$recentCount canciones",
+                            background = Brush.horizontalGradient(listOf(WiwyCard, WiwyCard)),
+                            modifier = Modifier.weight(1f),
+                        ) { navController.navigate("history") }
+                    }
+                }
+
+                // Mis playlists
+                item { SectionTitle("Mis playlists") }
+                items(playlists, key = { it.id }) { playlist ->
+                    PlaylistRow(playlist, downloads) {
+                        navController.navigate("local_playlist/${playlist.id}")
+                    }
+                }
+
+                // Playlists inteligentes
+                item { SectionTitle("Playlists inteligentes") }
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        SmartCard(R.drawable.favorite, Color(0xFFF25D8E), Color(0x33F25D8E), "Favoritas", "$likedCount canciones") {
+                            navController.navigate("auto_playlist/liked")
+                        }
+                        SmartCard(R.drawable.fire, WiwyOrange, Color(0x33F5791F), "Más escuchadas", "Top 50") {
+                            navController.navigate("top_playlist/50")
+                        }
+                        SmartCard(R.drawable.history, Color(0xFF3FBF5F), Color(0x333FBF5F), "Agregadas recientemente", "$recentCount canciones") {
+                            navController.navigate("history")
+                        }
+                        SmartCard(R.drawable.download, Color(0xFF5C8DF2), Color(0x335C8DF2), "Descargadas", "$downloadedCount canciones") {
+                            navController.navigate("auto_playlist/downloaded")
+                        }
+                    }
+                }
             }
         }
 
-        // Escuchado recientemente
-        if (recentSongs.isNotEmpty()) {
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text("Escuchado recientemente", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                    Icon(painterResource(R.drawable.navigate_next), null, tint = WiwyMuted, modifier = Modifier.size(22.dp).clickable { navController.navigate("history") })
-                }
-            }
-            items(recentSongs) { song ->
-                RecentSongRow(song) {
-                    playerConnection?.playQueue(YouTubeQueue.radio(song.toMediaMetadata()))
-                }
-            }
+        // FAB
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 20.dp, bottom = insets.calculateBottomPadding() + 20.dp)
+                .size(60.dp)
+                .clip(CircleShape)
+                .background(WiwyOrange)
+                .clickable { showCreate = true },
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(painterResource(R.drawable.add), null, tint = Color.White, modifier = Modifier.size(30.dp))
         }
-    }
     }
 }
 
 @Composable
-private fun CategoryRow(
+private fun SectionTitle(text: String) {
+    Text(
+        text,
+        color = Color.White,
+        fontSize = 20.sp,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 12.dp),
+    )
+}
+
+@Composable
+private fun ActionCard(icon: Int, label: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Row(
+        modifier = modifier
+            .height(56.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(WiwyCard)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        Icon(painterResource(icon), null, tint = WiwyOrange, modifier = Modifier.size(24.dp))
+        Spacer(Modifier.width(10.dp))
+        Text(label, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
+}
+
+@Composable
+private fun PinnedCard(
     icon: Int,
     iconTint: Color,
     iconBg: Color,
     title: String,
     subtitle: String,
+    background: Brush,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp)
-            .clip(RoundedCornerShape(14.dp))
+    Column(
+        modifier = modifier
+            .height(120.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(background)
             .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .padding(14.dp),
+        verticalArrangement = Arrangement.SpaceBetween,
     ) {
         Box(
-            modifier = Modifier.size(52.dp).clip(RoundedCornerShape(14.dp)).background(iconBg),
+            modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(iconBg),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(painterResource(icon), null, tint = iconTint, modifier = Modifier.size(26.dp))
+            Icon(painterResource(icon), null, tint = iconTint, modifier = Modifier.size(24.dp))
         }
-        Spacer(Modifier.width(16.dp))
-        Column(Modifier.weight(1f)) {
-            Text(title, color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
-            Text(subtitle, color = WiwyMuted, fontSize = 13.sp)
+        Column {
+            Text(title, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(subtitle, color = Color(0xCCFFFFFF), fontSize = 12.sp)
         }
     }
 }
 
 @Composable
-private fun RecentSongRow(song: Song, onPlay: () -> Unit) {
+private fun PlaylistRow(playlist: Playlist, downloads: Map<String, Download>, onClick: () -> Unit) {
+    val database = LocalDatabase.current
+    val songs by remember(playlist.id) { database.playlistSongs(playlist.id) }.collectAsState(initial = emptyList())
+    val totalSec = songs.sumOf { it.song.song.duration.coerceAtLeast(0) }
+    val downloaded = songs.isNotEmpty() && songs.all { downloads[it.song.id]?.state == Download.STATE_COMPLETED }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onPlay)
+            .clickable(onClick = onClick)
             .padding(horizontal = 20.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            modifier = Modifier.size(52.dp).clip(RoundedCornerShape(10.dp)).background(WiwyCard),
-        ) {
-            if (song.thumbnailUrl != null) {
-                AsyncImage(model = song.thumbnailUrl, contentDescription = song.title, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-            }
-        }
+        PlaylistThumbnail(
+            thumbnails = playlist.thumbnails,
+            size = 64.dp,
+            placeHolder = {
+                Icon(painterResource(R.drawable.queue_music), null, tint = WiwyMuted, modifier = Modifier.size(28.dp))
+            },
+            shape = RoundedCornerShape(12.dp),
+        )
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
-            Text(song.title, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(song.artists.joinToString { it.name }, color = WiwyMuted, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(playlist.playlist.name, color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Spacer(Modifier.height(2.dp))
+            Text(
+                buildString {
+                    append("${playlist.songCount} canciones")
+                    if (totalSec > 0) append(" • ${durationLabel(totalSec)}")
+                },
+                color = WiwyMuted,
+                fontSize = 13.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Spacer(Modifier.height(6.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (downloaded) {
+                    Icon(painterResource(R.drawable.library_add_check), null, tint = WiwyOrange, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Descargada", color = WiwyOrange, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                } else {
+                    Icon(painterResource(R.drawable.cloud), null, tint = WiwyMuted, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("En la nube", color = WiwyMuted, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                }
+            }
         }
         Box(
-            modifier = Modifier.size(40.dp).clip(CircleShape).background(WiwyCard),
+            modifier = Modifier.size(36.dp).clip(CircleShape).clickable(onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(painterResource(R.drawable.play), null, tint = Color.White, modifier = Modifier.size(22.dp))
+            Icon(painterResource(R.drawable.more_vert), null, tint = WiwyMuted, modifier = Modifier.size(22.dp))
         }
     }
+}
+
+@Composable
+private fun SmartCard(icon: Int, iconTint: Color, iconBg: Color, title: String, subtitle: String, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .width(140.dp)
+            .height(118.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .border(1.dp, Color(0x1AFFFFFF), RoundedCornerShape(16.dp))
+            .background(WiwyCard)
+            .clickable(onClick = onClick)
+            .padding(14.dp),
+        verticalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Box(
+            modifier = Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(iconBg),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(painterResource(icon), null, tint = iconTint, modifier = Modifier.size(22.dp))
+        }
+        Column {
+            Text(title, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(subtitle, color = WiwyMuted, fontSize = 12.sp)
+        }
+    }
+}
+
+private fun durationLabel(totalSeconds: Int): String {
+    val h = totalSeconds / 3600
+    val m = (totalSeconds % 3600) / 60
+    return if (h > 0) "$h h $m min" else "$m min"
 }
