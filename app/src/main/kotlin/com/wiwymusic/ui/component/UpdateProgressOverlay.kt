@@ -22,6 +22,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -31,6 +32,7 @@ import com.wiwymusic.utils.AppUpdateInstaller
 @Composable
 fun UpdateProgressOverlay() {
     val state by AppUpdateInstaller.state.collectAsState()
+    val wiwyOrange = Color(0xFFF5791F)
 
     when (val s = state) {
         is AppUpdateInstaller.State.Idle -> Unit
@@ -47,23 +49,28 @@ fun UpdateProgressOverlay() {
                     LinearProgressIndicator(
                         progress = { s.progress },
                         modifier = Modifier.fillMaxWidth().height(8.dp),
+                        color = wiwyOrange,
+                        trackColor = wiwyOrange.copy(alpha = 0.2f),
                         strokeCap = androidx.compose.ui.graphics.StrokeCap.Round,
                     )
                     Spacer(Modifier.height(10.dp))
                     Text(
                         "${(s.progress * 100).toInt()}%",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Bold,
+                        color = wiwyOrange,
                     )
                 } else {
                     LinearProgressIndicator(
                         modifier = Modifier.fillMaxWidth().height(8.dp),
+                        color = wiwyOrange,
+                        trackColor = wiwyOrange.copy(alpha = 0.2f),
                         strokeCap = androidx.compose.ui.graphics.StrokeCap.Round,
                     )
                 }
                 Spacer(Modifier.height(8.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    TextButton(onClick = { AppUpdateInstaller.cancel() }) { Text("Cancelar") }
+                    TextButton(onClick = { AppUpdateInstaller.cancel() }) { Text("Cancelar", color = wiwyOrange) }
                 }
             }
         }
@@ -78,6 +85,8 @@ fun UpdateProgressOverlay() {
                 Spacer(Modifier.height(16.dp))
                 LinearProgressIndicator(
                     modifier = Modifier.fillMaxWidth().height(8.dp),
+                    color = wiwyOrange,
+                    trackColor = wiwyOrange.copy(alpha = 0.2f),
                     strokeCap = androidx.compose.ui.graphics.StrokeCap.Round,
                 )
             }

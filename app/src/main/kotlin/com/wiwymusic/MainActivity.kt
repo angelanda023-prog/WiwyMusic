@@ -74,6 +74,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
@@ -512,49 +513,51 @@ class MainActivity : ComponentActivity() {
             val updateContext = LocalContext.current
             val releaseNotesState = remember { mutableStateOf<String?>(null) }
             val updateSheetContent: @Composable ColumnScope.() -> Unit = { // receiver: ColumnScope
+                val wiwyOrange = Color(0xFFF5791F)
                 Text(
                     text = stringResource(R.string.new_update_available),
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                     modifier = Modifier.padding(top = 16.dp)
                 )
 
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(16.dp))
 
-                OutlinedButton(
-                    onClick = {},
-                    shape = CircleShape,
-                    contentPadding = PaddingValues(
-                        horizontal = 5.dp,
-                        vertical = 5.dp
-                    )
+                // Dos tarjetas del mismo tamaño: versión instalada y nueva
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Text(text = latestVersionName, style = MaterialTheme.typography.labelLarge)
-                }
-
-                Spacer(Modifier.height(12.dp))
-
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f, fill = false)
-                    .verticalScroll(rememberScrollState())
-                ) {
-                    val notes = releaseNotesState.value
-                    if (!notes.isNullOrBlank()) {
-                        Markdown(
-                            content = notes,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(end = 8.dp)
-                        )
-                    } else {
-                        Text(
-                            text = stringResource(R.string.release_notes_unavailable),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
+                    Surface(
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    ) {
+                        Column(Modifier.padding(14.dp)) {
+                            Text("Instalada", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("v${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                    Surface(
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(16.dp),
+                        color = wiwyOrange.copy(alpha = 0.15f),
+                    ) {
+                        Column(Modifier.padding(14.dp)) {
+                            Text("Nueva versión", style = MaterialTheme.typography.labelSmall, color = wiwyOrange)
+                            Text(latestVersionName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = wiwyOrange)
+                        }
                     }
                 }
 
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(16.dp))
+
+                Text(
+                    text = "Algunas correcciones y mejoras del sistema.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                Spacer(Modifier.height(20.dp))
 
                 Button(
                     onClick = {
@@ -565,6 +568,7 @@ class MainActivity : ComponentActivity() {
                         } catch (_: Exception) {}
                     },
                     modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = wiwyOrange, contentColor = Color.White),
                 ) {
                     Text(text = stringResource(R.string.update_text))
                 }

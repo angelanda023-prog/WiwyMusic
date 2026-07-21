@@ -59,8 +59,8 @@ fun CreatePlaylistDialog(
 
     TextFieldDialog(
         icon = { Icon(painter = painterResource(R.drawable.playlist_add), contentDescription = null) },
-        title = { Text(text = stringResource(R.string.create_playlist)) },
-        placeholder = { Text(text = stringResource(R.string.playlist_name)) },
+        title = { Text(text = "Nueva Playlist") },
+        placeholder = { Text(text = "Nombre de la playlist") },
         isInputValid = { it.trim().isNotEmpty() },
         initialTextFieldValue = TextFieldValue(initialTextFieldValue ?: ""),
         onDismiss = onDismiss,
@@ -85,80 +85,5 @@ fun CreatePlaylistDialog(
                 }
             }
         },
-        extraContent = {
-            if (allowSyncing) {
-                val isYtmSyncEnabled = context.isSyncEnabled()
-                val syncDescription = when {
-                    !isSignedIn -> stringResource(R.string.not_logged_in_youtube)
-                    !isYtmSyncEnabled -> stringResource(R.string.sync_disabled)
-                    else -> stringResource(R.string.allows_for_sync_witch_youtube)
-                }
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    shape = MaterialTheme.shapes.large,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.sync),
-                            contentDescription = null,
-                            tint = if (syncedPlaylist) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            },
-                            modifier = Modifier.padding(top = 2.dp)
-                        )
-                        Column(
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.sync_playlist),
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = syncDescription,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Switch(
-                            checked = syncedPlaylist,
-                            onCheckedChange = {
-                                if (syncedPlaylist) {
-                                    syncedPlaylist = false
-                                    return@Switch
-                                }
-                                if (!isSignedIn) {
-                                    Toast.makeText(
-                                        context,
-                                        context.getString(R.string.not_logged_in_youtube),
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    return@Switch
-                                }
-                                if (!isYtmSyncEnabled) {
-                                    Toast.makeText(
-                                        context,
-                                        context.getString(R.string.sync_disabled),
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    return@Switch
-                                }
-                                syncedPlaylist = true
-                            }
-                        )
-                    }
-                }
-            }
-        }
     )
 }

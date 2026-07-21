@@ -93,13 +93,6 @@ fun WiwyLibraryScreen(navController: NavController) {
             ) {
                 Text("Playlist", color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.weight(1f))
                 Box(
-                    modifier = Modifier.size(40.dp).clip(CircleShape).clickable { showCreate = true },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(painterResource(R.drawable.add), null, tint = Color.White, modifier = Modifier.size(26.dp))
-                }
-                Spacer(Modifier.width(4.dp))
-                Box(
                     modifier = Modifier.size(40.dp).clip(CircleShape).background(WiwyOrange).clickable { navController.navigate("settings") },
                     contentAlignment = Alignment.Center,
                 ) {
