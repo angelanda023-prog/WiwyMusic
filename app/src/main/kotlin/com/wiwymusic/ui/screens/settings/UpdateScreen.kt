@@ -163,7 +163,7 @@ fun UpdateScreen(
         if (updateCheckState == UpdateCheckState.Loading) return
         coroutineScope.launch {
             updateCheckState = UpdateCheckState.Loading
-            Updater.checkForUpdate(BuildConfig.VERSION_NAME)
+            Updater.checkForUpdate(BuildConfig.VERSION_NAME, forceRefresh = true)
                 .onSuccess { info ->
                     if (info == null) {
                         updateCheckState = UpdateCheckState.UpToDate
