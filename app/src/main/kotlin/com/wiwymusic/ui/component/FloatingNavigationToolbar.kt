@@ -497,6 +497,8 @@ private fun FloatingNavigationToolbarItem(
     }
 }
 
+private val WiwyOrange = Color(0xFFF5791F)
+
 @Composable
 private fun floatingToolbarContainerColor(pureBlack: Boolean): Color {
     return if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer
@@ -504,22 +506,22 @@ private fun floatingToolbarContainerColor(pureBlack: Boolean): Color {
 
 @Composable
 private fun floatingToolbarFabContainerColor(pureBlack: Boolean): Color {
-    return if (pureBlack) Color.White.copy(alpha = 0.12f) else MaterialTheme.colorScheme.tertiaryContainer
+    return WiwyOrange
 }
 
 @Composable
 private fun floatingToolbarFabContentColor(pureBlack: Boolean): Color {
-    return if (pureBlack) Color.White else MaterialTheme.colorScheme.onTertiaryContainer
+    return Color.White
 }
 
 @Composable
 private fun floatingToolbarSelectedItemContainerColor(pureBlack: Boolean): Color {
-    return if (pureBlack) Color.White.copy(alpha = 0.12f) else MaterialTheme.colorScheme.secondaryContainer
+    return WiwyOrange
 }
 
 @Composable
 private fun floatingToolbarSelectedItemContentColor(pureBlack: Boolean): Color {
-    return if (pureBlack) Color.White else MaterialTheme.colorScheme.onSecondaryContainer
+    return Color.White
 }
 
 @Composable
@@ -533,10 +535,10 @@ private fun floatingToolbarItemContentColor(pureBlack: Boolean): Color {
 
 @Composable
 private fun floatingToolbarMenuIconContainerColor(pureBlack: Boolean): Color {
-    return if (pureBlack) Color.White.copy(alpha = 0.12f) else MaterialTheme.colorScheme.secondaryContainer
+    return WiwyOrange.copy(alpha = 0.18f)
 }
 
 @Composable
 private fun floatingToolbarMenuIconContentColor(pureBlack: Boolean): Color {
-    return if (pureBlack) Color.White else MaterialTheme.colorScheme.onSecondaryContainer
+    return WiwyOrange
 }

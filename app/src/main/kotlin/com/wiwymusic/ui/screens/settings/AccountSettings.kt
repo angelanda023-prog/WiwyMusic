@@ -114,6 +114,8 @@ import com.wiwymusic.utils.dataStore
 import com.wiwymusic.utils.rememberPreference
 import com.wiwymusic.viewmodels.HomeViewModel
 
+private val WiwyAccountOrange = androidx.compose.ui.graphics.Color(0xFFF5791F)
+
 @Composable
 fun AccountSettings(
     navController: NavController,
@@ -199,115 +201,14 @@ fun AccountSettings(
                 )
             }
 
-            // Account Options Section
-            AnimatedVisibility(
-                visible = isLoggedIn,
-                enter = fadeIn() + expandVertically(),
-                exit = fadeOut() + shrinkVertically()
-            ) {
-                SettingsSection(title = stringResource(R.string.account)) {
-                    SettingsToggleItem(
-                        icon = painterResource(R.drawable.add_circle),
-                        title = stringResource(R.string.more_content),
-                        subtitle = stringResource(R.string.use_login_for_browse_desc),
-                        checked = useLoginForBrowse,
-                        onCheckedChange = {
-                            YouTube.useLoginForBrowse = it
-                            onUseLoginForBrowseChange(it)
-                        }
-                    )
-
-                    HorizontalDivider(
-                        modifier = Modifier.padding(start = 56.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                    )
-
-                    SettingsToggleItem(
-                        icon = painterResource(R.drawable.cached),
-                        title = stringResource(R.string.yt_sync),
-                        checked = ytmSync,
-                        onCheckedChange = onYtmSyncChange
-                    )
-                }
-            }
-
-            // Sync & Integration Section
-            SettingsSection(title = stringResource(R.string.integration)) {
+            // WiwyMusic: Cuenta solo con Acceder (tarjeta) y sincronizar playlist.
+            SettingsSection {
                 SettingsClickableItem(
                     icon = painterResource(R.drawable.playlist_add),
                     title = stringResource(R.string.select_playlist_to_sync),
                     onClick = { showPlaylistDialog = true }
                 )
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(start = 56.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                )
-
-                SettingsClickableItem(
-                    icon = painterResource(R.drawable.integration),
-                    title = stringResource(R.string.integration),
-                    subtitle = "Discord, Last.fm, ListenBrainz",
-                    onClick = {
-                        onClose()
-                        navController.navigate("settings/integration")
-                    }
-                )
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(start = 56.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                )
-
-                SettingsClickableItem(
-                    icon = painterResource(R.drawable.fire),
-                    title = stringResource(R.string.music_together),
-                    onClick = {
-                        onClose()
-                        navController.navigate("settings/music_together")
-                    }
-                )
             }
-
-            // WiwyMusic: solo mostramos el acceso por token para iniciar sesion.
-            // Con sesion iniciada ocultamos cookies/visitor data/token (InnerTube automatico).
-            if (!isLoggedIn) {
-                SettingsSection {
-                    SettingsClickableItem(
-                        icon = painterResource(R.drawable.token),
-                        title = stringResource(R.string.advanced_login),
-                        onClick = { showTokenEditor = true }
-                    )
-                }
-            }
-
-            // Settings & Updates Section
-            SettingsSection {
-                SettingsClickableItem(
-                    icon = painterResource(R.drawable.settings),
-                    title = stringResource(R.string.settings),
-                    showBadge = hasUpdate,
-                    onClick = {
-                        onClose()
-                        navController.navigate("settings")
-                    }
-                )
-
-                if (hasUpdate) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(start = 56.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                    )
-
-                    UpdateAvailableItem(
-                        latestVersion = latestVersionName,
-                        onClick = { com.wiwymusic.utils.AppUpdateInstaller.downloadAndInstall(context, Updater.getLatestDownloadUrl()) }
-                    )
-                }
-            }
-
-            // App Version Footer
-            AppVersionFooter()
 
             Spacer(Modifier.height(8.dp))
         }
@@ -554,7 +455,7 @@ private fun SettingsClickableItem(
             modifier = Modifier
                 .size(40.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                .background(WiwyAccountOrange.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center
         ) {
             if (showBadge) {
@@ -567,7 +468,7 @@ private fun SettingsClickableItem(
                         painter = icon,
                         contentDescription = null,
                         modifier = Modifier.size(22.dp),
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = WiwyAccountOrange
                     )
                 }
             } else {
@@ -575,7 +476,7 @@ private fun SettingsClickableItem(
                     painter = icon,
                     contentDescription = null,
                     modifier = Modifier.size(22.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = WiwyAccountOrange
                 )
             }
         }
@@ -629,14 +530,14 @@ private fun SettingsToggleItem(
             modifier = Modifier
                 .size(40.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                .background(WiwyAccountOrange.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 painter = icon,
                 contentDescription = null,
                 modifier = Modifier.size(22.dp),
-                tint = MaterialTheme.colorScheme.primary
+                tint = WiwyAccountOrange
             )
         }
 
@@ -709,7 +610,7 @@ private fun UpdateAvailableItem(
                     painter = painterResource(R.drawable.update),
                     contentDescription = null,
                     modifier = Modifier.size(22.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = WiwyAccountOrange
                 )
             }
         }

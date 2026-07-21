@@ -78,6 +78,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
@@ -254,6 +255,8 @@ fun IconContainer(
     content: @Composable () -> Unit,
 ) {
     val ghostishShape = MaterialShapes.Ghostish.toShape()
+    // WiwyMusic: todos los iconos de Ajustes en naranja
+    val wiwyOrange = Color(0xFFF5791F)
 
     Box(
         modifier = modifier
@@ -262,8 +265,8 @@ fun IconContainer(
             .background(
                 Brush.linearGradient(
                     colors = listOf(
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-                        MaterialTheme.colorScheme.tertiary.copy(alpha = 0.06f)
+                        wiwyOrange.copy(alpha = 0.18f),
+                        wiwyOrange.copy(alpha = 0.08f)
                     ),
                     start = Offset(0f, 0f),
                     end = Offset(100f, 100f)
@@ -271,12 +274,14 @@ fun IconContainer(
             )
             .border(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                color = wiwyOrange.copy(alpha = 0.20f),
                 shape = ghostishShape
             ),
         contentAlignment = Alignment.Center,
     ) {
-        content()
+        CompositionLocalProvider(LocalContentColor provides wiwyOrange) {
+            content()
+        }
     }
 }
 

@@ -1361,7 +1361,8 @@ class MainActivity : ComponentActivity() {
                                                             .size(42.dp)
                                                             .clip(CircleShape)
                                                             .background(Color(0xFFF5791F))
-                                                            .clickable { navController.navigate("settings") },
+                                                            // WiwyMusic: el perfil abre la Cuenta (Ajustes está en la barra inferior)
+                                                            .clickable { showAccountDialog = true },
                                                         contentAlignment = Alignment.Center,
                                                     ) {
                                                         if (accountImageUrl != null) {
