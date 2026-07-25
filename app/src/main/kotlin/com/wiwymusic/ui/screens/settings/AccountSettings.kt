@@ -166,11 +166,14 @@ fun AccountSettings(
             val supaScope = rememberCoroutineScope()
             val supaLoggedIn = supaSession != null
             val supaEmail = supaSession?.email ?: ""
+            val supaAvatar by com.wiwymusic.utils.UserPrefs.avatarUrl.collectAsState()
+            var showAvatarPicker by remember { mutableStateOf(false) }
             AccountCard(
                 isLoggedIn = supaLoggedIn,
                 accountName = supaEmail.substringBefore("@").ifBlank { "Mi cuenta" },
                 accountEmail = supaEmail,
-                accountImageUrl = null,
+                accountImageUrl = supaAvatar,
+                onAvatarClick = { if (supaLoggedIn) showAvatarPicker = true },
                 onAccountClick = {
                     if (!supaLoggedIn) {
                         onClose()
@@ -181,6 +184,9 @@ fun AccountSettings(
                     supaScope.launch { com.wiwymusic.utils.SupabaseAuth.signOut() }
                 }
             )
+            if (showAvatarPicker) {
+                com.wiwymusic.ui.component.AvatarPickerSheet(onDismiss = { showAvatarPicker = false })
+            }
 
             // Token Editor Dialog
             if (showTokenEditor) {
@@ -288,7 +294,8 @@ private fun AccountCard(
     accountEmail: String,
     accountImageUrl: String?,
     onAccountClick: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onAvatarClick: () -> Unit = {},
 ) {
     val cardColor by animateColorAsState(
         targetValue = if (isLoggedIn)
@@ -315,19 +322,30 @@ private fun AccountCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Avatar
+            val presetColor = accountImageUrl?.takeIf { it.startsWith("preset:") }
+                ?.removePrefix("preset:")?.toIntOrNull()
+                ?.let { com.wiwymusic.ui.component.WiwyAvatarPresets.getOrNull(it) }
             Box(
                 modifier = Modifier
                     .size(60.dp)
                     .clip(CircleShape)
                     .background(
-                        if (isLoggedIn)
+                        presetColor ?: if (isLoggedIn)
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                         else
                             MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
-                    ),
+                    )
+                    .then(if (isLoggedIn) Modifier.clickable(onClick = onAvatarClick) else Modifier),
                 contentAlignment = Alignment.Center
             ) {
-                if (isLoggedIn && accountImageUrl != null) {
+                if (isLoggedIn && presetColor != null) {
+                    Icon(
+                        painter = painterResource(R.drawable.person),
+                        contentDescription = null,
+                        modifier = Modifier.size(30.dp),
+                        tint = Color.White,
+                    )
+                } else if (isLoggedIn && accountImageUrl != null) {
                     AsyncImage(
                         model = accountImageUrl,
                         contentDescription = null,

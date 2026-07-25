@@ -69,7 +69,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private val WiwyOrange = Color(0xFFF5791F)
-private const val MIN_ARTISTS = 10
+private const val MIN_ARTISTS = 1
+private const val MAX_ARTISTS = 10
 
 @Composable
 fun WiwyOnboardingScreen(onDone: () -> Unit) {
@@ -130,7 +131,7 @@ fun WiwyOnboardingScreen(onDone: () -> Unit) {
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                "Selecciona al menos $MIN_ARTISTS artistas para personalizar tu experiencia.",
+                "Elige de 1 a $MAX_ARTISTS artistas para personalizar tu experiencia.",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -181,7 +182,8 @@ fun WiwyOnboardingScreen(onDone: () -> Unit) {
                 items(displayed, key = { it.id }) { artist ->
                     val isSel = selected.contains(artist.id)
                     ArtistPickCard(artist, isSel) {
-                        if (isSel) selected.remove(artist.id) else selected.add(artist.id)
+                        if (isSel) selected.remove(artist.id)
+                        else if (selected.size < MAX_ARTISTS) selected.add(artist.id)
                     }
                 }
             }
@@ -218,7 +220,7 @@ fun WiwyOnboardingScreen(onDone: () -> Unit) {
                 CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
             } else {
                 Text(
-                    if (enough) "Continuar" else "Elige ${MIN_ARTISTS - selected.size} más",
+                    if (enough) "Continuar (${selected.size}/$MAX_ARTISTS)" else "Elige al menos 1 artista",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                 )
