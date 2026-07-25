@@ -87,6 +87,10 @@ class App : Application(), SingletonImageLoader.Factory {
             return
         }
         PreferenceStore.start(this)
+        // WiwyMusic: carga la sesión del backend propio (Supabase)
+        CoroutineScope(Dispatchers.IO).launch {
+            runCatching { com.wiwymusic.utils.SupabaseAuth.loadSession() }
+        }
         Timber.plant(Timber.DebugTree())
         try {
             Timber.plant(com.wiwymusic.utils.GlobalLogTree())

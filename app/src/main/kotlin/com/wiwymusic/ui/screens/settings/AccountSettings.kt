@@ -161,23 +161,24 @@ fun AccountSettings(
             modifier = Modifier.padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Account Card
+            // WiwyMusic: identidad del backend propio (Supabase), no YouTube
+            val supaSession by com.wiwymusic.utils.SupabaseAuth.session.collectAsState()
+            val supaScope = rememberCoroutineScope()
+            val supaLoggedIn = supaSession != null
+            val supaEmail = supaSession?.email ?: ""
             AccountCard(
-                isLoggedIn = isLoggedIn,
-                accountName = accountName,
-                accountEmail = accountEmail,
-                accountImageUrl = accountImageUrl,
+                isLoggedIn = supaLoggedIn,
+                accountName = supaEmail.substringBefore("@").ifBlank { "Mi cuenta" },
+                accountEmail = supaEmail,
+                accountImageUrl = null,
                 onAccountClick = {
-                    onClose()
-                    if (isLoggedIn) {
-                        navController.navigate("account")
-                    } else {
-                        navController.navigate(buildLoginRoute())
+                    if (!supaLoggedIn) {
+                        onClose()
+                        navController.navigate("auth")
                     }
                 },
                 onLogout = {
-                    onInnerTubeCookieChange("")
-                    forgetAccount(context)
+                    supaScope.launch { com.wiwymusic.utils.SupabaseAuth.signOut() }
                 }
             )
 

@@ -134,6 +134,10 @@ fun NavGraphBuilder.navigationBuilder(
         // WiwyMusic: pestaña Favoritos -> canciones que te gustan (auto playlist "liked")
         AutoPlaylistScreen(navController, scrollBehavior)
     }
+    composable("auth") {
+        // WiwyMusic: acceso al backend propio (Supabase) por correo/contraseña
+        com.wiwymusic.ui.screens.auth.WiwyAuthScreen(navController)
+    }
     composable("library/playlists") {
         com.wiwymusic.ui.screens.library.LibraryPlaylistsScreen(navController, filterContent = {})
     }

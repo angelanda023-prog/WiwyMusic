@@ -113,6 +113,12 @@ val NetworkMeteredKey = booleanPreferencesKey("networkMetered")
 
 val WifiOnlyDownloadKey = booleanPreferencesKey("wifiOnlyDownload")
 
+// WiwyMusic: sesión del backend propio (Supabase)
+val SupabaseAccessTokenKey = stringPreferencesKey("supabaseAccessToken")
+val SupabaseRefreshTokenKey = stringPreferencesKey("supabaseRefreshToken")
+val SupabaseUserIdKey = stringPreferencesKey("supabaseUserId")
+val SupabaseUserEmailKey = stringPreferencesKey("supabaseUserEmail")
+
 enum class AudioQuality {
     AUTO,
     HIGH,
