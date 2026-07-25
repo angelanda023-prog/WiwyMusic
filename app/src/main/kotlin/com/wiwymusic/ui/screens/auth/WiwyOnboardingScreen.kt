@@ -26,12 +26,16 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -46,6 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -59,6 +64,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -75,11 +81,39 @@ fun WiwyOnboardingScreen(onDone: () -> Unit) {
     val selected = remember { mutableStateListOf<String>() }
     val byId = remember { mutableMapOf<String, ArtistItem>() }
 
+    var query by remember { mutableStateOf("") }
+    var searchResults by remember { mutableStateOf<List<ArtistItem>>(emptyList()) }
+    var searching by remember { mutableStateOf(false) }
+
     LaunchedEffectArtists { list ->
         artists = list
         list.forEach { byId[it.id] = it }
         loading = false
     }
+
+    // Búsqueda de artistas (con debounce)
+    LaunchedEffect(query) {
+        val q = query.trim()
+        if (q.length < 2) {
+            searchResults = emptyList()
+            searching = false
+            return@LaunchedEffect
+        }
+        searching = true
+        delay(350)
+        val results = withContext(Dispatchers.IO) {
+            YouTube.search(q, YouTube.SearchFilter.FILTER_ARTIST)
+                .getOrNull()?.items
+                ?.filterIsInstance<ArtistItem>()
+                ?.take(24)
+                .orEmpty()
+        }
+        results.forEach { byId[it.id] = it }
+        searchResults = results
+        searching = false
+    }
+
+    val displayed = if (query.trim().length >= 2) searchResults else artists
 
     Column(
         modifier = Modifier
@@ -102,9 +136,39 @@ fun WiwyOnboardingScreen(onDone: () -> Unit) {
             )
         }
 
-        if (loading) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        // Buscador de artistas
+        OutlinedTextField(
+            value = query,
+            onValueChange = { query = it },
+            placeholder = { Text("Buscar artista…") },
+            leadingIcon = { Icon(painterResource(R.drawable.search), null) },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = WiwyOrange,
+                cursorColor = WiwyOrange,
+                focusedLeadingIconColor = WiwyOrange,
+            ),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 4.dp),
+        )
+
+        if (loading && query.isBlank()) {
+            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = WiwyOrange)
+            }
+        } else if (searching) {
+            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = WiwyOrange)
+            }
+        } else if (displayed.isEmpty()) {
+            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text(
+                    if (query.trim().length >= 2) "Sin resultados" else "—",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         } else {
             LazyVerticalGrid(
@@ -114,7 +178,7 @@ fun WiwyOnboardingScreen(onDone: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                items(artists, key = { it.id }) { artist ->
+                items(displayed, key = { it.id }) { artist ->
                     val isSel = selected.contains(artist.id)
                     ArtistPickCard(artist, isSel) {
                         if (isSel) selected.remove(artist.id) else selected.add(artist.id)
