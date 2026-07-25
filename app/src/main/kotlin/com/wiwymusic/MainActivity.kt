@@ -75,6 +75,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
@@ -1865,6 +1866,26 @@ class MainActivity : ComponentActivity() {
 
                         // WiwyMusic: diálogo de progreso de actualización OTA in-app
                         com.wiwymusic.ui.component.UpdateProgressOverlay()
+
+                        // WiwyMusic: gate de acceso — sin sesión no se puede usar la app
+                        val supaSession by com.wiwymusic.utils.SupabaseAuth.session.collectAsState()
+                        val supaLoaded by com.wiwymusic.utils.SupabaseAuth.loaded.collectAsState()
+                        if (supaLoaded && supaSession == null) {
+                            androidx.compose.material3.Surface(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .pointerInput(Unit) {
+                                        awaitPointerEventScope {
+                                            while (true) {
+                                                awaitPointerEvent().changes.forEach { it.consume() }
+                                            }
+                                        }
+                                    },
+                                color = MaterialTheme.colorScheme.surface,
+                            ) {
+                                com.wiwymusic.ui.screens.auth.WiwyAuthScreen(onAuthenticated = {})
+                            }
+                        }
 
                         if (showAccountDialog) {
                             AccountSettingsDialog(

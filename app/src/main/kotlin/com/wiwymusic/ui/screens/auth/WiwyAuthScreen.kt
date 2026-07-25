@@ -48,7 +48,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.wiwymusic.R
 import com.wiwymusic.utils.SupabaseAuth
 import kotlinx.coroutines.launch
@@ -58,7 +57,7 @@ private val WiwyOrange = Color(0xFFF5791F)
 private enum class AuthMode { LOGIN, REGISTER, RECOVER }
 
 @Composable
-fun WiwyAuthScreen(navController: NavController) {
+fun WiwyAuthScreen(onAuthenticated: () -> Unit) {
     val scope = rememberCoroutineScope()
 
     var mode by remember { mutableStateOf(AuthMode.LOGIN) }
@@ -89,13 +88,13 @@ fun WiwyAuthScreen(navController: NavController) {
         scope.launch {
             when (mode) {
                 AuthMode.LOGIN -> SupabaseAuth.signIn(email, password)
-                    .onSuccess { loading = false; navController.navigateUp() }
+                    .onSuccess { loading = false; onAuthenticated() }
                     .onFailure { loading = false; error = it.message }
 
                 AuthMode.REGISTER -> SupabaseAuth.signUp(email, password)
                     .onSuccess { loggedIn ->
                         loading = false
-                        if (loggedIn) navController.navigateUp()
+                        if (loggedIn) onAuthenticated()
                         else {
                             mode = AuthMode.LOGIN
                             info = "Cuenta creada. Revisa tu correo para confirmarla y luego inicia sesión."

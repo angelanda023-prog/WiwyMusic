@@ -136,7 +136,7 @@ fun NavGraphBuilder.navigationBuilder(
     }
     composable("auth") {
         // WiwyMusic: acceso al backend propio (Supabase) por correo/contraseña
-        com.wiwymusic.ui.screens.auth.WiwyAuthScreen(navController)
+        com.wiwymusic.ui.screens.auth.WiwyAuthScreen(onAuthenticated = { navController.navigateUp() })
     }
     composable("library/playlists") {
         com.wiwymusic.ui.screens.library.LibraryPlaylistsScreen(navController, filterContent = {})

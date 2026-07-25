@@ -37,6 +37,10 @@ object SupabaseAuth {
     val session: StateFlow<Session?> = _session.asStateFlow()
     val isLoggedIn: Boolean get() = _session.value != null
 
+    // true cuando ya se intentó cargar la sesión guardada (evita parpadeo del login)
+    private val _loaded = MutableStateFlow(false)
+    val loaded: StateFlow<Boolean> = _loaded.asStateFlow()
+
     /** Carga la sesión guardada al iniciar la app. */
     suspend fun loadSession() {
         val ds = App.instance.dataStore
@@ -47,6 +51,7 @@ object SupabaseAuth {
         if (!at.isNullOrBlank() && !rt.isNullOrBlank() && !uid.isNullOrBlank()) {
             _session.value = Session(at, rt, uid, email ?: "")
         }
+        _loaded.value = true
     }
 
     /** Inicia sesión. */
