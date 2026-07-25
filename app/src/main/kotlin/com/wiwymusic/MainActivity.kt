@@ -1870,6 +1870,18 @@ class MainActivity : ComponentActivity() {
                         // WiwyMusic: gate de acceso — sin sesión no se puede usar la app
                         val supaSession by com.wiwymusic.utils.SupabaseAuth.session.collectAsState()
                         val supaLoaded by com.wiwymusic.utils.SupabaseAuth.loaded.collectAsState()
+                        // Al cerrar sesión: cerrar Cuenta y volver al inicio para mostrar el login limpio
+                        LaunchedEffect(supaSession, supaLoaded) {
+                            if (supaLoaded && supaSession == null) {
+                                showAccountDialog = false
+                                runCatching {
+                                    navController.popBackStack(
+                                        navController.graph.startDestinationId,
+                                        inclusive = false,
+                                    )
+                                }
+                            }
+                        }
                         if (supaLoaded && supaSession == null) {
                             androidx.compose.material3.Surface(
                                 modifier = Modifier
