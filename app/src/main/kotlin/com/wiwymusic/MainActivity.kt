@@ -1882,6 +1882,12 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         }
+                        // Con sesión: sincronizar favoritos con la nube EN TIEMPO REAL (Fase 2)
+                        LaunchedEffect(supaSession?.userId) {
+                            if (supaSession != null) {
+                                runCatching { com.wiwymusic.utils.CloudSync.observeFavorites(database) }
+                            }
+                        }
                         if (supaLoaded && supaSession == null) {
                             androidx.compose.material3.Surface(
                                 modifier = Modifier
