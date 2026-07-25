@@ -1891,8 +1891,11 @@ class MainActivity : ComponentActivity() {
                         // Estado de onboarding (Fase A)
                         val onboarded by com.wiwymusic.utils.UserPrefs.onboarded.collectAsState()
                         LaunchedEffect(supaSession?.userId) {
-                            if (supaSession != null) com.wiwymusic.utils.UserPrefs.refresh()
-                            else com.wiwymusic.utils.UserPrefs.reset()
+                            if (supaSession != null) {
+                                com.wiwymusic.utils.UserPrefs.refresh()
+                                // Fase C: aprender de lo que realmente escuchas y adaptar el inicio
+                                runCatching { com.wiwymusic.utils.UserPrefs.learnFromHistory(database) }
+                            } else com.wiwymusic.utils.UserPrefs.reset()
                         }
                         if (supaLoaded && supaSession == null) {
                             androidx.compose.material3.Surface(

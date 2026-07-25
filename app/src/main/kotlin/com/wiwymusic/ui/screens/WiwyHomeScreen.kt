@@ -33,9 +33,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,6 +58,7 @@ import com.wiwymusic.LocalPlayerAwareWindowInsets
 import com.wiwymusic.LocalPlayerConnection
 import com.wiwymusic.R
 import com.wiwymusic.db.entities.Song
+import com.wiwymusic.innertube.YouTube
 import com.wiwymusic.innertube.models.AlbumItem
 import com.wiwymusic.innertube.models.ArtistItem
 import com.wiwymusic.innertube.models.PlaylistItem
@@ -63,7 +67,13 @@ import com.wiwymusic.innertube.models.WatchEndpoint
 import com.wiwymusic.innertube.models.YTItem
 import com.wiwymusic.models.toMediaMetadata
 import com.wiwymusic.playback.queues.YouTubeQueue
+import com.wiwymusic.utils.UserPrefs
 import com.wiwymusic.viewmodels.HomeViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import java.util.Calendar
 
 private val WiwyOrange = Color(0xFFF5791F)
@@ -111,6 +121,28 @@ fun WiwyHomeScreen(
 
     val insets = LocalPlayerAwareWindowInsets.current.asPaddingValues()
 
+    // Fase B: inicio personalizado según artistas preferidos (Supabase)
+    var personalized by remember { mutableStateOf<List<Pair<String, List<SongItem>>>>(emptyList()) }
+    LaunchedEffect(Unit) {
+        val artists = UserPrefs.getPreferredArtists().shuffled().take(4)
+        if (artists.isEmpty()) return@LaunchedEffect
+        val sections = withContext(Dispatchers.IO) {
+            coroutineScope {
+                artists.map { a ->
+                    async {
+                        val songs = YouTube.artist(a.id).getOrNull()
+                            ?.sections?.firstNotNullOfOrNull { sec ->
+                                sec.items.filterIsInstance<SongItem>().takeIf { it.isNotEmpty() }
+                            }
+                            ?.take(10).orEmpty()
+                        a.name to songs
+                    }
+                }.awaitAll()
+            }
+        }
+        personalized = sections.filter { it.second.isNotEmpty() }
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize().background(WiwyBg),
         contentPadding = PaddingValues(
@@ -135,6 +167,28 @@ fun WiwyHomeScreen(
         // Carrusel destacado (se mantiene)
         quickPicks?.takeIf { it.isNotEmpty() }?.let { songs ->
             item { FeaturedCarousel(songs.take(5), playerConnection) }
+        }
+
+        // Fase B: "Porque te gusta X" según artistas preferidos
+        personalized.forEach { (artistName, songs) ->
+            item(key = "pers_$artistName") { SectionHeader("Porque te gusta $artistName") }
+            item(key = "pers_row_$artistName") {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    items(songs, key = { it.id }) { song ->
+                        ArtCard(song.title, song.artists.joinToString { it.name }, song.thumbnail) {
+                            playerConnection?.playQueue(
+                                YouTubeQueue(
+                                    song.endpoint ?: WatchEndpoint(videoId = song.id),
+                                    song.toMediaMetadata(),
+                                )
+                            )
+                        }
+                    }
+                }
+            }
         }
 
         // Continuar escuchando (historial real; respaldo: keepListening)

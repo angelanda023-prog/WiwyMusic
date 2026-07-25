@@ -4,8 +4,10 @@
 
 package com.wiwymusic.utils
 
+import com.wiwymusic.db.MusicDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
@@ -49,6 +51,32 @@ object UserPrefs {
         Unit
     }
 
+    /** Lee los artistas preferidos del usuario (para el inicio personalizado). */
+    suspend fun getPreferredArtists(): List<ArtistPick> = withContext(Dispatchers.IO) {
+        val session = SupabaseAuth.session.value ?: return@withContext emptyList()
+        runCatching {
+            val conn = open(
+                "$BASE_URL/rest/v1/preferred_artists?select=artist_id,name,thumbnail_url&order=weight.desc,added_at.desc",
+                "GET",
+                session,
+            )
+            val code = conn.responseCode
+            val text = (if (code in 200..299) conn.inputStream else conn.errorStream)
+                ?.bufferedReader()?.use { it.readText() }.orEmpty()
+            conn.disconnect()
+            if (code !in 200..299) return@runCatching emptyList<ArtistPick>()
+            val arr = JSONArray(text)
+            (0 until arr.length()).map { i ->
+                val o = arr.getJSONObject(i)
+                ArtistPick(
+                    id = o.optString("artist_id"),
+                    name = o.optString("name"),
+                    thumbnailUrl = o.optString("thumbnail_url").takeIf { it.isNotBlank() && it != "null" },
+                )
+            }
+        }.getOrDefault(emptyList())
+    }
+
     /** Guarda los artistas elegidos y marca el onboarding como completado. */
     suspend fun completeOnboarding(artists: List<ArtistPick>): Result<Unit> = withContext(Dispatchers.IO) {
         val session = SupabaseAuth.session.value ?: return@withContext Result.failure(IllegalStateException("Sin sesión"))
@@ -85,6 +113,74 @@ object UserPrefs {
             patchConn.disconnect()
 
             _onboarded.value = true
+        }
+    }
+
+    /**
+     * Fase C — Aprendizaje: cuenta las reproducciones por artista del historial local
+     * y ajusta pesos / añade artistas descubiertos (source='learned') en la nube.
+     * Así el inicio se adapta a lo que realmente escuchas.
+     */
+    suspend fun learnFromHistory(database: MusicDatabase) = withContext(Dispatchers.IO) {
+        val session = SupabaseAuth.session.value ?: return@withContext
+        runCatching {
+            val events = database.events().first()
+            if (events.isEmpty()) return@runCatching
+
+            val counts = HashMap<String, Int>()
+            val names = HashMap<String, String>()
+            val thumbs = HashMap<String, String?>()
+            events.forEach { ev ->
+                ev.song.artists.forEach { ar ->
+                    if (ar.id.isBlank()) return@forEach
+                    counts[ar.id] = (counts[ar.id] ?: 0) + 1
+                    names[ar.id] = ar.name
+                    if (thumbs[ar.id] == null) thumbs[ar.id] = ar.thumbnailUrl
+                }
+            }
+            val top = counts.entries
+                .filter { it.value >= 2 }
+                .sortedByDescending { it.value }
+                .take(20)
+            if (top.isEmpty()) return@runCatching
+
+            val existingSources = fetchPreferredSources(session)
+
+            val rows = JSONArray()
+            top.forEach { (id, count) ->
+                rows.put(
+                    JSONObject()
+                        .put("user_id", session.userId)
+                        .put("artist_id", id)
+                        .put("name", names[id] ?: "")
+                        .put("thumbnail_url", thumbs[id] ?: JSONObject.NULL)
+                        .put("source", existingSources[id] ?: "learned")
+                        .put("weight", 1.0 + count)
+                )
+            }
+            val conn = open("$BASE_URL/rest/v1/preferred_artists?on_conflict=user_id,artist_id", "POST", session).apply {
+                setRequestProperty("Content-Type", "application/json")
+                setRequestProperty("Prefer", "resolution=merge-duplicates")
+                doOutput = true
+            }
+            conn.outputStream.use { it.write(rows.toString().toByteArray(Charsets.UTF_8)) }
+            conn.responseCode
+            conn.disconnect()
+        }
+        Unit
+    }
+
+    private fun fetchPreferredSources(session: SupabaseAuth.Session): Map<String, String> {
+        val conn = open("$BASE_URL/rest/v1/preferred_artists?select=artist_id,source", "GET", session)
+        val code = conn.responseCode
+        val text = (if (code in 200..299) conn.inputStream else conn.errorStream)
+            ?.bufferedReader()?.use { it.readText() }.orEmpty()
+        conn.disconnect()
+        if (code !in 200..299) return emptyMap()
+        val arr = JSONArray(text)
+        return (0 until arr.length()).associate { i ->
+            val o = arr.getJSONObject(i)
+            o.optString("artist_id") to o.optString("source", "onboarding")
         }
     }
 
