@@ -1888,6 +1888,12 @@ class MainActivity : ComponentActivity() {
                                 runCatching { com.wiwymusic.utils.CloudSync.observeFavorites(database) }
                             }
                         }
+                        // Estado de onboarding (Fase A)
+                        val onboarded by com.wiwymusic.utils.UserPrefs.onboarded.collectAsState()
+                        LaunchedEffect(supaSession?.userId) {
+                            if (supaSession != null) com.wiwymusic.utils.UserPrefs.refresh()
+                            else com.wiwymusic.utils.UserPrefs.reset()
+                        }
                         if (supaLoaded && supaSession == null) {
                             androidx.compose.material3.Surface(
                                 modifier = Modifier
@@ -1902,6 +1908,24 @@ class MainActivity : ComponentActivity() {
                                 color = MaterialTheme.colorScheme.surface,
                             ) {
                                 com.wiwymusic.ui.screens.auth.WiwyAuthScreen(onAuthenticated = {})
+                            }
+                        }
+
+                        // WiwyMusic: onboarding — con sesión pero sin completar (Fase A)
+                        if (supaLoaded && supaSession != null && onboarded == false) {
+                            androidx.compose.material3.Surface(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .pointerInput(Unit) {
+                                        awaitPointerEventScope {
+                                            while (true) {
+                                                awaitPointerEvent().changes.forEach { it.consume() }
+                                            }
+                                        }
+                                    },
+                                color = MaterialTheme.colorScheme.surface,
+                            ) {
+                                com.wiwymusic.ui.screens.auth.WiwyOnboardingScreen(onDone = {})
                             }
                         }
 
