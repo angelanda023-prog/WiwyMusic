@@ -211,12 +211,15 @@ fun AccountSettings(
             }
 
             // WiwyMusic: Cuenta solo con Acceder (tarjeta) y sincronizar playlist.
-            SettingsSection {
-                SettingsClickableItem(
-                    icon = painterResource(R.drawable.playlist_add),
-                    title = stringResource(R.string.select_playlist_to_sync),
-                    onClick = { showPlaylistDialog = true }
-                )
+            // Sincronizar con YouTube es un beneficio exclusivo Premium (login sigue libre para todos).
+            if (supaIsPremium == true) {
+                SettingsSection {
+                    SettingsClickableItem(
+                        icon = painterResource(R.drawable.playlist_add),
+                        title = stringResource(R.string.select_playlist_to_sync),
+                        onClick = { showPlaylistDialog = true }
+                    )
+                }
             }
 
             Spacer(Modifier.height(8.dp))

@@ -95,7 +95,11 @@ class SyncUtils @Inject constructor(
                     Timber.w("Skipping full sync - sync disabled")
                     return@withLock
                 }
-                
+                if (!isPremium()) {
+                    Timber.w("Skipping full sync - not premium")
+                    return@withLock
+                }
+
                 supervisorScope {
                     syncLikedSongs()
                     syncLibrarySongs()
@@ -167,6 +171,9 @@ class SyncUtils @Inject constructor(
         return syncEnabled.value && syncGeneration.get() == gen
     }
 
+    /** La sincronización con YouTube Music es un beneficio exclusivo Premium. */
+    private fun isPremium(): Boolean = UserPrefs.isPremium.value == true
+
     fun likeSong(s: SongEntity) {
         syncScope.launch {
             if (!isLoggedIn()) {
@@ -175,6 +182,10 @@ class SyncUtils @Inject constructor(
             }
             if (!isYtmSyncEnabled()) {
                 Timber.w("Skipping likeSong - sync disabled")
+                return@launch
+            }
+            if (!isPremium()) {
+                Timber.w("Skipping likeSong - not premium")
                 return@launch
             }
             val gen = syncGeneration.get()
@@ -190,6 +201,10 @@ class SyncUtils @Inject constructor(
         }
         if (!isYtmSyncEnabled()) {
             Timber.w("Skipping syncLikedSongs - sync disabled")
+            return@coroutineScope
+        }
+        if (!isPremium()) {
+            Timber.w("Skipping syncLikedSongs - not premium")
             return@coroutineScope
         }
         val gen = syncGeneration.get()
@@ -232,6 +247,10 @@ class SyncUtils @Inject constructor(
         }
         if (!isYtmSyncEnabled()) {
             Timber.w("Skipping syncLibrarySongs - sync disabled")
+            return@coroutineScope
+        }
+        if (!isPremium()) {
+            Timber.w("Skipping syncLibrarySongs - not premium")
             return@coroutineScope
         }
         val gen = syncGeneration.get()
@@ -278,6 +297,10 @@ class SyncUtils @Inject constructor(
         }
         if (!isYtmSyncEnabled()) {
             Timber.w("Skipping syncLikedAlbums - sync disabled")
+            return@coroutineScope
+        }
+        if (!isPremium()) {
+            Timber.w("Skipping syncLikedAlbums - not premium")
             return@coroutineScope
         }
         val gen = syncGeneration.get()
@@ -333,6 +356,10 @@ class SyncUtils @Inject constructor(
         }
         if (!isYtmSyncEnabled()) {
             Timber.w("Skipping syncArtistsSubscriptions - sync disabled")
+            return@coroutineScope
+        }
+        if (!isPremium()) {
+            Timber.w("Skipping syncArtistsSubscriptions - not premium")
             return@coroutineScope
         }
         val gen = syncGeneration.get()
@@ -396,6 +423,10 @@ class SyncUtils @Inject constructor(
         }
         if (!isYtmSyncEnabled()) {
             Timber.w("Skipping syncSavedPlaylists - sync disabled")
+            return@withLock
+        }
+        if (!isPremium()) {
+            Timber.w("Skipping syncSavedPlaylists - not premium")
             return@withLock
         }
         val gen = syncGeneration.get()
@@ -494,6 +525,10 @@ class SyncUtils @Inject constructor(
             Timber.w("Skipping syncAutoSyncPlaylists - sync disabled")
             return@coroutineScope
         }
+        if (!isPremium()) {
+            Timber.w("Skipping syncAutoSyncPlaylists - not premium")
+            return@coroutineScope
+        }
         val gen = syncGeneration.get()
         val autoSyncPlaylists = try {
             database.playlistsByNameAsc().first()
@@ -531,6 +566,10 @@ class SyncUtils @Inject constructor(
     private suspend fun syncPlaylist(browseId: String, playlistId: String) = coroutineScope {
         if (!isYtmSyncEnabled()) {
             Timber.w("syncPlaylist: Skipping - sync disabled")
+            return@coroutineScope
+        }
+        if (!isPremium()) {
+            Timber.w("syncPlaylist: Skipping - not premium")
             return@coroutineScope
         }
         val gen = syncGeneration.get()
