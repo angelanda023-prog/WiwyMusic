@@ -24,6 +24,7 @@ import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.json.JSONObject
+import timber.log.Timber
 
 data class GitCommit(
     val sha: String,
@@ -87,7 +88,11 @@ private data class ReleasesNetworkResult(
 object Updater {
     private val client = HttpClient()
     // WiwyMusic: 15 min en lugar de 6 h para que las OTA se detecten pronto.
-    private const val ReleaseCacheCheckIntervalMs: Long = 15 * 60 * 1000L
+    // Antes 15 min: con la API de GitHub sin autenticar (60 req/hora por IP,
+    // compartida entre todos los usuarios detrás de la misma IP/CGNAT), un
+    // intervalo tan corto agota el límite fácilmente y produce fallos 403
+    // silenciosos. 3h reduce la frecuencia sin notar demora real para el usuario.
+    private const val ReleaseCacheCheckIntervalMs: Long = 3 * 60 * 60 * 1000L
     var lastCheckTime = -1L
         private set
 
@@ -529,6 +534,8 @@ object Updater {
 
             val networkResult = runCatching {
                 fetchReleasesNetwork(perPage = perPage, cachedEtag = cachedEtag)
+            }.onFailure { e ->
+                Timber.w(e, "getAllReleases: network check failed, falling back to cache if available")
             }.getOrNull()
 
             if (networkResult == null) {
@@ -574,6 +581,10 @@ object Updater {
                 }
 
                 else -> {
+                    Timber.w(
+                        "getAllReleases: unexpected HTTP ${networkResult.status.value} from GitHub " +
+                            "(likely rate-limited, unauthenticated requests are capped at 60/hour per IP)",
+                    )
                     val fallback = cachedReleases
                     if (fallback != null) {
                         lastCheckTime = now

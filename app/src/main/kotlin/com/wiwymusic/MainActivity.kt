@@ -173,6 +173,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import com.wiwymusic.utils.PreferenceStore
 import kotlinx.coroutines.withContext
 import com.wiwymusic.constants.AppBarHeight
@@ -496,9 +497,11 @@ class MainActivity : ComponentActivity() {
                 }
 
                 if (System.currentTimeMillis() - Updater.lastCheckTime > 1.days.inWholeMilliseconds) {
-                    Updater.getLatestVersionName().onSuccess {
-                        latestVersionName = it
-                    }
+                    Updater.getLatestVersionName()
+                        .onSuccess { latestVersionName = it }
+                        .onFailure { e ->
+                            Timber.w(e, "MainActivity: update check failed")
+                        }
                 }
                 UpdateNotificationManager.checkForUpdates(this@MainActivity)
             }

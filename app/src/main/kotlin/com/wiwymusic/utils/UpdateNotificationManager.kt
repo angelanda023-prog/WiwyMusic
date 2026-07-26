@@ -29,6 +29,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import com.wiwymusic.BuildConfig
 import com.wiwymusic.MainActivity
 import com.wiwymusic.R
@@ -112,13 +113,17 @@ object UpdateNotificationManager {
 
                 dataStore.edit { it[LastUpdateCheckKey] = now }
 
-                Updater.getLatestVersionName().onSuccess { latestVersion ->
-                    if (!Updater.isSameVersion(latestVersion, BuildConfig.VERSION_NAME)) {
-                        notifyIfNewVersion(context, latestVersion)
+                Updater.getLatestVersionName()
+                    .onSuccess { latestVersion ->
+                        if (!Updater.isSameVersion(latestVersion, BuildConfig.VERSION_NAME)) {
+                            notifyIfNewVersion(context, latestVersion)
+                        }
                     }
-                }
+                    .onFailure { e ->
+                        Timber.w(e, "UpdateNotificationManager: update check failed")
+                    }
             } catch (e: Exception) {
-                // Silently fail
+                Timber.w(e, "UpdateNotificationManager: checkForUpdates failed")
             }
         }
     }
@@ -133,7 +138,7 @@ object UpdateNotificationManager {
                 dataStore.edit { it[LastNotifiedVersionKey] = latestVersion }
             }
         } catch (e: Exception) {
-            // Silently fail
+            Timber.w(e, "UpdateNotificationManager: notifyIfNewVersion failed")
         }
     }
 
