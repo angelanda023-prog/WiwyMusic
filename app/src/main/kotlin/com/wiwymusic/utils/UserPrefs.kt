@@ -5,16 +5,31 @@
 package com.wiwymusic.utils
 
 import com.wiwymusic.db.MusicDatabase
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.plugins.websocket.webSocket
+import io.ktor.websocket.Frame
+import io.ktor.websocket.WebSocketSession
+import io.ktor.websocket.readText
+import io.ktor.websocket.send
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.concurrent.TimeUnit
 
 object UserPrefs {
 
@@ -31,9 +46,16 @@ object UserPrefs {
     private val _avatarUrl = MutableStateFlow<String?>(null)
     val avatarUrl: StateFlow<String?> = _avatarUrl.asStateFlow()
 
+    // Plan Premium (null = aún no consultado). Se puebla al inicio vía refresh()
+    // y se mantiene actualizado en vivo vía startPremiumRealtimeSync().
+    private val _isPremium = MutableStateFlow<Boolean?>(null)
+    val isPremium: StateFlow<Boolean?> = _isPremium.asStateFlow()
+
     fun reset() {
         _onboarded.value = null
         _avatarUrl.value = null
+        _isPremium.value = null
+        stopPremiumRealtimeSync()
     }
 
     /**
@@ -49,7 +71,7 @@ object UserPrefs {
         val session = SupabaseAuth.session.value ?: return@withContext
         runCatching {
             val conn = open(
-                "$BASE_URL/rest/v1/profiles?select=onboarded,avatar_url&id=eq.${session.userId}",
+                "$BASE_URL/rest/v1/profiles?select=onboarded,avatar_url,is_premium&id=eq.${session.userId}",
                 "GET",
                 session,
             )
@@ -61,6 +83,7 @@ object UserPrefs {
                 val arr = JSONArray(text)
                 if (arr.length() > 0) {
                     val o = arr.getJSONObject(0)
+                    _isPremium.value = o.optBoolean("is_premium", false)
                     _onboarded.value = o.optBoolean("onboarded", false)
                     _avatarUrl.value = o.optString("avatar_url").takeIf { it.isNotBlank() && it != "null" }
                 } else {
@@ -253,4 +276,140 @@ object UserPrefs {
             connectTimeout = 20_000
             readTimeout = 20_000
         }
+
+    // ── Premium en tiempo real (Supabase Realtime / Phoenix channels) ──────────
+
+    private val realtimeClient by lazy {
+        HttpClient(OkHttp) {
+            engine {
+                config {
+                    connectTimeout(15, TimeUnit.SECONDS)
+                    readTimeout(30, TimeUnit.SECONDS)
+                    writeTimeout(15, TimeUnit.SECONDS)
+                    retryOnConnectionFailure(true)
+                }
+            }
+            install(WebSockets)
+        }
+    }
+
+    private var realtimeJob: Job? = null
+    private var realtimeSession: WebSocketSession? = null
+
+    /**
+     * Se suscribe en vivo a cambios de `profiles.is_premium` para el usuario dado,
+     * vía el WebSocket de Supabase Realtime (protocolo Phoenix Channels). Si la
+     * conexión se cae, reintenta con backoff manteniendo el último valor conocido
+     * de [isPremium] (no lo resetea a null mientras reconecta).
+     */
+    fun startPremiumRealtimeSync(scope: CoroutineScope, userId: String) {
+        stopPremiumRealtimeSync()
+        realtimeJob = scope.launch {
+            // Reenvía el access_token al canal abierto cuando SupabaseAuth lo renueve.
+            launch {
+                SupabaseAuth.session.collect { session ->
+                    val token = session?.accessToken ?: return@collect
+                    runCatching {
+                        realtimeSession?.send(
+                            JSONObject()
+                                .put("topic", "realtime:public:profiles")
+                                .put("event", "access_token")
+                                .put("payload", JSONObject().put("access_token", token))
+                                .put("ref", JSONObject.NULL)
+                                .toString(),
+                        )
+                    }
+                }
+            }
+
+            while (isActive) {
+                val token = SupabaseAuth.session.value?.accessToken
+                if (token == null) {
+                    delay(5_000)
+                    continue
+                }
+                runCatching {
+                    val wsUrl = "wss://${BASE_URL.removePrefix("https://")}/realtime/v1/websocket" +
+                        "?apikey=$ANON_KEY&vsn=1.0.0"
+                    realtimeClient.webSocket(wsUrl) {
+                        realtimeSession = this
+
+                        val joinPayload = JSONObject()
+                            .put(
+                                "config",
+                                JSONObject().put(
+                                    "postgres_changes",
+                                    org.json.JSONArray().put(
+                                        JSONObject()
+                                            .put("event", "UPDATE")
+                                            .put("schema", "public")
+                                            .put("table", "profiles")
+                                            .put("filter", "id=eq.$userId"),
+                                    ),
+                                ),
+                            )
+                            .put("access_token", token)
+                        send(
+                            JSONObject()
+                                .put("topic", "realtime:public:profiles")
+                                .put("event", "phx_join")
+                                .put("payload", joinPayload)
+                                .put("ref", "1")
+                                .toString(),
+                        )
+
+                        val heartbeatJob = launch {
+                            var ref = 2
+                            while (isActive) {
+                                delay(30_000)
+                                runCatching {
+                                    send(
+                                        JSONObject()
+                                            .put("topic", "phoenix")
+                                            .put("event", "heartbeat")
+                                            .put("payload", JSONObject())
+                                            .put("ref", (ref++).toString())
+                                            .toString(),
+                                    )
+                                }
+                            }
+                        }
+
+                        try {
+                            for (frame in incoming) {
+                                if (frame !is Frame.Text) continue
+                                handleRealtimeMessage(frame.readText())
+                            }
+                        } finally {
+                            heartbeatJob.cancel()
+                        }
+                    }
+                }
+                realtimeSession = null
+                if (isActive) delay(5_000) // backoff antes de reconectar
+            }
+        }
+    }
+
+    fun stopPremiumRealtimeSync() {
+        realtimeJob?.cancel()
+        realtimeJob = null
+        realtimeSession = null
+    }
+
+    private fun handleRealtimeMessage(text: String) {
+        runCatching {
+            val msg = JSONObject(text)
+            if (msg.optString("event") != "postgres_changes") return
+            val changes = msg.optJSONObject("payload")?.optJSONArray("data")
+                ?: msg.optJSONObject("payload")?.optJSONObject("data")?.let { org.json.JSONArray().put(it) }
+                ?: return
+            for (i in 0 until changes.length()) {
+                val record = changes.optJSONObject(i)?.optJSONObject("record") ?: continue
+                if (record.has("is_premium")) {
+                    _isPremium.value = record.optBoolean("is_premium", false)
+                }
+            }
+        }
+    }
 }

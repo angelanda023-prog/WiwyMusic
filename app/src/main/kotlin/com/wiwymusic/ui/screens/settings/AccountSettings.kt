@@ -167,12 +167,14 @@ fun AccountSettings(
             val supaLoggedIn = supaSession != null
             val supaEmail = supaSession?.email ?: ""
             val supaAvatar by com.wiwymusic.utils.UserPrefs.avatarUrl.collectAsState()
+            val supaIsPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
             var showAvatarPicker by remember { mutableStateOf(false) }
             AccountCard(
                 isLoggedIn = supaLoggedIn,
                 accountName = supaEmail.substringBefore("@").ifBlank { "Mi cuenta" },
                 accountEmail = supaEmail,
                 accountImageUrl = supaAvatar,
+                isPremium = supaIsPremium,
                 onAvatarClick = { if (supaLoggedIn) showAvatarPicker = true },
                 onAccountClick = {
                     if (!supaLoggedIn) {
@@ -296,6 +298,7 @@ private fun AccountCard(
     onAccountClick: () -> Unit,
     onLogout: () -> Unit,
     onAvatarClick: () -> Unit = {},
+    isPremium: Boolean? = null,
 ) {
     val cardColor by animateColorAsState(
         targetValue = if (isLoggedIn)
@@ -391,7 +394,26 @@ private fun AccountCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                } else if (!isLoggedIn) {
+                }
+                if (isLoggedIn && isPremium != null) {
+                    Spacer(Modifier.height(6.dp))
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (isPremium)
+                            WiwyAccountOrange.copy(alpha = 0.18f)
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
+                    ) {
+                        Text(
+                            text = if (isPremium) "⭐ Premium" else "Free",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isPremium) WiwyAccountOrange else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
+                        )
+                    }
+                }
+                if (!isLoggedIn) {
                     Spacer(Modifier.height(2.dp))
                     Text(
                         text = stringResource(R.string.not_logged_in),

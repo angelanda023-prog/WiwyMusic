@@ -12,10 +12,16 @@ import com.wiwymusic.constants.SupabaseAccessTokenKey
 import com.wiwymusic.constants.SupabaseRefreshTokenKey
 import com.wiwymusic.constants.SupabaseUserEmailKey
 import com.wiwymusic.constants.SupabaseUserIdKey
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
@@ -41,6 +47,11 @@ object SupabaseAuth {
     private val _loaded = MutableStateFlow(false)
     val loaded: StateFlow<Boolean> = _loaded.asStateFlow()
 
+    // Scope propio para el refresh automático de token (vive todo el proceso).
+    private val authScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private var refreshJob: Job? = null
+    private const val REFRESH_INTERVAL_MS = 50L * 60_000L // 50 min (el JWT expira ~1h)
+
     /** Carga la sesión guardada al iniciar la app. */
     suspend fun loadSession() {
         val ds = App.instance.dataStore
@@ -50,8 +61,34 @@ object SupabaseAuth {
         val email = ds.getAsync(SupabaseUserEmailKey)
         if (!at.isNullOrBlank() && !rt.isNullOrBlank() && !uid.isNullOrBlank()) {
             _session.value = Session(at, rt, uid, email ?: "")
+            scheduleAutoRefresh()
         }
         _loaded.value = true
+    }
+
+    /**
+     * Renueva el access token usando el refresh token guardado.
+     * Sin esto, el JWT (expira ~1h) quedaría estancado hasta el próximo login,
+     * cortando cualquier conexión de larga duración (ej. Supabase Realtime).
+     */
+    suspend fun refreshAccessToken(): Result<Unit> {
+        val rt = _session.value?.refreshToken ?: return Result.failure(IllegalStateException("Sin sesión"))
+        return post(
+            "/auth/v1/token?grant_type=refresh_token",
+            JSONObject().put("refresh_token", rt),
+        ).mapCatching { persistSession(it) }
+    }
+
+    /** Arranca el loop de refresh automático (idempotente). */
+    private fun scheduleAutoRefresh() {
+        refreshJob?.cancel()
+        refreshJob = authScope.launch {
+            while (isActive) {
+                delay(REFRESH_INTERVAL_MS)
+                if (_session.value == null) break
+                refreshAccessToken()
+            }
+        }
     }
 
     /** Inicia sesión. */
@@ -85,6 +122,8 @@ object SupabaseAuth {
 
     /** Cierra la sesión localmente. */
     suspend fun signOut() {
+        refreshJob?.cancel()
+        refreshJob = null
         _session.value = null
         App.instance.dataStore.edit { prefs ->
             prefs.remove(SupabaseAccessTokenKey)
@@ -137,6 +176,7 @@ object SupabaseAuth {
             prefs[SupabaseUserEmailKey] = email
         }
         _session.value = Session(accessToken, refreshToken, userId, email)
+        scheduleAutoRefresh()
     }
 
     private fun parseError(text: String, code: Int): String {
