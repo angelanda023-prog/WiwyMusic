@@ -37,6 +37,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -55,6 +56,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -120,8 +122,19 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.wiwymusic.LocalPlayerAwareWindowInsets
 import com.wiwymusic.LocalPlayerConnection
+import com.wiwymusic.LocalSyncUtils
 import com.wiwymusic.R
+import com.wiwymusic.constants.AccountEmailKey
+import com.wiwymusic.constants.AccountNameKey
+import com.wiwymusic.constants.InnerTubeCookieKey
+import com.wiwymusic.constants.LastCloudSyncAtKey
+import com.wiwymusic.constants.LastSpotifySyncAtKey
+import com.wiwymusic.constants.LastYtmSyncAtKey
 import com.wiwymusic.constants.ShowSpotifyPlaylistsKey
+import com.wiwymusic.innertube.utils.parseCookieString
+import com.wiwymusic.utils.PreferenceStore
+import com.wiwymusic.utils.UserPrefs
+import com.wiwymusic.utils.dataStore
 import com.wiwymusic.db.entities.Song
 import com.wiwymusic.spotify.SpotifyAccountUiState
 import com.wiwymusic.spotify.SpotifyAccountViewModel
@@ -161,6 +174,77 @@ private val SpotifyAccountIconSize = 44.dp
 private const val SpotifyLoginUserAgent =
     "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36"
 
+@Composable
+private fun SyncStatusFooter(
+    isActive: Boolean,
+    featuresText: String,
+    lastSyncLabel: String,
+    isSyncing: Boolean,
+    onSyncNow: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            AssistChip(
+                onClick = {},
+                label = {
+                    Text(
+                        text = if (isActive) stringResource(R.string.sync_active) else stringResource(R.string.sync_inactive),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                    )
+                },
+                colors = AssistChipDefaults.assistChipColors(
+                    containerColor = if (isActive) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    },
+                    labelColor = if (isActive) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                ),
+            )
+        }
+
+        Text(
+            text = featuresText,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                text = "${stringResource(R.string.last_sync)}: $lastSyncLabel",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            TextButton(
+                onClick = onSyncNow,
+                enabled = !isSyncing,
+            ) {
+                if (isSyncing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                    )
+                    Spacer(modifier = Modifier.size(8.dp))
+                }
+                Text(stringResource(R.string.sync_now))
+            }
+        }
+    }
+}
+
 @SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -186,9 +270,30 @@ fun BackupAndRestore(
 
     val backupRestoreProgress by viewModel.backupRestoreProgress.collectAsState()
     val cloudState by viewModel.cloudUploadState.collectAsState()
+    val isPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val clipboardManager = LocalClipboardManager.current
+    val syncUtils = LocalSyncUtils.current
+
+    val (lastCloudSyncAt, onLastCloudSyncAtChange) = rememberPreference(LastCloudSyncAtKey, 0L)
+    val (lastYtmSyncAt, onLastYtmSyncAtChange) = rememberPreference(LastYtmSyncAtKey, 0L)
+    val (lastSpotifySyncAt, onLastSpotifySyncAtChange) = rememberPreference(LastSpotifySyncAtKey, 0L)
+
+    val ytmAccountName by rememberPreference(AccountNameKey, "")
+    val ytmAccountEmail by rememberPreference(AccountEmailKey, "")
+    val ytmCookie by rememberPreference(InnerTubeCookieKey, "")
+    val ytmLoggedIn = "SAPISID" in parseCookieString(ytmCookie)
+    var isYtmSyncing by remember { mutableStateOf(false) }
+
+    val lastSyncFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm") }
+    fun formatLastSync(timestampMs: Long): String {
+        if (timestampMs <= 0L) return context.getString(R.string.never_synced)
+        val dateTime = java.time.Instant.ofEpochMilli(timestampMs)
+            .atZone(java.time.ZoneId.systemDefault())
+            .toLocalDateTime()
+        return dateTime.format(lastSyncFormatter)
+    }
 
     // Cargar estado inicial del switch
     LaunchedEffect(Unit) {
@@ -200,6 +305,14 @@ fun BackupAndRestore(
     LaunchedEffect(spotifyState.isAuthenticated) {
         if (spotifyState.isAuthenticated) {
             showSpotifyLogin = false
+        }
+    }
+
+    // WiwyMusic: registra la marca de tiempo de la última sincronización exitosa
+    // con la nube, para mostrarla en la tarjeta Premium de "Copia de seguridad".
+    LaunchedEffect(cloudState.lastUploadUrl) {
+        if (cloudState.lastUploadUrl != null) {
+            onLastCloudSyncAtChange(System.currentTimeMillis())
         }
     }
 
@@ -247,7 +360,30 @@ fun BackupAndRestore(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.backup_restore)) },
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(stringResource(R.string.backup_restore))
+                        if (isPremium == true) {
+                            AssistChip(
+                                onClick = {},
+                                label = {
+                                    Text(
+                                        text = "PREMIUM",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                    )
+                                },
+                                colors = AssistChipDefaults.assistChipColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    labelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                ),
+                            )
+                        }
+                    }
+                },
                 navigationIcon = {
                     IconButton(
                         onClick = navController::navigateUp,
@@ -277,7 +413,22 @@ fun BackupAndRestore(
                 start = 16.dp, end = 16.dp, bottom = 16.dp, top = 8.dp
             ),
         ) {
-
+            val isFreeEdition = isPremium != true
+            if (isFreeEdition) {
+                freeBackupAndRestoreContent(
+                    onCreateBackup = {
+                        val formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+                        backupLauncher.launch(
+                            "${context.getString(R.string.app_name)}_${
+                                LocalDateTime.now().format(formatter)
+                            }.backup"
+                        )
+                    },
+                    onRestoreBackup = {
+                        restoreLauncher.launch(arrayOf("application/octet-stream"))
+                    },
+                )
+            } else {
             // ── Backup / Restore card ─────────────────────────────────────────
             item {
                 Card(
@@ -450,6 +601,21 @@ fun BackupAndRestore(
                             )
                         }
 
+                        SyncStatusFooter(
+                            isActive = cloudState.isEnabled,
+                            featuresText = stringResource(R.string.sync_features_backup),
+                            lastSyncLabel = formatLastSync(lastCloudSyncAt),
+                            isSyncing = cloudState.isUploading,
+                            onSyncNow = {
+                                val formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+                                backupLauncher.launch(
+                                    "${context.getString(R.string.app_name)}_${
+                                        LocalDateTime.now().format(formatter)
+                                    }.backup"
+                                )
+                            },
+                        )
+
                         // Mostrar estado de subida
                         AnimatedVisibility(
                             visible = cloudState.isUploading,
@@ -582,6 +748,87 @@ fun BackupAndRestore(
                                     )
                                 }
                             }
+                        }
+                    }
+                }
+            }
+
+            // ── YouTube Music Sync card ─────────────────────────────────────────
+            if (isPremium == true) {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(18.dp),
+                                    color = MaterialTheme.colorScheme.errorContainer,
+                                ) {
+                                    Box(
+                                        modifier = Modifier.size(52.dp),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.sync),
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onErrorContainer,
+                                            modifier = Modifier.size(26.dp),
+                                        )
+                                    }
+                                }
+
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = stringResource(R.string.ytm_sync_title),
+                                        style = MaterialTheme.typography.titleLarge,
+                                    )
+                                    Text(
+                                        text = if (ytmLoggedIn) {
+                                            ytmAccountEmail.ifBlank { ytmAccountName }
+                                                .ifBlank { stringResource(R.string.ytm_sync_desc) }
+                                        } else {
+                                            stringResource(R.string.ytm_not_connected)
+                                        },
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(top = 4.dp),
+                                    )
+                                }
+                            }
+
+                            SyncStatusFooter(
+                                isActive = ytmLoggedIn,
+                                featuresText = stringResource(R.string.ytm_sync_features),
+                                lastSyncLabel = formatLastSync(lastYtmSyncAt),
+                                isSyncing = isYtmSyncing,
+                                onSyncNow = {
+                                    if (ytmLoggedIn) {
+                                        isYtmSyncing = true
+                                        coroutineScope.launch {
+                                            try {
+                                                syncUtils.performFullSync()
+                                                onLastYtmSyncAtChange(System.currentTimeMillis())
+                                            } finally {
+                                                isYtmSyncing = false
+                                            }
+                                        }
+                                    } else {
+                                        navController.navigate("settings/account")
+                                    }
+                                },
+                            )
                         }
                     }
                 }
@@ -784,6 +1031,17 @@ fun BackupAndRestore(
                                     }
                                 }
 
+                                SyncStatusFooter(
+                                    isActive = spotifyState.isAuthenticated,
+                                    featuresText = stringResource(R.string.sync_features_spotify),
+                                    lastSyncLabel = formatLastSync(lastSpotifySyncAt),
+                                    isSyncing = spotifyState.isLoading,
+                                    onSyncNow = {
+                                        spotifyAccountViewModel.reloadPlaylists()
+                                        onLastSpotifySyncAtChange(System.currentTimeMillis())
+                                    },
+                                )
+
                                 // Toggle con label mejorado
                                 Surface(
                                     shape = RoundedCornerShape(20.dp),
@@ -941,7 +1199,7 @@ fun BackupAndRestore(
                     }
                 }
             }
-
+            }
         }
     }
 
@@ -983,6 +1241,169 @@ fun BackupAndRestore(
                 spotifyAccountViewModel.connectWithCookies(spDc = spDc, spKey = spKey)
             },
         )
+    }
+}
+
+private fun LazyListScope.freeBackupAndRestoreContent(
+    onCreateBackup: () -> Unit,
+    onRestoreBackup: () -> Unit,
+) {
+    item {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Surface(shape = RoundedCornerShape(18.dp), color = MaterialTheme.colorScheme.primaryContainer) {
+                        Icon(
+                            painterResource(R.drawable.backup), null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(14.dp).size(28.dp),
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Copia de seguridad local", style = MaterialTheme.typography.titleLarge)
+                        Text(
+                            "Guarda tus datos en un archivo en tu dispositivo y recupéralos cuando lo necesites.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Text(
+                        "FREE", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(10.dp))
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                    )
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    NewActionButton(
+                        icon = { Icon(painterResource(R.drawable.backup), null) }, text = "Crear copia",
+                        onClick = onCreateBackup, modifier = Modifier.weight(1f),
+                        backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                    )
+                    NewActionButton(
+                        icon = { Icon(painterResource(R.drawable.restore), null) }, text = "Restaurar copia",
+                        onClick = onRestoreBackup, modifier = Modifier.weight(1f),
+                        backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+                Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)) {
+                    Row(
+                        modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Icon(painterResource(R.drawable.info), null, tint = MaterialTheme.colorScheme.primary)
+                        Text(
+                            "Solo tú tienes acceso a tus respaldos. Guárdalos en un lugar seguro.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        }
+    }
+    item {
+        FreePremiumCard(
+            icon = R.drawable.cloud,
+            title = "Sincronización en la nube",
+            description = "Sincroniza automáticamente tu biblioteca y configuraciones en todos tus dispositivos.",
+            features = "Favoritos  •  Biblioteca  •  Playlists  •  Historial  •  Configuración",
+            action = "Mejora a Premium para activar la sincronización en la nube",
+        )
+    }
+    item {
+        FreePremiumCard(
+            icon = R.drawable.playlist_import,
+            title = "Sincronización con YouTube Music",
+            description = "Importa y sincroniza tus playlists, favoritos y biblioteca de YouTube Music.",
+            features = "Favoritos  •  Biblioteca  •  Playlists  •  Historial",
+            action = "Mejora a Premium para conectar YouTube Music",
+        )
+    }
+    item {
+        FreePremiumCard(
+            icon = R.drawable.spotify_icon,
+            title = "Sincronización con Spotify",
+            description = "Importa tus playlists y canciones favoritas desde Spotify.",
+            features = "Favoritos  •  Playlists  •  Artistas  •  Álbumes",
+            action = "Mejora a Premium para conectar Spotify",
+        )
+    }
+    item {
+        Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp), color = MaterialTheme.colorScheme.surfaceContainer) {
+            Row(
+                modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Icon(painterResource(R.drawable.lock), null, tint = MaterialTheme.colorScheme.primary)
+                Column {
+                    Text("Tu privacidad es nuestra prioridad", style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        "Tus datos se almacenan de forma segura y nunca se comparten con terceros.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FreePremiumCard(
+    @DrawableRes icon: Int,
+    title: String,
+    description: String,
+    features: String,
+    action: String,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth().border(
+            1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.7f), RoundedCornerShape(24.dp)
+        ),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.primaryContainer) {
+                    Icon(
+                        painterResource(icon), null, tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(12.dp).size(32.dp),
+                    )
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(title, style = MaterialTheme.typography.titleLarge)
+                    Text(description, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        "PREMIUM", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(6.dp))
+                            .padding(horizontal = 6.dp, vertical = 3.dp),
+                    )
+                    Icon(
+                        painterResource(R.drawable.lock), "Disponible en Premium",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 8.dp).size(28.dp),
+                    )
+                }
+            }
+            Text(features, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                action, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.fillMaxWidth().border(
+                    1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.7f), RoundedCornerShape(12.dp)
+                ).padding(horizontal = 12.dp, vertical = 10.dp),
+            )
+        }
     }
 }
 

@@ -302,6 +302,17 @@
     <string name="cloud_uploading">Uploading to the cloud: %d%%</string>
     <string name="last_cloud_url">Last link</string>
     <string name="cloud_upload_error_detail">Error: %s</string>
+    <string name="sync_active">ACTIVE</string>
+    <string name="sync_inactive">Inactive</string>
+    <string name="sync_features_backup">Favorites · Library · Playlists · History · Settings</string>
+    <string name="last_sync">Last sync</string>
+    <string name="never_synced">Never synced</string>
+    <string name="sync_now">Sync now</string>
+    <string name="ytm_sync_title">YouTube Music Sync</string>
+    <string name="ytm_sync_desc">Keep your library and playlists synced with YouTube Music</string>
+    <string name="ytm_sync_features">Liked songs · Library · Playlists · Followed artists</string>
+    <string name="ytm_not_connected">YouTube Music is not connected</string>
+    <string name="sync_features_spotify">Playlists · Import to library</string>
 
     <string name="crossfade_disabled_description">Crossfade disabled</string>
     <string name="crossfade_short_description">Quick transition</string>

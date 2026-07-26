@@ -718,3 +718,9 @@ val ShowSpotifyPlaylistsKey = booleanPreferencesKey("show_spotify_playlists")
 val SpotifyLibraryPlaylistsCacheKey = stringPreferencesKey("spotify_library_playlists_cache")
 
 val JossRedMultimediaKey = booleanPreferencesKey("JossRedMultimedia")
+
+// WiwyMusic: marcas de tiempo de "última sincronización" para las tarjetas
+// Premium de Copia de seguridad y restauración (Cloud/YouTube Music/Spotify).
+val LastCloudSyncAtKey = longPreferencesKey("last_cloud_sync_at")
+val LastYtmSyncAtKey = longPreferencesKey("last_ytm_sync_at")
+val LastSpotifySyncAtKey = longPreferencesKey("last_spotify_sync_at")

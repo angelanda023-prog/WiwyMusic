@@ -301,6 +301,17 @@
     <string name="cloud_uploading">Subiendo a la nube: %d%%</string>
     <string name="last_cloud_url">Último enlace</string>
     <string name="cloud_upload_error_detail">Error: %s</string>
+    <string name="sync_active">ACTIVA</string>
+    <string name="sync_inactive">Inactiva</string>
+    <string name="sync_features_backup">Favoritos · Biblioteca · Playlists · Historial · Configuración</string>
+    <string name="last_sync">Última sincronización</string>
+    <string name="never_synced">Nunca sincronizado</string>
+    <string name="sync_now">Sincronizar ahora</string>
+    <string name="ytm_sync_title">Sincronización con YouTube Music</string>
+    <string name="ytm_sync_desc">Mantén tu biblioteca y playlists sincronizadas con YouTube Music</string>
+    <string name="ytm_sync_features">Canciones que te gustan · Biblioteca · Playlists · Artistas seguidos</string>
+    <string name="ytm_not_connected">YouTube Music no está conectado</string>
+    <string name="sync_features_spotify">Playlists · Importar a la biblioteca</string>
 
     <string name="crossfade_disabled_description">Crossfade desactivado</string>
     <string name="crossfade_short_description">Transición rápida</string>
