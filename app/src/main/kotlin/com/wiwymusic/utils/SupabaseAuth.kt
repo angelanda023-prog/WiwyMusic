@@ -61,6 +61,11 @@ object SupabaseAuth {
         val email = ds.getAsync(SupabaseUserEmailKey)
         if (!at.isNullOrBlank() && !rt.isNullOrBlank() && !uid.isNullOrBlank()) {
             _session.value = Session(at, rt, uid, email ?: "")
+            // El token guardado puede llevar horas o días sin usarse (app cerrada) y
+            // ya estar vencido (~1h de vida). Sin esto, el primer ciclo de refresco
+            // automático tarda hasta 50 min, y mientras tanto toda petición (incluido
+            // el estado Premium) falla en silencio con 401.
+            refreshAccessToken()
             scheduleAutoRefresh()
         }
         _loaded.value = true
