@@ -358,6 +358,13 @@ object UserPrefs {
                                 .toString(),
                         )
 
+                        // Al (re)conectar, refresca el estado completo desde la API REST.
+                        // postgres_changes solo entrega deltas: si la conexión se cayó
+                        // justo cuando cambió is_premium en el servidor (p. ej. un ajuste
+                        // manual desde el panel de administración), ese cambio se perdería
+                        // para siempre y la app quedaría "atascada" con el valor viejo.
+                        launch { refresh() }
+
                         val heartbeatJob = launch {
                             var ref = 2
                             while (isActive) {
