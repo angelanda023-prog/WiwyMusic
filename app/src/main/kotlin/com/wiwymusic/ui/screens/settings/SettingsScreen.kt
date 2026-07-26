@@ -42,6 +42,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -122,6 +123,7 @@ fun SettingsScreen(
 
     val shouldShowPermissionHint = !isStorageGranted || !isNotificationGranted
     val hasUpdate = !Updater.isSameVersion(latestVersionName, BuildConfig.VERSION_NAME)
+    val isPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
 
     val resetSearch: () -> Unit = {
         isSearching = false
@@ -187,6 +189,8 @@ fun SettingsScreen(
             }
         },
         onUpdateClick = { navController.navigate("settings/update") },
+        isPremium = isPremium,
+        onPremiumBannerClick = { navController.navigate("settings/account") },
     )
 
     Scaffold(
@@ -216,11 +220,30 @@ fun SettingsScreen(
                                         color = Color(0xFFF5791F),
                                     )
                                 }
-                                Text(
-                                    "v${BuildConfig.VERSION_NAME}",
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        "v${BuildConfig.VERSION_NAME}",
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    if (isPremium != null) {
+                                        Text(
+                                            " · ",
+                                            fontSize = 12.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                        Text(
+                                            if (isPremium == true) "⭐ Premium" else "Plan Free",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = if (isPremium == true) {
+                                                Color(0xFFF5791F)
+                                            } else {
+                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                            },
+                                        )
+                                    }
+                                }
                             }
                         }
                     },

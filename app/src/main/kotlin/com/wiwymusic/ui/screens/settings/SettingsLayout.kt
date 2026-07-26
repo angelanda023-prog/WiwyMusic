@@ -67,6 +67,8 @@ data class SettingsContentState(
     val hasSearchResults: Boolean,
     val onRequestPermission: () -> Unit,
     val onUpdateClick: () -> Unit,
+    val isPremium: Boolean? = null,
+    val onPremiumBannerClick: () -> Unit = {},
 )
 
 @Composable
@@ -223,6 +225,25 @@ private fun CompactSettingsLayout(
                             .padding(horizontal = pad)
                             .padding(bottom = spacing),
                     )
+                }
+            }
+
+            if (state.isPremium != null) {
+                item(key = "premium") {
+                    AnimatedVisibility(
+                        visible = bannerVisible,
+                        enter = fadeIn(SettingsAnimations.entranceSpring()) +
+                            expandVertically(SettingsAnimations.entranceSpring()),
+                        exit = fadeOut(tween(300)) + shrinkVertically(tween(300)),
+                    ) {
+                        SettingsPremiumBanner(
+                            isPremium = state.isPremium,
+                            onClick = state.onPremiumBannerClick,
+                            modifier = Modifier
+                                .padding(horizontal = pad)
+                                .padding(bottom = spacing),
+                        )
+                    }
                 }
             }
         }
@@ -391,6 +412,23 @@ private fun MediumSettingsLayout(
                         )
                     }
                 }
+
+                if (state.isPremium != null) {
+                    item(key = "premium") {
+                        AnimatedVisibility(
+                            visible = bannerVisible,
+                            enter = fadeIn(SettingsAnimations.entranceSpring()) +
+                                expandVertically(SettingsAnimations.entranceSpring()),
+                            exit = fadeOut(tween(300)) + shrinkVertically(tween(300)),
+                        ) {
+                            SettingsPremiumBanner(
+                                isPremium = state.isPremium,
+                                onClick = state.onPremiumBannerClick,
+                                modifier = Modifier.padding(bottom = spacing),
+                            )
+                        }
+                    }
+                }
             }
 
             if (state.quickActions.isNotEmpty()) {
@@ -544,6 +582,23 @@ private fun ExpandedSettingsLayout(
                             onClick = state.onUpdateClick,
                             modifier = Modifier.padding(bottom = spacing),
                         )
+                    }
+                }
+
+                if (state.isPremium != null) {
+                    item(key = "premium") {
+                        AnimatedVisibility(
+                            visible = bannerVisible,
+                            enter = fadeIn(SettingsAnimations.entranceSpring()) +
+                                expandVertically(SettingsAnimations.entranceSpring()),
+                            exit = fadeOut(tween(300)) + shrinkVertically(tween(300)),
+                        ) {
+                            SettingsPremiumBanner(
+                                isPremium = state.isPremium,
+                                onClick = state.onPremiumBannerClick,
+                                modifier = Modifier.padding(bottom = spacing),
+                            )
+                        }
                     }
                 }
             }

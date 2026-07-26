@@ -253,6 +253,118 @@ fun SettingsUpdateBanner(
     }
 }
 
+/**
+ * Banner de plan al inicio de Ajustes: "Hazte Premium" (Free) o "Premium Activo"
+ * (Premium) — para que el usuario sepa su plan sin entrar a Cuenta.
+ */
+@Composable
+fun SettingsPremiumBanner(
+    isPremium: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) SettingsAnimations.PressScale else 1f,
+        animationSpec = SettingsAnimations.pressSpring(),
+        label = "premiumScale",
+    )
+
+    val accentColor = if (isPremium) {
+        MaterialTheme.colorScheme.tertiary
+    } else {
+        Color(0xFFF5791F) // WiwyOrange
+    }
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .scale(scale)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            ),
+        shape = RoundedCornerShape(SettingsDimensions.BannerCardCornerRadius),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(
+                            accentColor.copy(alpha = 0.18f),
+                            accentColor.copy(alpha = 0.06f),
+                            Color.Transparent,
+                        ),
+                        start = Offset(0f, 0f),
+                        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY),
+                    ),
+                )
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(SettingsDimensions.BannerIconSize)
+                    .clip(CircleShape)
+                    .background(accentColor.copy(alpha = 0.16f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(if (isPremium) R.drawable.star else R.drawable.offline),
+                    contentDescription = null,
+                    tint = accentColor,
+                    modifier = Modifier.size(SettingsDimensions.BannerIconInnerSize),
+                )
+            }
+
+            Spacer(modifier = Modifier.width(14.dp))
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    text = if (isPremium) "Premium Activo" else "Hazte Premium",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = if (isPremium) {
+                        "Administra tu suscripción"
+                    } else {
+                        "Descargas ilimitadas, sincronización y audio de mayor calidad."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(accentColor.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.arrow_forward),
+                    contentDescription = null,
+                    tint = accentColor,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+        }
+    }
+}
+
 @Composable
 fun SettingsSearchEmpty(
     modifier: Modifier = Modifier,
