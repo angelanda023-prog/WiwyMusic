@@ -36,11 +36,23 @@ object UserPrefs {
         _avatarUrl.value = null
     }
 
-    /** Consulta si el usuario ya hizo el onboarding. */
+    /**
+     * Consulta si el usuario ya hizo el onboarding.
+     *
+     * Importante: si la petición falla (red, timeout, error del servidor) NO
+     * se fuerza `onboarded = false` — se deja el valor tal cual estaba (que
+     * puede ser `null` = "aún no sabemos" o un `true` ya confirmado antes).
+     * De lo contrario, un hiccup de red podía hacer reaparecer el onboarding
+     * en una cuenta que ya lo había completado.
+     */
     suspend fun refresh() = withContext(Dispatchers.IO) {
         val session = SupabaseAuth.session.value ?: return@withContext
         runCatching {
-            val conn = open("$BASE_URL/rest/v1/profiles?select=onboarded,avatar_url", "GET", session)
+            val conn = open(
+                "$BASE_URL/rest/v1/profiles?select=onboarded,avatar_url&id=eq.${session.userId}",
+                "GET",
+                session,
+            )
             val code = conn.responseCode
             val text = (if (code in 200..299) conn.inputStream else conn.errorStream)
                 ?.bufferedReader()?.use { it.readText() }.orEmpty()
@@ -52,12 +64,12 @@ object UserPrefs {
                     _onboarded.value = o.optBoolean("onboarded", false)
                     _avatarUrl.value = o.optString("avatar_url").takeIf { it.isNotBlank() && it != "null" }
                 } else {
+                    // No hay fila de perfil todavía: cuenta legítimamente nueva.
                     _onboarded.value = false
                 }
-            } else {
-                _onboarded.value = false
             }
-        }.onFailure { _onboarded.value = false }
+            // Código de error HTTP: no tocamos _onboarded, se reintentará en el próximo refresh().
+        }
         Unit
     }
 
@@ -156,8 +168,9 @@ object UserPrefs {
                 doOutput = true
             }
             patchConn.outputStream.use { it.write(JSONObject().put("onboarded", true).toString().toByteArray(Charsets.UTF_8)) }
-            patchConn.responseCode
+            val patchCode = patchConn.responseCode
             patchConn.disconnect()
+            if (patchCode !in 200..299) throw IllegalStateException("No se pudo marcar el onboarding como completado ($patchCode)")
 
             _onboarded.value = true
         }

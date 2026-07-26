@@ -79,6 +79,7 @@ fun WiwyOnboardingScreen(onDone: () -> Unit) {
     var artists by remember { mutableStateOf<List<ArtistItem>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var saving by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
     val selected = remember { mutableStateListOf<String>() }
     val byId = remember { mutableMapOf<String, ArtistItem>() }
 
@@ -191,17 +192,32 @@ fun WiwyOnboardingScreen(onDone: () -> Unit) {
 
         // Botón inferior
         val enough = selected.size >= MIN_ARTISTS
+        if (error != null) {
+            Text(
+                error!!,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 13.sp,
+                modifier = Modifier.padding(horizontal = 20.dp),
+            )
+            Spacer(Modifier.height(4.dp))
+        }
         Button(
             onClick = {
                 if (!enough || saving) return@Button
                 saving = true
+                error = null
                 scope.launch {
                     val picks = selected.mapNotNull { id ->
                         byId[id]?.let { UserPrefs.ArtistPick(it.id, it.title, it.thumbnail) }
                     }
-                    UserPrefs.completeOnboarding(picks)
+                    val result = UserPrefs.completeOnboarding(picks)
                     saving = false
-                    onDone()
+                    result.fold(
+                        onSuccess = { onDone() },
+                        onFailure = {
+                            error = "No se pudo guardar. Revisa tu conexión e intenta de nuevo."
+                        },
+                    )
                 }
             },
             enabled = enough && !saving,
