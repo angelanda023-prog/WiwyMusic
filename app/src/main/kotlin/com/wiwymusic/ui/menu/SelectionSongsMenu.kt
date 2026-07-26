@@ -26,6 +26,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.ListItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -80,6 +81,7 @@ fun SelectionSongMenu(
     val context = LocalContext.current
     val database = LocalDatabase.current
     val downloadUtil = LocalDownloadUtil.current
+    val isPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val playerConnection = LocalPlayerConnection.current ?: return
     val syncUtils = LocalSyncUtils.current
@@ -415,31 +417,34 @@ fun SelectionSongMenu(
                     )
                 }
                 else -> {
-                    ListItem(
-                        headlineContent = { Text(text = stringResource(R.string.action_download)) },
-                        leadingContent = {
-                            Icon(
-                                painter = painterResource(R.drawable.download),
-                                contentDescription = null,
-                            )
-                        },
-                        modifier = Modifier.clickable {
-                            songSelection.forEach { song ->
-                                val downloadRequest =
-                                    DownloadRequest
-                                        .Builder(song.id, song.id.toUri())
-                                        .setCustomCacheKey(song.id)
-                                        .setData(song.song.title.toByteArray())
-                                        .build()
-                                DownloadService.sendAddDownload(
-                                    context,
-                                    ExoDownloadService::class.java,
-                                    downloadRequest,
-                                    false,
+                    if (isPremium == true) {
+                        ListItem(
+                            headlineContent = { Text(text = stringResource(R.string.action_download)) },
+                            leadingContent = {
+                                Icon(
+                                    painter = painterResource(R.drawable.download),
+                                    contentDescription = null,
                                 )
+                            },
+                            modifier = Modifier.clickable {
+                                if (!downloadUtil.canDownload()) return@clickable
+                                songSelection.forEach { song ->
+                                    val downloadRequest =
+                                        DownloadRequest
+                                            .Builder(song.id, song.id.toUri())
+                                            .setCustomCacheKey(song.id)
+                                            .setData(song.song.title.toByteArray())
+                                            .build()
+                                    DownloadService.sendAddDownload(
+                                        context,
+                                        ExoDownloadService::class.java,
+                                        downloadRequest,
+                                        false,
+                                    )
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
@@ -518,6 +523,7 @@ fun SelectionMediaMetadataMenu(
     val context = LocalContext.current
     val database = LocalDatabase.current
     val downloadUtil = LocalDownloadUtil.current
+    val isPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val playerConnection = LocalPlayerConnection.current ?: return
 
@@ -787,31 +793,34 @@ fun SelectionMediaMetadataMenu(
                     )
                 }
                 else -> {
-                    ListItem(
-                        headlineContent = { Text(text = stringResource(R.string.action_download)) },
-                        leadingContent = {
-                            Icon(
-                                painter = painterResource(R.drawable.download),
-                                contentDescription = null,
-                            )
-                        },
-                        modifier = Modifier.clickable {
-                            songSelection.forEach { song ->
-                                val downloadRequest =
-                                    DownloadRequest
-                                        .Builder(song.id, song.id.toUri())
-                                        .setCustomCacheKey(song.id)
-                                        .setData(song.title.toByteArray())
-                                        .build()
-                                DownloadService.sendAddDownload(
-                                    context,
-                                    ExoDownloadService::class.java,
-                                    downloadRequest,
-                                    false,
+                    if (isPremium == true) {
+                        ListItem(
+                            headlineContent = { Text(text = stringResource(R.string.action_download)) },
+                            leadingContent = {
+                                Icon(
+                                    painter = painterResource(R.drawable.download),
+                                    contentDescription = null,
                                 )
+                            },
+                            modifier = Modifier.clickable {
+                                if (!downloadUtil.canDownload()) return@clickable
+                                songSelection.forEach { song ->
+                                    val downloadRequest =
+                                        DownloadRequest
+                                            .Builder(song.id, song.id.toUri())
+                                            .setCustomCacheKey(song.id)
+                                            .setData(song.title.toByteArray())
+                                            .build()
+                                    DownloadService.sendAddDownload(
+                                        context,
+                                        ExoDownloadService::class.java,
+                                        downloadRequest,
+                                        false,
+                                    )
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }

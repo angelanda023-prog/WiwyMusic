@@ -153,8 +153,10 @@ fun ColumnScope.PlayerMenu(
     val librarySong by database.song(mediaMetadata.id).collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
 
-    val download by LocalDownloadUtil.current.getDownload(mediaMetadata.id)
+    val downloadUtil = LocalDownloadUtil.current
+    val download by downloadUtil.getDownload(mediaMetadata.id)
         .collectAsState(initial = null)
+    val isPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
 
     val artists =
         remember(mediaMetadata.artists) {
@@ -592,26 +594,29 @@ fun ColumnScope.PlayerMenu(
                         )
                     }
                     else -> {
-                        ListItem(
-                            headlineContent = { Text(text = stringResource(R.string.action_download)) },
-                            leadingContent = {
-                                Icon(painter = painterResource(R.drawable.download), contentDescription = null)
-                            },
-                            modifier = Modifier.clickable {
-                                database.transaction { insert(mediaMetadata) }
-                                val downloadRequest = DownloadRequest
-                                    .Builder(mediaMetadata.id, mediaMetadata.id.toUri())
-                                    .setCustomCacheKey(mediaMetadata.id)
-                                    .setData(mediaMetadata.title.toByteArray())
-                                    .build()
-                                DownloadService.sendAddDownload(context, ExoDownloadService::class.java, downloadRequest, false)
-                            },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        )
+                        if (isPremium == true) {
+                            ListItem(
+                                headlineContent = { Text(text = stringResource(R.string.action_download)) },
+                                leadingContent = {
+                                    Icon(painter = painterResource(R.drawable.download), contentDescription = null)
+                                },
+                                modifier = Modifier.clickable {
+                                    if (!downloadUtil.canDownload()) return@clickable
+                                    database.transaction { insert(mediaMetadata) }
+                                    val downloadRequest = DownloadRequest
+                                        .Builder(mediaMetadata.id, mediaMetadata.id.toUri())
+                                        .setCustomCacheKey(mediaMetadata.id)
+                                        .setData(mediaMetadata.title.toByteArray())
+                                        .build()
+                                    DownloadService.sendAddDownload(context, ExoDownloadService::class.java, downloadRequest, false)
+                                },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                            )
+                        }
                     }
                 }
 
-                if (externalDownloaderEnabled) {
+                if (externalDownloaderEnabled && isPremium == true) {
                     HorizontalDivider(modifier = Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.outlineVariant)
                     ListItem(
                         headlineContent = { Text(text = stringResource(R.string.open_with_downloader)) },

@@ -4325,8 +4325,11 @@ class MusicService :
                 }
 
             if (requiredCachedLength != null) {
+                // El contenido ya descargado (downloadCache) solo se sirve a usuarios Premium;
+                // el cache general de streaming (playerCache) sigue disponible para todos.
+                val isPremium = com.wiwymusic.utils.UserPrefs.isPremium.value == true
                 val isFullyCached =
-                    downloadCache.isCached(mediaId, dataSpec.position, requiredCachedLength) ||
+                    (isPremium && downloadCache.isCached(mediaId, dataSpec.position, requiredCachedLength)) ||
                             playerCache.isCached(mediaId, dataSpec.position, requiredCachedLength)
                 if (isFullyCached) {
                     scope.launch(Dispatchers.IO) { recoverSong(mediaId) }

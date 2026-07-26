@@ -440,6 +440,7 @@ fun AlbumScreen(
     }
 
     val downloadUtil = LocalDownloadUtil.current
+    val isPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
     var downloadState by remember { mutableStateOf(Download.STATE_STOPPED) }
 
     LaunchedEffect(albumWithSongs) {
@@ -851,79 +852,83 @@ fun AlbumScreen(
                                 )
                             }
 
-                            // Download Button
-                            Surface(
-                                onClick = {
-                                    when (downloadState) {
-                                        Download.STATE_COMPLETED -> {
-                                            albumWithSongs.songs.forEach { song ->
-                                                DownloadService.sendRemoveDownload(
-                                                    context,
-                                                    ExoDownloadService::class.java,
-                                                    song.id,
-                                                    false,
-                                                )
+                            // Download Button (solo Premium)
+                            if (isPremium == true) {
+                                Surface(
+                                    onClick = {
+                                        when (downloadState) {
+                                            Download.STATE_COMPLETED -> {
+                                                albumWithSongs.songs.forEach { song ->
+                                                    DownloadService.sendRemoveDownload(
+                                                        context,
+                                                        ExoDownloadService::class.java,
+                                                        song.id,
+                                                        false,
+                                                    )
+                                                }
+                                            }
+                                            Download.STATE_DOWNLOADING -> {
+                                                albumWithSongs.songs.forEach { song ->
+                                                    DownloadService.sendRemoveDownload(
+                                                        context,
+                                                        ExoDownloadService::class.java,
+                                                        song.id,
+                                                        false,
+                                                    )
+                                                }
+                                            }
+                                            else -> {
+                                                if (downloadUtil.canDownload()) {
+                                                    albumWithSongs.songs.forEach { song ->
+                                                        val downloadRequest =
+                                                            DownloadRequest
+                                                                .Builder(song.id, song.id.toUri())
+                                                                .setCustomCacheKey(song.id)
+                                                                .setData(song.song.title.toByteArray())
+                                                                .build()
+                                                        DownloadService.sendAddDownload(
+                                                            context,
+                                                            ExoDownloadService::class.java,
+                                                            downloadRequest,
+                                                            false,
+                                                        )
+                                                    }
+                                                }
                                             }
                                         }
-                                        Download.STATE_DOWNLOADING -> {
-                                            albumWithSongs.songs.forEach { song ->
-                                                DownloadService.sendRemoveDownload(
-                                                    context,
-                                                    ExoDownloadService::class.java,
-                                                    song.id,
-                                                    false,
-                                                )
-                                            }
-                                        }
-                                        else -> {
-                                            albumWithSongs.songs.forEach { song ->
-                                                val downloadRequest =
-                                                    DownloadRequest
-                                                        .Builder(song.id, song.id.toUri())
-                                                        .setCustomCacheKey(song.id)
-                                                        .setData(song.song.title.toByteArray())
-                                                        .build()
-                                                DownloadService.sendAddDownload(
-                                                    context,
-                                                    ExoDownloadService::class.java,
-                                                    downloadRequest,
-                                                    false,
-                                                )
-                                            }
-                                        }
-                                    }
-                                },
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.surfaceVariant,
-                                modifier = Modifier.size(48.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
+                                    },
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    modifier = Modifier.size(48.dp)
                                 ) {
-                                    when (downloadState) {
-                                        Download.STATE_COMPLETED -> {
-                                            Icon(
-                                                painter = painterResource(R.drawable.offline),
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.size(24.dp)
-                                            )
-                                        }
-                                        Download.STATE_DOWNLOADING -> {
-                                            CircularProgressIndicator(
-                                                strokeWidth = 2.dp,
-                                                modifier = Modifier.size(24.dp),
-                                                color = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                        else -> {
-                                            Icon(
-                                                painter = painterResource(R.drawable.download),
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                modifier = Modifier.size(24.dp)
-                                            )
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        when (downloadState) {
+                                            Download.STATE_COMPLETED -> {
+                                                Icon(
+                                                    painter = painterResource(R.drawable.offline),
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.size(24.dp)
+                                                )
+                                            }
+                                            Download.STATE_DOWNLOADING -> {
+                                                CircularProgressIndicator(
+                                                    strokeWidth = 2.dp,
+                                                    modifier = Modifier.size(24.dp),
+                                                    color = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
+                                            else -> {
+                                                Icon(
+                                                    painter = painterResource(R.drawable.download),
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    modifier = Modifier.size(24.dp)
+                                                )
+                                            }
                                         }
                                     }
                                 }

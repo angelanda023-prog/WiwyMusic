@@ -120,9 +120,11 @@ fun SongMenu(
     val playerConnection = LocalPlayerConnection.current ?: return
     val songState = database.song(originalSong.id).collectAsState(initial = originalSong)
     val song = songState.value ?: originalSong
-    val download by LocalDownloadUtil.current.getDownload(originalSong.id)
+    val downloadUtil = LocalDownloadUtil.current
+    val download by downloadUtil.getDownload(originalSong.id)
         .collectAsState(initial = null)
     val downloadState = metadata?.downloadState ?: download?.state
+    val isPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val syncUtils = LocalSyncUtils.current
     var refetchIconDegree by remember { mutableFloatStateOf(0f) }
@@ -752,31 +754,34 @@ fun SongMenu(
                             )
                         }
                         else -> {
-                            ListItem(
-                                headlineContent = { Text(text = stringResource(R.string.action_download)) },
-                                leadingContent = {
-                                    Icon(
-                                        painter = painterResource(R.drawable.download),
-                                        contentDescription = null,
-                                    )
-                                },
-                                modifier =
-                                    Modifier.clickable {
-                                        val downloadRequest =
-                                            DownloadRequest
-                                                .Builder(song.id, song.id.toUri())
-                                                .setCustomCacheKey(song.id)
-                                                .setData(song.song.title.toByteArray())
-                                                .build()
-                                        DownloadService.sendAddDownload(
-                                            context,
-                                            ExoDownloadService::class.java,
-                                            downloadRequest,
-                                            false,
+                            if (isPremium == true) {
+                                ListItem(
+                                    headlineContent = { Text(text = stringResource(R.string.action_download)) },
+                                    leadingContent = {
+                                        Icon(
+                                            painter = painterResource(R.drawable.download),
+                                            contentDescription = null,
                                         )
                                     },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                            )
+                                    modifier =
+                                        Modifier.clickable {
+                                            if (!downloadUtil.canDownload()) return@clickable
+                                            val downloadRequest =
+                                                DownloadRequest
+                                                    .Builder(song.id, song.id.toUri())
+                                                    .setCustomCacheKey(song.id)
+                                                    .setData(song.song.title.toByteArray())
+                                                    .build()
+                                            DownloadService.sendAddDownload(
+                                                context,
+                                                ExoDownloadService::class.java,
+                                                downloadRequest,
+                                                false,
+                                            )
+                                        },
+                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                )
+                            }
                         }
                     }
                     if (externalDownloaderEnabled) {

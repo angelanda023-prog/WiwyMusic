@@ -111,6 +111,7 @@ fun YouTubePlaylistMenu(
     val context = LocalContext.current
     val database = LocalDatabase.current
     val downloadUtil = LocalDownloadUtil.current
+    val isPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
     val playerConnection = LocalPlayerConnection.current ?: return
     val syncUtils = LocalSyncUtils.current
     val dbPlaylist by database.playlistByBrowseId(playlist.id).collectAsState(initial = null)
@@ -707,38 +708,41 @@ fun YouTubePlaylistMenu(
                     }
 
                     else -> {
-                        ListItem(
-                            headlineContent = { Text(text = stringResource(R.string.action_download)) },
-                            leadingContent = {
-                                Icon(
-                                    painter = painterResource(R.drawable.download),
-                                    contentDescription = null,
-                                )
-                            },
-                            modifier = Modifier.clickable {
-                                coroutineScope.launch {
-                                    songs
-                                        .ifEmpty {
-                                            withContext(Dispatchers.IO) {
-                                                YouTube.playlist(playlist.id).completed().getOrNull()?.songs.orEmpty()
+                        if (isPremium == true) {
+                            ListItem(
+                                headlineContent = { Text(text = stringResource(R.string.action_download)) },
+                                leadingContent = {
+                                    Icon(
+                                        painter = painterResource(R.drawable.download),
+                                        contentDescription = null,
+                                    )
+                                },
+                                modifier = Modifier.clickable {
+                                    if (!downloadUtil.canDownload()) return@clickable
+                                    coroutineScope.launch {
+                                        songs
+                                            .ifEmpty {
+                                                withContext(Dispatchers.IO) {
+                                                    YouTube.playlist(playlist.id).completed().getOrNull()?.songs.orEmpty()
+                                                }
+                                            }.forEach { song ->
+                                                val downloadRequest =
+                                                    DownloadRequest.Builder(song.id, song.id.toUri())
+                                                        .setCustomCacheKey(song.id)
+                                                        .setData(song.title.toByteArray())
+                                                        .build()
+                                                DownloadService.sendAddDownload(
+                                                    context,
+                                                    ExoDownloadService::class.java,
+                                                    downloadRequest,
+                                                    false,
+                                                )
                                             }
-                                        }.forEach { song ->
-                                            val downloadRequest =
-                                                DownloadRequest.Builder(song.id, song.id.toUri())
-                                                    .setCustomCacheKey(song.id)
-                                                    .setData(song.title.toByteArray())
-                                                    .build()
-                                            DownloadService.sendAddDownload(
-                                                context,
-                                                ExoDownloadService::class.java,
-                                                downloadRequest,
-                                                false,
-                                            )
-                                        }
-                                }
-                            },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        )
+                                    }
+                                },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                            )
+                        }
                     }
                 }
             }

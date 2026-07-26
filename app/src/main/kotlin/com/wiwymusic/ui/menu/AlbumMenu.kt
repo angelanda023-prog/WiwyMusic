@@ -102,6 +102,7 @@ fun AlbumMenu(
     val context = LocalContext.current
     val database = LocalDatabase.current
     val downloadUtil = LocalDownloadUtil.current
+    val isPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
     val playerConnection = LocalPlayerConnection.current ?: return
     val scope = rememberCoroutineScope()
     val libraryAlbum by database.album(originalAlbum.id).collectAsState(initial = originalAlbum)
@@ -505,31 +506,34 @@ fun AlbumMenu(
                     )
                 }
                 else -> {
-                    ListItem(
-                        headlineContent = { Text(text = stringResource(R.string.action_download)) },
-                        leadingContent = {
-                            Icon(
-                                painter = painterResource(R.drawable.download),
-                                contentDescription = null,
-                            )
-                        },
-                        modifier = Modifier.clickable {
-                            songs.forEach { song ->
-                                val downloadRequest =
-                                    DownloadRequest
-                                        .Builder(song.id, song.id.toUri())
-                                        .setCustomCacheKey(song.id)
-                                        .setData(song.song.title.toByteArray())
-                                        .build()
-                                DownloadService.sendAddDownload(
-                                    context,
-                                    ExoDownloadService::class.java,
-                                    downloadRequest,
-                                    false,
+                    if (isPremium == true) {
+                        ListItem(
+                            headlineContent = { Text(text = stringResource(R.string.action_download)) },
+                            leadingContent = {
+                                Icon(
+                                    painter = painterResource(R.drawable.download),
+                                    contentDescription = null,
                                 )
+                            },
+                            modifier = Modifier.clickable {
+                                if (!downloadUtil.canDownload()) return@clickable
+                                songs.forEach { song ->
+                                    val downloadRequest =
+                                        DownloadRequest
+                                            .Builder(song.id, song.id.toUri())
+                                            .setCustomCacheKey(song.id)
+                                            .setData(song.song.title.toByteArray())
+                                            .build()
+                                    DownloadService.sendAddDownload(
+                                        context,
+                                        ExoDownloadService::class.java,
+                                        downloadRequest,
+                                        false,
+                                    )
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }

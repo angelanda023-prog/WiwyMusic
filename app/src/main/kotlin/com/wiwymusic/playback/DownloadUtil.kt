@@ -99,6 +99,9 @@ constructor(
 
     val downloads = MutableStateFlow<Map<String, Download>>(emptyMap())
 
+    /** Punto único de verdad: solo los usuarios Premium pueden descargar contenido offline. */
+    fun canDownload(): Boolean = com.wiwymusic.utils.UserPrefs.isPremium.value == true
+
     private val dataSourceFactory =
         ResolvingDataSource.Factory(
             CacheDataSource

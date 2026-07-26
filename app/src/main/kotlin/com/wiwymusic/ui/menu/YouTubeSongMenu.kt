@@ -103,7 +103,9 @@ fun YouTubeSongMenu(
     val database = LocalDatabase.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val librarySong by database.song(song.id).collectAsState(initial = null)
-    val download by LocalDownloadUtil.current.getDownload(song.id).collectAsState(initial = null)
+    val downloadUtil = LocalDownloadUtil.current
+    val download by downloadUtil.getDownload(song.id).collectAsState(initial = null)
+    val isPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val syncUtils = LocalSyncUtils.current
     val artists = remember {
@@ -454,31 +456,34 @@ fun YouTubeSongMenu(
                     )
                 }
                 else -> {
-                    ListItem(
-                        headlineContent = { Text(text = stringResource(R.string.action_download)) },
-                        leadingContent = {
-                            Icon(
-                                painter = painterResource(R.drawable.download),
-                                contentDescription = null,
-                            )
-                        },
-                        modifier = Modifier.clickable {
-                            database.transaction {
-                                insert(song.toMediaMetadata())
+                    if (isPremium == true) {
+                        ListItem(
+                            headlineContent = { Text(text = stringResource(R.string.action_download)) },
+                            leadingContent = {
+                                Icon(
+                                    painter = painterResource(R.drawable.download),
+                                    contentDescription = null,
+                                )
+                            },
+                            modifier = Modifier.clickable {
+                                if (!downloadUtil.canDownload()) return@clickable
+                                database.transaction {
+                                    insert(song.toMediaMetadata())
+                                }
+                                val downloadRequest = DownloadRequest
+                                    .Builder(song.id, song.id.toUri())
+                                    .setCustomCacheKey(song.id)
+                                    .setData(song.title.toByteArray())
+                                    .build()
+                                DownloadService.sendAddDownload(
+                                    context,
+                                    ExoDownloadService::class.java,
+                                    downloadRequest,
+                                    false,
+                                )
                             }
-                            val downloadRequest = DownloadRequest
-                                .Builder(song.id, song.id.toUri())
-                                .setCustomCacheKey(song.id)
-                                .setData(song.title.toByteArray())
-                                .build()
-                            DownloadService.sendAddDownload(
-                                context,
-                                ExoDownloadService::class.java,
-                                downloadRequest,
-                                false,
-                            )
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }

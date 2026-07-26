@@ -90,6 +90,7 @@ fun PlaylistMenu(
     val context = LocalContext.current
     val database = LocalDatabase.current
     val downloadUtil = LocalDownloadUtil.current
+    val isPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
     val playerConnection = LocalPlayerConnection.current ?: return
     val dbPlaylist by database.playlist(playlist.id).collectAsState(initial = playlist)
     var songs by remember {
@@ -573,32 +574,35 @@ fun PlaylistMenu(
                         }
 
                         else -> {
-                            ListItem(
-                                headlineContent = { Text(text = stringResource(R.string.action_download)) },
-                                leadingContent = {
-                                    Icon(
-                                        painter = painterResource(R.drawable.download),
-                                        contentDescription = null,
-                                    )
-                                },
-                                modifier = Modifier.clickable {
-                                    songs.forEach { song ->
-                                        val downloadRequest =
-                                            DownloadRequest
-                                                .Builder(song.id, song.id.toUri())
-                                                .setCustomCacheKey(song.id)
-                                                .setData(song.song.title.toByteArray())
-                                                .build()
-                                        DownloadService.sendAddDownload(
-                                            context,
-                                            ExoDownloadService::class.java,
-                                            downloadRequest,
-                                            false,
+                            if (isPremium == true) {
+                                ListItem(
+                                    headlineContent = { Text(text = stringResource(R.string.action_download)) },
+                                    leadingContent = {
+                                        Icon(
+                                            painter = painterResource(R.drawable.download),
+                                            contentDescription = null,
                                         )
-                                    }
-                                },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                            )
+                                    },
+                                    modifier = Modifier.clickable {
+                                        if (!downloadUtil.canDownload()) return@clickable
+                                        songs.forEach { song ->
+                                            val downloadRequest =
+                                                DownloadRequest
+                                                    .Builder(song.id, song.id.toUri())
+                                                    .setCustomCacheKey(song.id)
+                                                    .setData(song.song.title.toByteArray())
+                                                    .build()
+                                            DownloadService.sendAddDownload(
+                                                context,
+                                                ExoDownloadService::class.java,
+                                                downloadRequest,
+                                                false,
+                                            )
+                                        }
+                                    },
+                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                )
+                            }
                         }
                     }
                 }
