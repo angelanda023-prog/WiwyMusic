@@ -178,10 +178,17 @@ fun buildSettingsGroups(
                 title = "INFORMACIÓN",
                 items = listOf(
                     SettingsItem(
+                        icon = painterResource(R.drawable.update),
+                        title = "Actualizaciones",
+                        subtitle = if (hasUpdate) "Nueva versión disponible" else "Buscar actualizaciones",
+                        showUpdateIndicator = hasUpdate,
+                        accentColor = orange,
+                        onClick = { resetSearch(); navController.navigate("settings/update") },
+                    ),
+                    SettingsItem(
                         icon = painterResource(R.drawable.info),
                         title = "Acerca de",
                         subtitle = "Versión y licencias",
-                        showUpdateIndicator = hasUpdate,
                         accentColor = orange,
                         onClick = { resetSearch(); navController.navigate("settings/about") },
                     ),

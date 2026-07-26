@@ -88,12 +88,7 @@ fun WiwyDownloadsScreen(navController: NavController) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text("Descargas", color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.weight(1f))
-            Box(
-                modifier = Modifier.size(40.dp).clip(CircleShape).background(WiwyOrange).clickable { navController.navigate("settings") },
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(painterResource(R.drawable.person), null, tint = Color.White, modifier = Modifier.size(22.dp))
-            }
+            com.wiwymusic.ui.component.WiwyProfileAvatar()
         }
 
         LazyColumn(contentPadding = PaddingValues(bottom = 120.dp)) {

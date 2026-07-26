@@ -175,8 +175,6 @@ fun SettingsScreen(
         internalGroup = if (queryText.isNotBlank()) internalGroup else null,
         // WiwyMusic: los permisos se gestionan ahora dentro de Privacidad
         showPermissionBanner = false,
-        showUpdateBanner = hasUpdate,
-        latestVersion = latestVersionName,
         isSearchActive = queryText.isNotBlank(),
         hasSearchResults = hasSearchResults,
         onRequestPermission = {
@@ -190,7 +188,6 @@ fun SettingsScreen(
                 permissionLauncher.launch(toRequest.toTypedArray())
             }
         },
-        onUpdateClick = { navController.navigate("settings/update") },
         isPremium = isPremium,
         onPremiumBannerClick = { navController.navigate("settings/account") },
     )

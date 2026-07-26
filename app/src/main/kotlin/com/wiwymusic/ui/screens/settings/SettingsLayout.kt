@@ -61,12 +61,9 @@ data class SettingsContentState(
     val groups: List<SettingsGroup>,
     val internalGroup: SettingsGroup?,
     val showPermissionBanner: Boolean,
-    val showUpdateBanner: Boolean,
-    val latestVersion: String,
     val isSearchActive: Boolean,
     val hasSearchResults: Boolean,
     val onRequestPermission: () -> Unit,
-    val onUpdateClick: () -> Unit,
     val isPremium: Boolean? = null,
     val onPremiumBannerClick: () -> Unit = {},
 )
@@ -204,23 +201,6 @@ private fun CompactSettingsLayout(
                 ) {
                     SettingsPermissionBanner(
                         onRequestPermission = state.onRequestPermission,
-                        modifier = Modifier
-                            .padding(horizontal = pad)
-                            .padding(bottom = spacing),
-                    )
-                }
-            }
-
-            item(key = "update") {
-                AnimatedVisibility(
-                    visible = bannerVisible && state.showUpdateBanner,
-                    enter = fadeIn(SettingsAnimations.entranceSpring()) +
-                        expandVertically(SettingsAnimations.entranceSpring()),
-                    exit = fadeOut(tween(300)) + shrinkVertically(tween(300)),
-                ) {
-                    SettingsUpdateBanner(
-                        latestVersion = state.latestVersion,
-                        onClick = state.onUpdateClick,
                         modifier = Modifier
                             .padding(horizontal = pad)
                             .padding(bottom = spacing),
@@ -398,21 +378,6 @@ private fun MediumSettingsLayout(
                     }
                 }
 
-                item(key = "update") {
-                    AnimatedVisibility(
-                        visible = bannerVisible && state.showUpdateBanner,
-                        enter = fadeIn(SettingsAnimations.entranceSpring()) +
-                            expandVertically(SettingsAnimations.entranceSpring()),
-                        exit = fadeOut(tween(300)) + shrinkVertically(tween(300)),
-                    ) {
-                        SettingsUpdateBanner(
-                            latestVersion = state.latestVersion,
-                            onClick = state.onUpdateClick,
-                            modifier = Modifier.padding(bottom = spacing),
-                        )
-                    }
-                }
-
                 if (state.isPremium != null) {
                     item(key = "premium") {
                         AnimatedVisibility(
@@ -565,21 +530,6 @@ private fun ExpandedSettingsLayout(
                     ) {
                         SettingsPermissionBanner(
                             onRequestPermission = state.onRequestPermission,
-                            modifier = Modifier.padding(bottom = spacing),
-                        )
-                    }
-                }
-
-                item(key = "update") {
-                    AnimatedVisibility(
-                        visible = bannerVisible && state.showUpdateBanner,
-                        enter = fadeIn(SettingsAnimations.entranceSpring()) +
-                            expandVertically(SettingsAnimations.entranceSpring()),
-                        exit = fadeOut(tween(300)) + shrinkVertically(tween(300)),
-                    ) {
-                        SettingsUpdateBanner(
-                            latestVersion = state.latestVersion,
-                            onClick = state.onUpdateClick,
                             modifier = Modifier.padding(bottom = spacing),
                         )
                     }

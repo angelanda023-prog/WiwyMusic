@@ -88,17 +88,7 @@ fun WiwySearchLanding(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text("Buscar", color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.weight(1f))
-            Box(
-                modifier = Modifier.size(40.dp).clip(CircleShape).background(WiwyOrange)
-                    .clickable { navController.navigate("settings") },
-                contentAlignment = Alignment.Center,
-            ) {
-                if (accountImageUrl != null) {
-                    AsyncImage(model = accountImageUrl, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize().clip(CircleShape))
-                } else {
-                    Icon(painterResource(R.drawable.person), null, tint = Color.White, modifier = Modifier.size(22.dp))
-                }
-            }
+            com.wiwymusic.ui.component.WiwyProfileAvatar()
         }
         // Barra de búsqueda FIJA
         Row(

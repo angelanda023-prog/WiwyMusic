@@ -1181,8 +1181,6 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    var showAccountDialog by remember { mutableStateOf(false) }
-
 
 
                     CompositionLocalProvider(
@@ -1358,38 +1356,10 @@ class MainActivity : ComponentActivity() {
                                                     }
                                                 },
                                                 actions = {
-                                                    // WiwyMusic: perfil con avatar de Supabase (foto o preset de color)
-                                                    val wiwyAvatar by com.wiwymusic.utils.UserPrefs.avatarUrl.collectAsState()
-                                                    val presetColor = wiwyAvatar?.takeIf { it.startsWith("preset:") }
-                                                        ?.removePrefix("preset:")?.toIntOrNull()
-                                                        ?.let { com.wiwymusic.ui.component.WiwyAvatarPresets.getOrNull(it) }
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .padding(end = 10.dp)
-                                                            .size(42.dp)
-                                                            .clip(CircleShape)
-                                                            .background(presetColor ?: Color(0xFFF5791F))
-                                                            // WiwyMusic: el perfil abre la Cuenta (Ajustes está en la barra inferior)
-                                                            .clickable { showAccountDialog = true },
-                                                        contentAlignment = Alignment.Center,
-                                                    ) {
-                                                        if (presetColor == null && wiwyAvatar != null) {
-                                                            AsyncImage(
-                                                                model = wiwyAvatar,
-                                                                contentDescription = stringResource(R.string.account),
-                                                                modifier = Modifier
-                                                                    .fillMaxSize()
-                                                                    .clip(CircleShape)
-                                                            )
-                                                        } else {
-                                                            Icon(
-                                                                painter = painterResource(R.drawable.person),
-                                                                contentDescription = stringResource(R.string.account),
-                                                                tint = Color.White,
-                                                                modifier = Modifier.size(24.dp)
-                                                            )
-                                                        }
-                                                    }
+                                                    // WiwyMusic: avatar del perfil, puramente decorativo (sin acción de tap)
+                                                    com.wiwymusic.ui.component.WiwyProfileAvatar(
+                                                        modifier = Modifier.padding(end = 10.dp),
+                                                    )
                                                 },
                                                 scrollBehavior = if (shouldUseFloatingTopBar) {
                                                     searchBarScrollBehavior
@@ -1880,7 +1850,6 @@ class MainActivity : ComponentActivity() {
                         // Al cerrar sesión: cerrar Cuenta y volver al inicio para mostrar el login limpio
                         LaunchedEffect(supaSession, supaLoaded) {
                             if (supaLoaded && supaSession == null) {
-                                showAccountDialog = false
                                 runCatching {
                                     navController.popBackStack(
                                         navController.graph.startDestinationId,
@@ -1941,14 +1910,6 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 com.wiwymusic.ui.screens.auth.WiwyOnboardingScreen(onDone = {})
                             }
-                        }
-
-                        if (showAccountDialog) {
-                            AccountSettingsDialog(
-                                navController = navController,
-                                onDismiss = { showAccountDialog = false },
-                                latestVersionName = latestVersionName
-                            )
                         }
 
                         sharedSong?.let { song ->
