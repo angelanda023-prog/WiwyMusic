@@ -51,6 +51,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -174,10 +175,47 @@ private val SpotifyAccountIconSize = 44.dp
 private const val SpotifyLoginUserAgent =
     "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36"
 
+private data class SyncFeature(@DrawableRes val icon: Int, val label: String)
+
+@Composable
+private fun SyncFeatureChecklist(features: List<SyncFeature>) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        features.forEach { feature ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Icon(
+                    painter = painterResource(feature.icon),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp),
+                )
+                Text(
+                    text = feature.label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Icon(
+                    painter = painterResource(R.drawable.check),
+                    contentDescription = null,
+                    tint = androidx.compose.ui.graphics.Color(0xFF4CAF50),
+                    modifier = Modifier.size(12.dp),
+                )
+            }
+        }
+    }
+}
+
 @Composable
 private fun SyncStatusFooter(
     isActive: Boolean,
-    featuresText: String,
+    features: List<SyncFeature>,
     lastSyncLabel: String,
     isSyncing: Boolean,
     onSyncNow: () -> Unit,
@@ -211,11 +249,7 @@ private fun SyncStatusFooter(
             )
         }
 
-        Text(
-            text = featuresText,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        SyncFeatureChecklist(features)
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -226,11 +260,16 @@ private fun SyncStatusFooter(
                 text = "${stringResource(R.string.last_sync)}: $lastSyncLabel",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp),
             )
 
-            TextButton(
-                onClick = onSyncNow,
-                enabled = !isSyncing,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable(enabled = !isSyncing, onClick = onSyncNow),
             ) {
                 if (isSyncing) {
                     CircularProgressIndicator(
@@ -239,7 +278,12 @@ private fun SyncStatusFooter(
                     )
                     Spacer(modifier = Modifier.size(8.dp))
                 }
-                Text(stringResource(R.string.sync_now))
+                Text(
+                    text = stringResource(R.string.sync_now),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                )
             }
         }
     }
@@ -603,7 +647,13 @@ fun BackupAndRestore(
 
                         SyncStatusFooter(
                             isActive = cloudState.isEnabled,
-                            featuresText = stringResource(R.string.sync_features_backup),
+                            features = listOf(
+                                SyncFeature(R.drawable.favorite, stringResource(R.string.filter_favorites)),
+                                SyncFeature(R.drawable.library_music, stringResource(R.string.filter_library)),
+                                SyncFeature(R.drawable.queue_music, stringResource(R.string.playlists)),
+                                SyncFeature(R.drawable.history, stringResource(R.string.history)),
+                                SyncFeature(R.drawable.settings, stringResource(R.string.settings)),
+                            ),
                             lastSyncLabel = formatLastSync(lastCloudSyncAt),
                             isSyncing = cloudState.isUploading,
                             onSyncNow = {
@@ -810,7 +860,12 @@ fun BackupAndRestore(
 
                             SyncStatusFooter(
                                 isActive = ytmLoggedIn,
-                                featuresText = stringResource(R.string.ytm_sync_features),
+                                features = listOf(
+                                    SyncFeature(R.drawable.favorite, stringResource(R.string.filter_favorites)),
+                                    SyncFeature(R.drawable.library_music, stringResource(R.string.filter_library)),
+                                    SyncFeature(R.drawable.queue_music, stringResource(R.string.playlists)),
+                                    SyncFeature(R.drawable.history, stringResource(R.string.history)),
+                                ),
                                 lastSyncLabel = formatLastSync(lastYtmSyncAt),
                                 isSyncing = isYtmSyncing,
                                 onSyncNow = {
@@ -832,49 +887,6 @@ fun BackupAndRestore(
                         }
                     }
                 }
-            }
-
-            // ── Import playlist ───────────────────────────────────────────────
-            item {
-                Material3SettingsGroup(
-                    title = stringResource(R.string.import_playlist),
-                    items = listOf(
-                        Material3SettingsItem(
-                            icon = painterResource(R.drawable.playlist_add),
-                            title = {
-                                Text(
-                                    text = stringResource(R.string.import_online),
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                            },
-                            description = {
-                                Text(
-                                    text = "audio/*",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            },
-                            onClick = { importM3uLauncherOnline.launch(arrayOf("audio/*")) },
-                        ),
-                        Material3SettingsItem(
-                            icon = painterResource(R.drawable.playlist_add),
-                            title = {
-                                Text(
-                                    text = stringResource(R.string.import_csv),
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                            },
-                            description = {
-                                Text(
-                                    text = "text/csv",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            },
-                            onClick = { importPlaylistFromCsv.launch(CSV_MIME_TYPES) },
-                        ),
-                    )
-                )
             }
 
             // ── Spotify Account card ──────────────────────────────────────────
@@ -1033,7 +1045,12 @@ fun BackupAndRestore(
 
                                 SyncStatusFooter(
                                     isActive = spotifyState.isAuthenticated,
-                                    featuresText = stringResource(R.string.sync_features_spotify),
+                                    features = listOf(
+                                        SyncFeature(R.drawable.favorite, stringResource(R.string.filter_favorites)),
+                                        SyncFeature(R.drawable.queue_music, stringResource(R.string.playlists)),
+                                        SyncFeature(R.drawable.artist, stringResource(R.string.artists)),
+                                        SyncFeature(R.drawable.album, stringResource(R.string.albums)),
+                                    ),
                                     lastSyncLabel = formatLastSync(lastSpotifySyncAt),
                                     isSyncing = spotifyState.isLoading,
                                     onSyncNow = {
@@ -1094,16 +1111,6 @@ fun BackupAndRestore(
                                     modifier = Modifier.fillMaxWidth(),
                                     verticalArrangement = Arrangement.spacedBy(10.dp),
                                 ) {
-                                    SpotifyActionButton(
-                                        icon = R.drawable.sync,
-                                        label = stringResource(R.string.spotify_reload_playlist),
-                                        backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
-                                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        onClick = { spotifyAccountViewModel.reloadPlaylists() },
-                                        enabled = !spotifyState.isLoading,
-                                        isLoading = spotifyState.isLoading,
-                                    )
-
                                     SpotifyActionButton(
                                         icon = R.drawable.logout,
                                         label = stringResource(R.string.action_logout),

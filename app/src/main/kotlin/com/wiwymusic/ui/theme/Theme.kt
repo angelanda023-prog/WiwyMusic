@@ -43,7 +43,9 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlin.math.abs
 import kotlin.math.min
 
-val DefaultThemeColor = Color(0xFFED5564)
+// WiwyMusic: naranja de marca (mismo tono que el logo/acentos), no el
+// rosa/rojo original de OpenTune.
+val DefaultThemeColor = Color(0xFFF5791F)
 
 data class ThemeSeedPalette(
     val primary: Color,
@@ -64,8 +66,13 @@ fun OpenTuneTheme(
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
-    val useSystemDynamicColor =
-        (seedPalette == null && themeColor == DefaultThemeColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+    // WiwyMusic: nunca se adopta el color dinámico del sistema (Material You /
+    // wallpaper del teléfono) — la app siempre usa su propia paleta de marca
+    // (naranja por defecto, o el color extraído de la portada en reproducción).
+    // Antes, sin canción sonando, la app caía en dynamicDarkColorScheme/
+    // dynamicLightColorScheme del sistema, mostrando un gris ajeno a la marca
+    // si el fondo de pantalla del usuario era neutro.
+    val useSystemDynamicColor = false
 
     val typography = remember(useSystemFont) {
         if (useSystemFont) SystemTypography else AppTypography

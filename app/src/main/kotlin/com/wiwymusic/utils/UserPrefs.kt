@@ -68,7 +68,11 @@ object UserPrefs {
      * en una cuenta que ya lo había completado.
      */
     suspend fun refresh() = withContext(Dispatchers.IO) {
-        val session = SupabaseAuth.session.value ?: return@withContext
+        val session = SupabaseAuth.session.value
+        if (session == null) {
+            timber.log.Timber.w("UserPrefs.refresh: sin sesión, se omite")
+            return@withContext
+        }
         runCatching {
             val conn = open(
                 "$BASE_URL/rest/v1/profiles?select=onboarded,avatar_url,is_premium&id=eq.${session.userId}",
@@ -79,6 +83,7 @@ object UserPrefs {
             val text = (if (code in 200..299) conn.inputStream else conn.errorStream)
                 ?.bufferedReader()?.use { it.readText() }.orEmpty()
             conn.disconnect()
+            timber.log.Timber.d("UserPrefs.refresh: code=$code body=$text")
             if (code in 200..299) {
                 val arr = JSONArray(text)
                 if (arr.length() > 0) {
@@ -92,6 +97,8 @@ object UserPrefs {
                 }
             }
             // Código de error HTTP: no tocamos _onboarded, se reintentará en el próximo refresh().
+        }.onFailure { e ->
+            timber.log.Timber.w(e, "UserPrefs.refresh: fallo de red")
         }
         Unit
     }

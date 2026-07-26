@@ -82,6 +82,8 @@ object SupabaseAuth {
             "/auth/v1/token?grant_type=refresh_token",
             JSONObject().put("refresh_token", rt),
         ).mapCatching { persistSession(it) }
+            .onFailure { e -> timber.log.Timber.w(e, "SupabaseAuth.refreshAccessToken: fallo") }
+            .onSuccess { timber.log.Timber.d("SupabaseAuth.refreshAccessToken: OK") }
     }
 
     /** Arranca el loop de refresh automático (idempotente). */
