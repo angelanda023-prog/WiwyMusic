@@ -171,7 +171,7 @@ object OtaRealtimeSync {
         val notificationsEnabled = context.dataStore.data
             .map { it[com.wiwymusic.constants.EnableUpdateNotificationKey] ?: false }
             .first()
-        if (notificationsEnabled && !Updater.isSameVersion(version, com.wiwymusic.BuildConfig.VERSION_NAME)) {
+        if (notificationsEnabled && Updater.isNewerVersion(version, com.wiwymusic.BuildConfig.VERSION_NAME)) {
             UpdateNotificationManager.notifyIfNewVersion(context, version)
         }
     }

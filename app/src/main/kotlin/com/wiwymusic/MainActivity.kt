@@ -503,7 +503,6 @@ class MainActivity : ComponentActivity() {
                             Timber.w(e, "MainActivity: update check failed")
                         }
                 }
-                UpdateNotificationManager.checkForUpdates(this@MainActivity)
             }
 
             // Use remembered instances so the same state object is used everywhere
@@ -580,7 +579,7 @@ class MainActivity : ComponentActivity() {
 
             // fetch release notes and show sheet when a new version is detected
             LaunchedEffect(latestVersionName) {
-                if (!Updater.isSameVersion(latestVersionName, BuildConfig.VERSION_NAME)) {
+                if (Updater.isNewerVersion(latestVersionName, BuildConfig.VERSION_NAME)) {
                     Updater.getLatestReleaseNotes().onSuccess {
                         releaseNotesState.value = it
                     }.onFailure {

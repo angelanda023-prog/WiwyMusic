@@ -124,7 +124,7 @@ fun SettingsScreen(
     }
 
     val shouldShowPermissionHint = !isStorageGranted || !isNotificationGranted
-    val hasUpdate = !Updater.isSameVersion(latestVersionName, BuildConfig.VERSION_NAME)
+    val hasUpdate = Updater.isNewerVersion(latestVersionName, BuildConfig.VERSION_NAME)
     val isPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
 
     val resetSearch: () -> Unit = {

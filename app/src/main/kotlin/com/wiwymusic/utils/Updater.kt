@@ -203,6 +203,19 @@ object Updater {
         }
     }
 
+    /**
+     * true solo si [remote] es una versión SemVer estrictamente mayor que
+     * [current]. A diferencia de [isSameVersion] (que solo detecta "distinta"),
+     * esto evita notificar como "actualización" algo que en realidad es una
+     * versión anterior o igual — importante para fuentes que no garantizan
+     * ser siempre la última (ej. una fila editable en Supabase).
+     */
+    internal fun isNewerVersion(remote: String, current: String): Boolean {
+        val remoteSemVer = parseSemVerOrNull(remote) ?: return false
+        val currentSemVer = parseSemVerOrNull(current) ?: return false
+        return remoteSemVer > currentSemVer
+    }
+
     internal fun findLatestRelease(releases: List<ReleaseInfo>): ReleaseInfo? {
         if (releases.isEmpty()) return null
         val parsed =
