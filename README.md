@@ -1,24 +1,14 @@
-# OpenTune
+# WiwyMusic
 
 <div align="center">
-  <img src="https://github.com/Arturo254/OpenTune/blob/master/fastlane/metadata/android/en-US/images/featureGraphic.png" alt="Banner de OpenTune" width="100%"/>
-  
+
   ### Cliente Avanzado de YouTube Music con Material Design 3 para Android
-  
-  [![Última Versión](https://img.shields.io/github/v/release/Arturo254/OpenTune?style=flat-square&logo=github&color=0D1117&labelColor=161B22)](https://github.com/Arturo254/OpenTune/releases)
-  [![Licencia](https://img.shields.io/github/license/Arturo254/OpenTune?style=flat-square&logo=gnu&color=2B3137&labelColor=161B22)](https://github.com/Arturo254/OpenTune/blob/main/LICENSE)
-  [![Estado de Traducción](https://badges.crowdin.net/opentune/localized.svg)](https://crowdin.com/project/opentune)
+
+  [![Última Versión](https://img.shields.io/github/v/release/angelanda023-prog/WiwyMusic?style=flat-square&logo=github&color=0D1117&labelColor=161B22)](https://github.com/angelanda023-prog/WiwyMusic/releases)
+  [![Licencia](https://img.shields.io/badge/Licencia-GPLv3-2B3137?style=flat-square&logo=gnu&labelColor=161B22)](LICENSE)
   [![Android](https://img.shields.io/badge/Plataforma-Android%206.0+-3DDC84.svg?style=flat-square&logo=android&logoColor=white&labelColor=161B22)](https://www.android.com)
-  [![Estrellas](https://img.shields.io/github/stars/Arturo254/OpenTune?style=flat-square&logo=github&color=yellow&labelColor=161B22&cacheSeconds=21600)](https://github.com/Arturo254/OpenTune/stargazers)
-  [![Forks](https://img.shields.io/github/forks/Arturo254/OpenTune?style=flat-square&logo=github&color=blue&labelColor=161B22&cacheSeconds=21600)](https://github.com/Arturo254/OpenTune/network/members)
+  [![Estrellas](https://img.shields.io/github/stars/angelanda023-prog/WiwyMusic?style=flat-square&logo=github&color=yellow&labelColor=161B22&cacheSeconds=21600)](https://github.com/angelanda023-prog/WiwyMusic/stargazers)
 </div>
-
-
-
-
-[![English](https://img.shields.io/badge/readme.md-english-blue?style=for-the-badge)](README.en.md)
-
-
 
 ---
 
@@ -27,40 +17,38 @@
 - [Visión General](#visión-general)
 - [Stack Tecnológico](#stack-tecnológico)
 - [Características Principales](#características-principales)
-- [Documentación](#documentación)
 - [Instalación](#instalación)
 - [Compilación desde Código Fuente](#compilación-desde-código-fuente)
 - [Contribuciones](#contribuciones)
-- [Apoya el Proyecto](#apoya-el-proyecto)
-- [Reconocimientos](#reconocimientos)
+- [Créditos](#créditos)
 - [Licencia](#licencia)
 
 ---
 
 ## Visión General
 
-**OpenTune** es un cliente de YouTube Music de código abierto diseñado para dispositivos Android. Ofrece una experiencia de usuario superior con una interfaz moderna que implementa Material Design 3, proporcionando funcionalidades avanzadas para explorar, reproducir y gestionar contenido musical sin las limitaciones de la aplicación oficial.
+**WiwyMusic** es un cliente de YouTube Music para Android con cuenta propia, plan Premium y sincronización en la nube, con una interfaz moderna basada en Material Design 3.
 
 ### Beneficios Clave
 
 - **Experiencia sin Anuncios**: Disfruta de música sin interrupciones publicitarias
 - **Rendimiento Mejorado**: Optimizado para reproducción y navegación fluida
-- **Enfoque en la Privacidad**: Sin recolección de datos ni seguimiento
 - **Interfaz Personalizable**: Personaliza tu experiencia musical
-- **Capacidades Offline**: Descarga y reproduce música sin conexión a internet
+- **Capacidades Offline**: Descarga y reproduce música sin conexión a internet (Premium)
+- **Sincronización en la nube**: Respaldo y sincronización de tu biblioteca entre dispositivos (Premium)
 
-> **Nota**: OpenTune es un proyecto independiente y no está afiliado, patrocinado ni respaldado por YouTube o Google.
+> **Nota**: WiwyMusic es un proyecto independiente y no está afiliado, patrocinado ni respaldado por YouTube o Google.
 
 ---
 
 ## Stack Tecnológico
 
 <div align="center">
-  
+
 | Frontend | Backend | Herramientas de Desarrollo |
 |:--------:|:-------:|:-------------------------:|
-| ![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white) | ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white) | ![Android Studio](https://img.shields.io/badge/Android%20Studio-3DDC84?style=for-the-badge&logo=androidstudio&logoColor=white) |
-| ![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white) | ![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white) | ![Gradle](https://img.shields.io/badge/Gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white) |
+| ![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white) | ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white) | ![Android Studio](https://img.shields.io/badge/Android%20Studio-3DDC84?style=for-the-badge&logo=androidstudio&logoColor=white) |
+| ![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white) | ![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=for-the-badge&logo=cloudflare&logoColor=white) | ![Gradle](https://img.shields.io/badge/Gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white) |
 | ![Material Design 3](https://img.shields.io/badge/Material%20Design%203-757575?style=for-the-badge&logo=materialdesign&logoColor=white) | | ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white) |
 
 </div>
@@ -88,16 +76,20 @@
 <td>Encuentra rápidamente canciones, vídeos, álbumes y listas de reproducción</td>
 </tr>
 <tr>
-<td><strong>👤 Integración de Cuenta</strong></td>
-<td>Inicia sesión para sincronizar preferencias y colecciones</td>
+<td><strong>👤 Cuenta propia + Plan Premium</strong></td>
+<td>Inicia sesión con tu cuenta de WiwyMusic y accede a beneficios Premium</td>
 </tr>
 <tr>
 <td><strong>📚 Gestión de Biblioteca</strong></td>
 <td>Organiza y administra completamente tu colección musical</td>
 </tr>
 <tr>
-<td><strong>📱 Modo Offline</strong></td>
+<td><strong>📱 Modo Offline (Premium)</strong></td>
 <td>Descarga contenido para escuchar sin conexión</td>
+</tr>
+<tr>
+<td><strong>☁️ Sincronización en la nube (Premium)</strong></td>
+<td>Respalda y sincroniza tu biblioteca, favoritos y playlists entre dispositivos</td>
 </tr>
 </table>
 
@@ -151,26 +143,7 @@
 <td><strong>🖼️ Exportación de Portadas</strong></td>
 <td>Guarda imágenes de álbumes en alta resolución</td>
 </tr>
-  <tr>
-<td><strong>  Portadas Animadas</strong></td>
-<td>Guarda Portadas de canciones animadas *1</td>
-</tr>
 </table>
-
-*1  Las portadas animadas se basan en la api de Apple Music Y la api de OpenTune. algunas no pueden estar disponibles. 
-puedes ver su disponibilidad en la web de la API de OpenTune: https://canvas-opentune.netlify.app/
-
----
-
-## Documentación
-
-Para información detallada sobre configuración, características avanzadas y guías de uso, consulta nuestra documentación oficial:
-
-<div align="center">
-  
-[![Documentación](https://img.shields.io/badge/Documentación-GitBook-4285F4?style=for-the-badge&logo=gitbook&logoColor=white)](https://opentune.gitbook.io/)
-
-</div>
 
 ---
 
@@ -185,38 +158,14 @@ Para información detallada sobre configuración, características avanzadas y g
 | Red | Conexión a Internet para streaming |
 | RAM | 2 GB recomendados |
 
-### Métodos de Instalación
+### Instalación desde GitHub Releases
 
-#### Opción 1: Releases de GitHub (Recomendado)
-
-1. Navega a la sección de [Releases](https://github.com/Arturo254/OpenTune/releases) en GitHub
-2. Descarga el archivo APK de la última versión estable
+1. Navega a la sección de [Releases](https://github.com/angelanda023-prog/WiwyMusic/releases) en GitHub
+2. Descarga el archivo `WiwyMusic.apk` de la última versión
 3. Habilita "Instalar desde fuentes desconocidas" en la configuración de seguridad de tu dispositivo
 4. Abre el archivo APK descargado para completar la instalación
 
-#### Opción 2: Sitio Web Oficial
-
-1. Visita el [sitio web oficial de OpenTune](https://opentune.netlify.app/)
-2. Selecciona la opción de descarga para Android
-3. Sigue las instrucciones de instalación proporcionadas
-
-#### Opción 3: F-Droid
-
-<div align="center">
-  
-[<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80">](https://f-droid.org/es/packages/com.Arturo254.opentune)
-
-</div>
-
-#### Opción 4: OpenApk
-
-<div align="center">
-  
-[<img src="https://www.openapk.net/images/openapk-badge.png" alt="Get it on OpenApk" height="80">](https://www.openapk.net/opentune/com.Arturo254.opentune/)
-
-</div>
-
-> **Aviso de Seguridad**: Por razones de seguridad, se recomienda obtener la aplicación exclusivamente a través de los canales oficiales mencionados anteriormente. Evita descargar APKs de fuentes no verificadas.
+> **Aviso de Seguridad**: Por razones de seguridad, se recomienda obtener la aplicación exclusivamente a través de los [Releases oficiales](https://github.com/angelanda023-prog/WiwyMusic/releases) de este repositorio. Evita descargar APKs de fuentes no verificadas.
 
 ---
 
@@ -247,12 +196,12 @@ Para información detallada sobre configuración, características avanzadas y g
 </tr>
 <tr>
 <td>JDK</td>
-<td>11 o superior</td>
+<td>21</td>
 <td>Entorno de ejecución Java</td>
 </tr>
 <tr>
 <td>Android SDK</td>
-<td>API nivel 33 (Android 13)</td>
+<td>API nivel 36</td>
 <td>Herramientas de desarrollo Android</td>
 </tr>
 </table>
@@ -261,13 +210,10 @@ Para información detallada sobre configuración, características avanzadas y g
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/Arturo254/OpenTune.git
+git clone https://github.com/angelanda023-prog/WiwyMusic.git
 
 # Navegar al directorio del proyecto
-cd OpenTune
-
-# Actualizar submódulos (si los hay)
-git submodule update --init --recursive
+cd WiwyMusic
 ```
 
 ### Métodos de Compilación
@@ -276,27 +222,21 @@ git submodule update --init --recursive
 
 1. Abre Android Studio
 2. Selecciona "Abrir un proyecto existente de Android Studio"
-3. Navega y selecciona el directorio de OpenTune
+3. Navega y selecciona el directorio de WiwyMusic
 4. Espera a que se complete la sincronización del proyecto y la indexación
 5. Selecciona Construir → Construir Bundle(s) / APK(s) → Construir APK(s)
 
 #### Compilación por Línea de Comandos
 
 ```bash
-# Construir versión de producción
-./gradlew assembleRelease
+# Construir versión de producción (flavor universal)
+./gradlew assembleUniversalRelease
 
 # Construir versión de depuración
-./gradlew assembleDebug
-
-# Construcción completa con pruebas
-./gradlew build
+./gradlew assembleUniversalDebug
 
 # Ejecutar pruebas unitarias
 ./gradlew test
-
-# Limpiar construcción
-./gradlew clean
 ```
 
 > **Nota**: Los archivos APK compilados se ubicarán en el directorio `app/build/outputs/apk/`.
@@ -307,31 +247,11 @@ git submodule update --init --recursive
 
 ### Código de Conducta
 
-Todos los participantes en este proyecto deben adherirse a nuestro código de conducta que promueve un entorno inclusivo, respetuoso y constructivo. Por favor, revisa el [Código de Conducta completo](https://github.com/Arturo254/OpenTune/blob/master/CODE_OF_CONDUCT.md) antes de contribuir.
-
-### Traducción
-
-Ayuda a traducir OpenTune a tu idioma o mejorar las traducciones existentes:
-
-<div align="center">
-  
-[![POEditor](https://img.shields.io/badge/POEditor-2196F3?style=for-the-badge&logo=translate&logoColor=white)](https://poeditor.com/join/project/208BwCVazA)
-[![Crowdin](https://img.shields.io/badge/Crowdin-2E3440?style=for-the-badge&logo=crowdin&logoColor=white)](https://crowdin.com/project/opentune)
-
-</div>
-
-### Canales de Comunidad
-
-<div align="center">
-  
-[![Chat de Telegram](https://img.shields.io/badge/Telegram-Chat-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/OpenTune_chat)
-[![Actualizaciones de Telegram](https://img.shields.io/badge/Telegram-Actualizaciones-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/opentune_updates)
-
-</div>
+Todos los participantes en este proyecto deben adherirse a nuestro [Código de Conducta](CODE_OF_CONDUCT.md) que promueve un entorno inclusivo, respetuoso y constructivo.
 
 ### Flujo de Trabajo de Desarrollo
 
-1. **Revisión de Issues**: Verifica [issues abiertas](https://github.com/Arturo254/OpenTune/issues) o crea una nueva describiendo el problema o característica
+1. **Revisión de Issues**: Verifica [issues abiertas](https://github.com/angelanda023-prog/WiwyMusic/issues) o crea una nueva describiendo el problema o característica
 2. **Fork del Repositorio**: Crea un fork personal del repositorio
 3. **Rama de Característica**: Crea una rama para tu característica (`git checkout -b feature/nueva-caracteristica`)
 4. **Implementación**: Implementa cambios siguiendo las convenciones de código del proyecto
@@ -340,97 +260,28 @@ Ayuda a traducir OpenTune a tu idioma o mejorar las traducciones existentes:
 7. **Push de Cambios**: Sube cambios a tu fork (`git push origin feature/nueva-caracteristica`)
 8. **Pull Request**: Abre un PR detallando los cambios y referenciando la issue correspondiente
 
-> **Directrices de Desarrollo**: Revisa nuestras [directrices de contribución](https://github.com/Arturo254/OpenTune/blob/master/CONTRIBUTING.md) para información detallada sobre el proceso de desarrollo, estándares de código y flujo de trabajo.
+> Revisa [CONTRIBUTING.md](CONTRIBUTING.md) para más detalles sobre el proceso de desarrollo y estándares de código.
 
 ---
 
-## Apoya el Proyecto
+## Créditos
 
-Si encuentras valor en **OpenTune** y quieres contribuir a su desarrollo continuo, considera hacer una donación. Tu apoyo financiero nos permite:
+WiwyMusic es un fork de **[OpenTune](https://github.com/Arturo254/OpenTune)** (por Arturo Cervantes), distribuido bajo la Licencia Pública General GNU v3.0. Todo el crédito por el proyecto base y su arquitectura original corresponde a sus autores y contribuidores; el código aquí presente incluye modificaciones propias de rebranding, backend e integraciones específicas de WiwyMusic.
 
-- Implementar nuevas características y mejoras
-- Corregir errores y optimizar el rendimiento
-- Mantener la infraestructura del proyecto
-- Dedicar más tiempo al desarrollo y mantenimiento
+OpenTune, a su vez, reconoce como inspiración a [ArchiveTune](https://github.com/koiverse/ArchiveTune) y [Vivi Music](https://github.com/vivizzz007/vivi-music).
 
-<div align="center">
-  
-[![GitHub Sponsors](https://img.shields.io/badge/GitHub_Sponsors-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sponsors/Arturo254)
-[![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](mailto:cervantesarturo254@gmail.com)
-
-</div>
-
-> **Nota**: Las donaciones son completamente opcionales. OpenTune siempre será gratuito y de código abierto, independientemente del apoyo financiero recibido.
-
----
-
-## 🌟 Reconocimientos
-
-OpenTune existe gracias al trabajo, inspiración y apoyo de numerosos proyectos y personas dentro de la comunidad de desarrollo de aplicaciones musicales open source.
-
-Agradecemos especialmente a:
-
----
-
-### 💡 Proyectos que inspiraron OpenTune
-
-- **[ArchiveTune](https://github.com/koiverse/ArchiveTune)**  
-  Proyecto base e inspiración inicial para muchas de las ideas y funcionalidades que dieron forma a OpenTune.
-
-- **[Vivi Music](https://github.com/vivizzz007/vivi-music)**  
-  Codigo fuente de Canvas, API e inspiracion.
-
----
-
-### 🤝 Colaboradores principales
-
-- **[@Fabito02](https://github.com/Fabito02)**  
-  Por su apoyo constante, feedback, ideas y acompañamiento durante el desarrollo inicial del proyecto.
-
----
-
-### 🌍 Comunidad OpenTune
-
-- **Traductores de la comunidad**  
-  Gracias a todos los colaboradores que ayudan a mantener OpenTune disponible en múltiples idiomas y permiten que usuarios de todo el mundo puedan disfrutar de la aplicación.
-
-- **Beta testers**  
-  Gracias a quienes prueban nuevas versiones, reportan errores y proporcionan comentarios que ayudan a mejorar la estabilidad, rendimiento y experiencia de usuario.
-
----
-
-### ❤️ Inspiración Open Source
-
-OpenTune también reconoce el trabajo de todos los desarrolladores que crean herramientas, librerías y proyectos de código abierto que hacen posible construir aplicaciones modernas para Android.
-
-Sin la comunidad open source, este proyecto no sería posible.
 ---
 
 ## Licencia
 
-**Copyright © 2025 Arturo Cervantes**
+Este proyecto es un derivado de OpenTune y se distribuye bajo los mismos términos:
 
 Este programa es software libre: puedes redistribuirlo y/o modificarlo bajo los términos de la Licencia Pública General GNU publicada por la Free Software Foundation, ya sea la versión 3 de la Licencia, o (a tu elección) cualquier versión posterior.
 
-Este programa se distribuye con la esperanza de que sea útil, pero **SIN NINGUNA GARANTÍA**; ni siquiera la garantía implícita de COMERCIABILIDAD o IDONEIDAD PARA UN PROPÓSITO PARTICULAR. Consulta la [Licencia Pública General GNU](https://github.com/Arturo254/OpenTune/blob/main/LICENSE) para más detalles.
+Este programa se distribuye con la esperanza de que sea útil, pero **SIN NINGUNA GARANTÍA**; ni siquiera la garantía implícita de COMERCIABILIDAD o IDONEIDAD PARA UN PROPÓSITO PARTICULAR. Consulta la [Licencia Pública General GNU](LICENSE) para más detalles.
 
 <div align="center">
-  
+
 [![GPL v3](https://img.shields.io/badge/Licencia-GPLv3-blue.svg?style=for-the-badge&logo=gnu&logoColor=white)](https://www.gnu.org/licenses/gpl-3.0)
 
-</div>
-
-> **Importante**: Cualquier uso comercial no autorizado de este software o sus derivados constituye una violación de los términos de licencia.
-
----
-
-<div align="center">
-  <p><strong>© 2023-2024 Proyectos de Código Abierto</strong></p>
-  <p>Desarrollado con pasión por <a href="https://github.com/Arturo254">Arturo Cervantes</a></p>
-  
-  <br>
-  
-  [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Arturo254)
-  [![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:cervantesarturo254@gmail.com)
-  
 </div>
