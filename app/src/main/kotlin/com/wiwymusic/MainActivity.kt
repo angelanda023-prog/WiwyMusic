@@ -479,21 +479,38 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            val notificationPermissionLauncher =
-                rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-                    if (isGranted) {
-                        playerConnection?.service?.refreshPlaybackNotification()
-                    }
+            // WiwyMusic: pide de una sola vez, al abrir la app, todos los permisos
+            // que necesita (notificaciones, audio local, micrófono para
+            // reconocimiento de canciones, Bluetooth) en vez de ir pidiéndolos
+            // uno por uno según el usuario va tocando cada función.
+            val allPermissionsLauncher = rememberLauncherForActivityResult(
+                ActivityResultContracts.RequestMultiplePermissions()
+            ) { result ->
+                if (result[Manifest.permission.POST_NOTIFICATIONS] == true) {
+                    playerConnection?.service?.refreshPlaybackNotification()
                 }
+            }
 
             LaunchedEffect(Unit) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                    ContextCompat.checkSelfPermission(
-                        this@MainActivity,
-                        Manifest.permission.POST_NOTIFICATIONS
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                val storagePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    Manifest.permission.READ_MEDIA_AUDIO
+                } else {
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                }
+                val toRequest = buildList {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        add(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                    add(storagePermission)
+                    add(Manifest.permission.RECORD_AUDIO)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        add(Manifest.permission.BLUETOOTH_CONNECT)
+                    }
+                }.filter {
+                    ContextCompat.checkSelfPermission(this@MainActivity, it) != PackageManager.PERMISSION_GRANTED
+                }
+                if (toRequest.isNotEmpty()) {
+                    allPermissionsLauncher.launch(toRequest.toTypedArray())
                 }
 
                 if (System.currentTimeMillis() - Updater.lastCheckTime > 1.days.inWholeMilliseconds) {
