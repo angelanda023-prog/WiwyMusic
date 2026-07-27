@@ -1000,6 +1000,8 @@ private fun StatusCard(
                                 stringResource(R.string.together_status),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = statusColor,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                             )
                             if (isActive && !isError) {
                                 Box(
@@ -1024,13 +1026,20 @@ private fun StatusCard(
                             },
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                     if (isActive) {
                         FilledTonalButton(onClick = onLeave, shape = RoundedCornerShape(14.dp)) {
                             Icon(painterResource(R.drawable.leave), null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text(stringResource(R.string.leave), fontWeight = FontWeight.SemiBold)
+                            Text(
+                                stringResource(R.string.leave),
+                                fontWeight = FontWeight.SemiBold,
+                                maxLines = 1,
+                                softWrap = false,
+                            )
                         }
                     }
                 }
@@ -1135,6 +1144,8 @@ private fun LanSessionLinkCard(
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
@@ -1182,6 +1193,9 @@ private fun LanSessionLinkCard(
                     Text(
                         stringResource(R.string.copy_link),
                         fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
 
@@ -1200,6 +1214,9 @@ private fun LanSessionLinkCard(
                     Text(
                         stringResource(R.string.share),
                         fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
