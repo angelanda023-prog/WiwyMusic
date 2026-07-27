@@ -308,6 +308,7 @@
     <string name="last_sync">Last sync</string>
     <string name="never_synced">Never synced</string>
     <string name="sync_now">Sync now</string>
+    <string name="sync_section_title">Sync</string>
     <string name="ytm_sync_title">YouTube Music Sync</string>
     <string name="ytm_sync_desc">Keep your library and playlists synced with YouTube Music</string>
     <string name="ytm_sync_features">Liked songs · Library · Playlists · Followed artists</string>

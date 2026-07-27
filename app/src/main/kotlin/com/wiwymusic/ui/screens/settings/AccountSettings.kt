@@ -47,6 +47,7 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -215,8 +216,9 @@ fun AccountSettings(
             if (supaIsPremium == true) {
                 SettingsSection {
                     SettingsClickableItem(
-                        icon = painterResource(R.drawable.playlist_add),
-                        title = stringResource(R.string.select_playlist_to_sync),
+                        icon = painterResource(R.drawable.music_note),
+                        title = stringResource(R.string.sync_section_title),
+                        subtitle = stringResource(R.string.select_playlist_to_sync),
                         onClick = { showPlaylistDialog = true }
                     )
                 }
@@ -283,9 +285,9 @@ private fun AccountSettingsHeader(onClose: () -> Unit) {
                 )
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.close),
+                    painter = painterResource(R.drawable.arrow_back),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = WiwyAccountOrange
                 )
             }
         }
@@ -316,6 +318,15 @@ private fun AccountCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
+            .border(
+                width = 1.dp,
+                color = if (isPremium == true) {
+                    WiwyAccountOrange.copy(alpha = 0.5f)
+                } else {
+                    Color.Transparent
+                },
+                shape = RoundedCornerShape(24.dp),
+            )
             .clickable(onClick = onAccountClick),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = cardColor),
@@ -391,7 +402,7 @@ private fun AccountCard(
                 if (isLoggedIn && accountEmail.isNotEmpty()) {
                     Spacer(Modifier.height(2.dp))
                     Text(
-                        text = accountEmail,
+                        text = "@$accountEmail",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -399,21 +410,36 @@ private fun AccountCard(
                     )
                 }
                 if (isLoggedIn && isPremium != null) {
-                    Spacer(Modifier.height(6.dp))
+                    Spacer(Modifier.height(8.dp))
                     Surface(
-                        shape = RoundedCornerShape(8.dp),
+                        shape = RoundedCornerShape(10.dp),
                         color = if (isPremium)
-                            WiwyAccountOrange.copy(alpha = 0.18f)
+                            WiwyAccountOrange.copy(alpha = 0.14f)
                         else
                             MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
                     ) {
-                        Text(
-                            text = if (isPremium) "⭐ Premium" else "Free",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isPremium) WiwyAccountOrange else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                        ) {
+                            if (isPremium) {
+                                Text("👑", style = MaterialTheme.typography.labelMedium)
+                            }
+                            Column {
+                                Text(
+                                    text = stringResource(R.string.account),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                Text(
+                                    text = if (isPremium) "Premium" else "Free",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isPremium) WiwyAccountOrange else MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
                     }
                 }
                 if (!isLoggedIn) {
@@ -428,10 +454,23 @@ private fun AccountCard(
 
             // Logout Button or Arrow
             if (isLoggedIn) {
-                FilledTonalButton(
+                OutlinedButton(
                     onClick = onLogout,
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(14.dp),
+                    border = androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.error.copy(alpha = 0.5f),
+                    ),
+                    colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error,
+                    ),
                 ) {
+                    Icon(
+                        painter = painterResource(R.drawable.logout),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(Modifier.width(6.dp))
                     Text(
                         text = stringResource(R.string.action_logout),
                         style = MaterialTheme.typography.labelMedium

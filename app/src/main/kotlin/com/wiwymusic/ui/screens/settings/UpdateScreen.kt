@@ -6,11 +6,6 @@
 
 package com.wiwymusic.ui.screens.settings
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -71,26 +66,21 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import com.wiwymusic.BuildConfig
 import com.wiwymusic.LocalPlayerAwareWindowInsets
 import com.wiwymusic.R
-import com.wiwymusic.constants.EnableUpdateNotificationKey
 import com.wiwymusic.constants.UpdateChannel
 import com.wiwymusic.constants.UpdateChannelKey
 import com.wiwymusic.ui.component.EnumListPreference
 import com.wiwymusic.ui.component.IconButton
 import com.wiwymusic.ui.component.PreferenceGroupTitle
-import com.wiwymusic.ui.component.SwitchPreference
 import com.wiwymusic.ui.utils.backToMain
 import com.wiwymusic.utils.GitCommit
 import com.wiwymusic.utils.UpdateInfo
-import com.wiwymusic.utils.UpdateNotificationManager
 import com.wiwymusic.utils.Updater
 import com.wiwymusic.utils.rememberEnumPreference
-import com.wiwymusic.utils.rememberPreference
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
@@ -121,9 +111,6 @@ fun UpdateScreen(
         mutableStateOf("https://pub-2218e6bbd5b948e1b5d882cf4d92086d.r2.dev/app-universal-release.apk")
     }
 
-    val (enableUpdateNotification, onEnableUpdateNotificationChange) = rememberPreference(
-        EnableUpdateNotificationKey, defaultValue = false
-    )
     val (updateChannel, onUpdateChannelChange) = rememberEnumPreference(
         UpdateChannelKey, defaultValue = UpdateChannel.STABLE
     )
@@ -138,25 +125,6 @@ fun UpdateScreen(
     var pendingUpdateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
 
     var showNightlyConfirmDialog by remember { mutableStateOf(false) }
-    var showNotifConfirmDialog by remember { mutableStateOf(false) }
-    var hasNotificationPermission by remember {
-        mutableStateOf(
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
-                        PackageManager.PERMISSION_GRANTED
-            else true
-        )
-    }
-
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        hasNotificationPermission = granted
-        if (granted) {
-            onEnableUpdateNotificationChange(true)
-            UpdateNotificationManager.schedulePeriodicUpdateCheck(context)
-        }
-    }
 
     // ── Función de comprobación ───────────────────────────────────────────────
     fun checkForUpdate() {
@@ -189,22 +157,6 @@ fun UpdateScreen(
                 onDismiss     = { showUpdateDialog = false }
             )
         }
-    }
-
-    if (showNotifConfirmDialog) {
-        BuildChannelInfoDialog(
-            title = stringResource(R.string.enable_update_notification),
-            onConfirm = {
-                showNotifConfirmDialog = false
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !hasNotificationPermission)
-                    permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                else {
-                    onEnableUpdateNotificationChange(true)
-                    UpdateNotificationManager.schedulePeriodicUpdateCheck(context)
-                }
-            },
-            onDismiss = { showNotifConfirmDialog = false }
-        )
     }
 
     if (showNightlyConfirmDialog) {
@@ -341,25 +293,6 @@ fun UpdateScreen(
                     }
                 }
                 Spacer(Modifier.height(16.dp))
-            }
-
-            // ── Preferencias ──────────────────────────────────────────────────
-            item { PreferenceGroupTitle(title = stringResource(R.string.notification_settings)) }
-
-            item {
-                SwitchPreference(
-                    title = { Text(stringResource(R.string.enable_update_notification)) },
-                    description = stringResource(R.string.enable_update_notification_desc),
-                    icon = { Icon(painterResource(R.drawable.new_release), null) },
-                    checked = enableUpdateNotification,
-                    onCheckedChange = { enabled ->
-                        if (enabled) showNotifConfirmDialog = true
-                        else {
-                            onEnableUpdateNotificationChange(false)
-                            UpdateNotificationManager.cancelPeriodicUpdateCheck(context)
-                        }
-                    }
-                )
             }
 
             item {
