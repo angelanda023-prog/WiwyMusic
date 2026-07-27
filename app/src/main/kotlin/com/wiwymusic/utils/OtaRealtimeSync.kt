@@ -26,9 +26,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import timber.log.Timber
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.concurrent.TimeUnit
 
 object OtaRealtimeSync {
@@ -58,6 +61,11 @@ object OtaRealtimeSync {
                 runCatching {
                     val wsUrl = "wss://${BASE_URL.removePrefix("https://")}/realtime/v1/websocket" +
                         "?apikey=$ANON_KEY&vsn=1.0.0"
+                    // Al (re)conectar, revisa el valor actual: postgres_changes solo
+                    // entrega deltas, así que si la fila cambió mientras la app estaba
+                    // cerrada (sin conexión), ese cambio se perdería para siempre.
+                    fetchAndNotifyIfNewer(context)
+
                     client.webSocket(wsUrl) {
                         send(
                             JSONObject()
@@ -125,13 +133,46 @@ object OtaRealtimeSync {
                 val record = changes.optJSONObject(i)?.optJSONObject("record") ?: continue
                 if (record.optString("key") != "latest_version") continue
                 val newVersion = record.optString("value").takeIf { it.isNotBlank() } ?: continue
-                val notificationsEnabled = context.dataStore.data
-                    .map { it[com.wiwymusic.constants.EnableUpdateNotificationKey] ?: false }
-                    .first()
-                if (notificationsEnabled && !Updater.isSameVersion(newVersion, com.wiwymusic.BuildConfig.VERSION_NAME)) {
-                    UpdateNotificationManager.notifyIfNewVersion(context, newVersion)
-                }
+                notifyIfEnabledAndNewer(context, newVersion)
             }
+        }
+    }
+
+    /** Consulta el valor actual vía REST (no espera un evento de cambio). */
+    private suspend fun fetchAndNotifyIfNewer(context: Context) {
+        runCatching {
+            withContext(Dispatchers.IO) {
+                val conn = (
+                    URL("$BASE_URL/rest/v1/app_config?select=value&key=eq.latest_version")
+                        .openConnection() as HttpURLConnection
+                    ).apply {
+                    requestMethod = "GET"
+                    setRequestProperty("apikey", ANON_KEY)
+                    setRequestProperty("Authorization", "Bearer $ANON_KEY")
+                    connectTimeout = 15_000
+                    readTimeout = 15_000
+                }
+                val code = conn.responseCode
+                val body = (if (code in 200..299) conn.inputStream else conn.errorStream)
+                    ?.bufferedReader()?.use { it.readText() }.orEmpty()
+                conn.disconnect()
+                if (code !in 200..299) return@withContext
+
+                val arr = JSONArray(body)
+                if (arr.length() == 0) return@withContext
+                val version = arr.getJSONObject(0).optString("value").takeIf { it.isNotBlank() }
+                    ?: return@withContext
+                notifyIfEnabledAndNewer(context, version)
+            }
+        }.onFailure { e -> Timber.w(e, "OtaRealtimeSync: fetch inicial falló") }
+    }
+
+    private suspend fun notifyIfEnabledAndNewer(context: Context, version: String) {
+        val notificationsEnabled = context.dataStore.data
+            .map { it[com.wiwymusic.constants.EnableUpdateNotificationKey] ?: false }
+            .first()
+        if (notificationsEnabled && !Updater.isSameVersion(version, com.wiwymusic.BuildConfig.VERSION_NAME)) {
+            UpdateNotificationManager.notifyIfNewVersion(context, version)
         }
     }
 }
