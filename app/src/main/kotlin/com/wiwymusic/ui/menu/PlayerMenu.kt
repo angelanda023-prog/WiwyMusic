@@ -483,9 +483,13 @@ fun ColumnScope.PlayerMenu(
                         },
                         text = stringResource(R.string.music_together),
                         onClick = {
+                            // WiwyMusic: navigate() debe ir antes de snapTo — colapsar el
+                            // sheet primero deja el destino actual sin RESUMED por un
+                            // instante y Navigation Compose ignora el navigate() en
+                            // silencio (por eso el primer toque no abría la pantalla).
                             onDismiss()
-                            playerBottomSheetState.snapTo(playerBottomSheetState.collapsedBound)
                             navController.navigate("settings/music_together")
+                            playerBottomSheetState.snapTo(playerBottomSheetState.collapsedBound)
                         }
                     ),
                     // ── Always On Display ─────────────────────────────────────
