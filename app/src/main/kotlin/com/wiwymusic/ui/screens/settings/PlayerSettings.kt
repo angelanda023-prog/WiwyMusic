@@ -296,6 +296,12 @@ fun PlayerSettings(
             onCheckedChange = onAudioNormalizationChange
         )
 
+        CrossfadeSliderPreference(
+            value = audioCrossfadeSeconds,
+            onValueChange = onAudioCrossfadeSecondsChange,
+            isEnabled = !audioOffload,
+        )
+
         SwitchPreference(
             title = { Text("Descargar solo con Wi-Fi") },
             description = "Pausa las descargas cuando usas datos móviles",

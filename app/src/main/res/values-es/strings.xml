@@ -636,7 +636,7 @@
     <string name="allow">Permitir</string>
     <string name="you_might_like">Tal vez te guste</string>
     <string name="refresh_suggestions">Actualizar sugerencias</string>
-    <string name="music_together">Juntos con WiwyMusic Music</string>
+    <string name="music_together">Juntos con WiwyMusic</string>
     <string name="together_display_name">Mostrar nombre</string>
     <string name="together_display_name_placeholder">Tú nombre</string>
     <string name="together_port">Puerto de sesión</string>
@@ -692,7 +692,7 @@
     <string name="together_error_state">Error</string>
     <string name="got_it">Entendido</string>
     <string name="together_dont_show_again">No mostrar esto nuevamente</string>
-    <string name="together_welcome_title">Bienvenido a WiwyMusic Music Together</string>
+    <string name="together_welcome_title">Bienvenido a WiwyMusic Together</string>
     <string name="together_welcome_body">Music Together permite que múltiples dispositivos compartan una sesión en vivo con una cola y reproducción sincronizadas.</string>
     <string name="together_welcome_host_title">Organizar una sesión</string>
     <string name="together_welcome_host_body">Pulsa \"comenzar sesión\", después comparte el enlace de sesión. Mantén WiwyMusic abierto en segundo plano mientras alojas.</string>

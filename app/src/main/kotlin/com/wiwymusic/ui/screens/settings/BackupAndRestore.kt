@@ -880,7 +880,9 @@ fun BackupAndRestore(
                                             }
                                         }
                                     } else {
-                                        navController.navigate("settings/account")
+                                        // WiwyMusic: login de YouTube Music independiente
+                                        // de la cuenta WiwyMusic (WebView de OpenTune).
+                                        navController.navigate("login")
                                     }
                                 },
                             )

@@ -65,7 +65,7 @@
 
                 <data
                     android:host="together"
-                    android:scheme="opentune" />
+                    android:scheme="wiwymusic" />
             </intent-filter>
 
             <!-- Youtube filter -->

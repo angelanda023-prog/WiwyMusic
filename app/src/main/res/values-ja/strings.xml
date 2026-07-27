@@ -659,7 +659,7 @@
     <string name="you_might_like">あなた好み</string>
     <string name="refresh_suggestions">提案を更新</string>
 
-    <string name="music_together">WiwyMusic Music Together</string>
+    <string name="music_together">WiwyMusic Together</string>
     <string name="together_display_name">表示名</string>
     <string name="together_display_name_placeholder">あなたの名前</string>
     <string name="together_port">セッションポート</string>
@@ -715,7 +715,7 @@
 
     <string name="got_it">了解</string>
     <string name="together_dont_show_again">これを二度と表示しない</string>
-    <string name="together_welcome_title">WiwyMusic Music Togetherへようこそ</string>
+    <string name="together_welcome_title">WiwyMusic Togetherへようこそ</string>
     <string name="together_welcome_body">Music Togetherを使用すると、複数のデバイスで同期キューと再生を備えたライブセッションを共有できます。</string>
     <string name="together_welcome_host_title">セッションをホスト</string>
     <string name="together_welcome_host_body">「セッションを開始」をタップし、セッションリンクを共有します。ホストしている間はWiwyMusicをバックグラウンドで開いたままにしてください。</string>

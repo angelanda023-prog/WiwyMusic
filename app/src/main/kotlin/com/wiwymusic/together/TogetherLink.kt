@@ -31,7 +31,7 @@ data class TogetherJoinInfo(
             ).joinToString("&") { (k, v) ->
                 "${URLEncoder.encode(k, charset)}=${URLEncoder.encode(v, charset)}"
             }
-        return "OpenTune://together?$q"
+        return "wiwymusic://together?$q"
     }
 }
 
@@ -53,7 +53,8 @@ object TogetherLink {
     }
 
     private fun decodeDeepLink(uri: URI): TogetherJoinInfo? {
-        if (!uri.scheme.equals("OpenTune", ignoreCase = true)) return null
+        val scheme = uri.scheme
+        if (!scheme.equals("wiwymusic", ignoreCase = true) && !scheme.equals("opentune", ignoreCase = true)) return null
         val authority = uri.host?.lowercase() ?: uri.authority?.lowercase() ?: return null
         if (authority != "together") return null
 
