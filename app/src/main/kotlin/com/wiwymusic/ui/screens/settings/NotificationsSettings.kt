@@ -43,6 +43,7 @@ import com.wiwymusic.ui.component.PreferenceEntry
 import com.wiwymusic.ui.component.PreferenceGroupTitle
 import com.wiwymusic.ui.component.SwitchPreference
 import com.wiwymusic.ui.utils.backToMain
+import com.wiwymusic.utils.UpdateNotificationManager
 import com.wiwymusic.utils.rememberPreference
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,6 +71,7 @@ fun NotificationsSettings(
         hasNotificationPermission = granted
         if (granted) {
             onEnableUpdateNotificationChange(true)
+            UpdateNotificationManager.schedulePeriodicUpdateCheck(context)
         }
     }
 
@@ -109,9 +111,11 @@ fun NotificationsSettings(
                         notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     } else {
                         onEnableUpdateNotificationChange(true)
+                        UpdateNotificationManager.schedulePeriodicUpdateCheck(context)
                     }
                 } else {
                     onEnableUpdateNotificationChange(false)
+                    UpdateNotificationManager.cancelPeriodicUpdateCheck(context)
                 }
             }
         )

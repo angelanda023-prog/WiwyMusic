@@ -503,6 +503,7 @@ class MainActivity : ComponentActivity() {
                             Timber.w(e, "MainActivity: update check failed")
                         }
                 }
+                UpdateNotificationManager.checkForUpdates(this@MainActivity)
             }
 
             // Use remembered instances so the same state object is used everywhere

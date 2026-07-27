@@ -91,11 +91,6 @@ class App : Application(), SingletonImageLoader.Factory {
         CoroutineScope(Dispatchers.IO).launch {
             runCatching { com.wiwymusic.utils.SupabaseAuth.loadSession() }
         }
-        // WiwyMusic: aviso instantáneo de OTA vía Supabase Realtime (no depende de sesión)
-        com.wiwymusic.utils.OtaRealtimeSync.start(
-            this,
-            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + Dispatchers.IO),
-        )
         Timber.plant(Timber.DebugTree())
         try {
             Timber.plant(com.wiwymusic.utils.GlobalLogTree())
