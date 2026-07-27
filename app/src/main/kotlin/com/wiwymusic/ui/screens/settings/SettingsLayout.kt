@@ -208,24 +208,6 @@ private fun CompactSettingsLayout(
                 }
             }
 
-            if (state.isPremium != null) {
-                item(key = "premium") {
-                    AnimatedVisibility(
-                        visible = bannerVisible,
-                        enter = fadeIn(SettingsAnimations.entranceSpring()) +
-                            expandVertically(SettingsAnimations.entranceSpring()),
-                        exit = fadeOut(tween(300)) + shrinkVertically(tween(300)),
-                    ) {
-                        SettingsPremiumBanner(
-                            isPremium = state.isPremium,
-                            onClick = state.onPremiumBannerClick,
-                            modifier = Modifier
-                                .padding(horizontal = pad)
-                                .padding(bottom = spacing),
-                        )
-                    }
-                }
-            }
         }
 
         if (state.quickActions.isNotEmpty()) {
@@ -378,22 +360,6 @@ private fun MediumSettingsLayout(
                     }
                 }
 
-                if (state.isPremium != null) {
-                    item(key = "premium") {
-                        AnimatedVisibility(
-                            visible = bannerVisible,
-                            enter = fadeIn(SettingsAnimations.entranceSpring()) +
-                                expandVertically(SettingsAnimations.entranceSpring()),
-                            exit = fadeOut(tween(300)) + shrinkVertically(tween(300)),
-                        ) {
-                            SettingsPremiumBanner(
-                                isPremium = state.isPremium,
-                                onClick = state.onPremiumBannerClick,
-                                modifier = Modifier.padding(bottom = spacing),
-                            )
-                        }
-                    }
-                }
             }
 
             if (state.quickActions.isNotEmpty()) {
@@ -535,22 +501,6 @@ private fun ExpandedSettingsLayout(
                     }
                 }
 
-                if (state.isPremium != null) {
-                    item(key = "premium") {
-                        AnimatedVisibility(
-                            visible = bannerVisible,
-                            enter = fadeIn(SettingsAnimations.entranceSpring()) +
-                                expandVertically(SettingsAnimations.entranceSpring()),
-                            exit = fadeOut(tween(300)) + shrinkVertically(tween(300)),
-                        ) {
-                            SettingsPremiumBanner(
-                                isPremium = state.isPremium,
-                                onClick = state.onPremiumBannerClick,
-                                modifier = Modifier.padding(bottom = spacing),
-                            )
-                        }
-                    }
-                }
             }
 
             if (state.quickActions.isNotEmpty()) {

@@ -26,6 +26,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -211,18 +214,9 @@ fun AccountSettings(
                 )
             }
 
-            // WiwyMusic: Cuenta solo con Acceder (tarjeta) y sincronizar playlist.
-            // Sincronizar con YouTube es un beneficio exclusivo Premium (login sigue libre para todos).
-            if (supaIsPremium == true) {
-                SettingsSection {
-                    SettingsClickableItem(
-                        icon = painterResource(R.drawable.music_note),
-                        title = stringResource(R.string.sync_section_title),
-                        subtitle = stringResource(R.string.select_playlist_to_sync),
-                        onClick = { showPlaylistDialog = true }
-                    )
-                }
-            }
+            // WiwyMusic: sección "Sincronización" oculta a pedido — ya vive en
+            // Copia de seguridad y restauración (tarjeta YouTube Music), evitando
+            // duplicar la misma acción en dos pantallas.
 
             Spacer(Modifier.height(8.dp))
         }
@@ -249,6 +243,7 @@ private fun AccountSettingsHeader(onClose: () -> Unit) {
                     )
                 )
             )
+            .windowInsetsPadding(WindowInsets.statusBars)
             .padding(top = 8.dp, bottom = 16.dp)
     ) {
         Row(
