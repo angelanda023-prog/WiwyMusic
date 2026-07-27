@@ -431,12 +431,16 @@ private fun AccountCard(
                                     text = stringResource(R.string.account),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    softWrap = false,
                                 )
                                 Text(
                                     text = if (isPremium) "Premium" else "Free",
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = if (isPremium) WiwyAccountOrange else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    softWrap = false,
                                 )
                             }
                         }
@@ -457,6 +461,10 @@ private fun AccountCard(
                 OutlinedButton(
                     onClick = onLogout,
                     shape = RoundedCornerShape(14.dp),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                        horizontal = 12.dp,
+                        vertical = 8.dp,
+                    ),
                     border = androidx.compose.foundation.BorderStroke(
                         1.dp,
                         MaterialTheme.colorScheme.error.copy(alpha = 0.5f),
@@ -468,12 +476,14 @@ private fun AccountCard(
                     Icon(
                         painter = painterResource(R.drawable.logout),
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp),
+                        modifier = Modifier.size(16.dp),
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
                         text = stringResource(R.string.action_logout),
-                        style = MaterialTheme.typography.labelMedium
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                        softWrap = false,
                     )
                 }
             } else {
