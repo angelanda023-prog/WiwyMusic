@@ -466,6 +466,9 @@ fun NavGraphBuilder.navigationBuilder(
         // WiwyMusic: pestaña Descargas tipo mockup (espacio, categorías, calidad, limpiar)
         WiwyDownloadsScreen(navController)
     }
+    composable("downloaded_albums") {
+        DownloadedAlbumsScreen(navController)
+    }
     composable("download_queue_list") {
         DownloadQueueScreen(navController)
     }

@@ -60,6 +60,8 @@ fun WiwyDownloadsScreen(navController: NavController) {
     val downloadUtil = LocalDownloadUtil.current
     val downloads by downloadUtil.downloads.collectAsState()
     val songCount = downloads.values.count { it.state == Download.STATE_COMPLETED }
+    val albumsViewModel: com.wiwymusic.viewmodels.DownloadedAlbumsViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+    val downloadedAlbums by albumsViewModel.downloadedAlbums.collectAsState()
 
     val (audioQuality) = rememberEnumPreference(AudioQualityKey, AudioQuality.AUTO)
     val qualityLabel = when (audioQuality) {
@@ -121,8 +123,8 @@ fun WiwyDownloadsScreen(navController: NavController) {
                         navController.navigate("auto_playlist/downloaded")
                     }
                     Divider()
-                    DownloadCat(R.drawable.album, WiwyOrange, "Álbumes", "0 álbumes") {
-                        navController.navigate("library/albums")
+                    DownloadCat(R.drawable.album, WiwyOrange, "Álbumes", "${downloadedAlbums.size} álbumes") {
+                        navController.navigate("downloaded_albums")
                     }
                     Divider()
                     DownloadCat(R.drawable.queue_music, Color(0xFF3FBF5F), "Playlists", "0 playlists") {

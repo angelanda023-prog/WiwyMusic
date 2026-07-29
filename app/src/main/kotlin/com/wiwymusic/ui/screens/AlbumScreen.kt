@@ -15,6 +15,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -36,6 +37,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -821,6 +823,11 @@ fun AlbumScreen(
                                     )
                                 },
                                 shape = RoundedCornerShape(24.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFF5791F),
+                                    contentColor = Color.White,
+                                ),
+                                contentPadding = PaddingValues(0.dp),
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp)
@@ -841,6 +848,11 @@ fun AlbumScreen(
                                     )
                                 },
                                 shape = RoundedCornerShape(24.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFF5791F),
+                                    contentColor = Color.White,
+                                ),
+                                contentPadding = PaddingValues(0.dp),
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp)
