@@ -147,9 +147,17 @@ fun AccountSettings(
     val accountName by viewModel.accountName.collectAsState()
     val accountImageUrl by viewModel.accountImageUrl.collectAsState()
 
+    val supaSession by com.wiwymusic.utils.SupabaseAuth.session.collectAsState()
+    val supaScope = rememberCoroutineScope()
+    val supaLoggedIn = supaSession != null
+    val supaEmail = supaSession?.email ?: ""
+    val supaAvatar by com.wiwymusic.utils.UserPrefs.avatarUrl.collectAsState()
+    val supaIsPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
+
     var showToken by remember { mutableStateOf(false) }
     var showTokenEditor by remember { mutableStateOf(false) }
     var showPlaylistDialog by remember { mutableStateOf(false) }
+    var showAvatarPicker by remember { mutableStateOf(false) }
 
     val hasUpdate = Updater.isNewerVersion(latestVersionName, BuildConfig.VERSION_NAME)
 
@@ -159,20 +167,16 @@ fun AccountSettings(
             .verticalScroll(rememberScrollState())
     ) {
         // Header Section
-        AccountSettingsHeader(onClose = onClose)
+        AccountSettingsHeader(
+            onClose = onClose,
+            isPremium = supaIsPremium,
+        )
 
         Column(
             modifier = Modifier.padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // WiwyMusic: identidad del backend propio (Supabase), no YouTube
-            val supaSession by com.wiwymusic.utils.SupabaseAuth.session.collectAsState()
-            val supaScope = rememberCoroutineScope()
-            val supaLoggedIn = supaSession != null
-            val supaEmail = supaSession?.email ?: ""
-            val supaAvatar by com.wiwymusic.utils.UserPrefs.avatarUrl.collectAsState()
-            val supaIsPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
-            var showAvatarPicker by remember { mutableStateOf(false) }
             AccountCard(
                 isLoggedIn = supaLoggedIn,
                 accountName = supaEmail.substringBefore("@").ifBlank { "Mi cuenta" },
@@ -231,7 +235,10 @@ fun AccountSettings(
 }
 
 @Composable
-private fun AccountSettingsHeader(onClose: () -> Unit) {
+private fun AccountSettingsHeader(
+    onClose: () -> Unit,
+    isPremium: Boolean?,
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -257,20 +264,53 @@ private fun AccountSettingsHeader(onClose: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // App Icon
-                Icon(
+                // Keep the original logo colors, matching the Settings header.
+                Image(
                     painter = painterResource(R.drawable.opentune),
                     contentDescription = null,
-                    modifier = Modifier
-                        .size(44.dp)
+                    modifier = Modifier.size(40.dp),
                 )
 
-                Text(
-                    text = stringResource(id = R.string.app_name),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                Column {
+                    Row {
+                        Text(
+                            text = "Wiwy",
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 22.sp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = "Music",
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 22.sp,
+                            color = WiwyAccountOrange,
+                        )
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "v${BuildConfig.VERSION_NAME}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        if (isPremium != null) {
+                            Text(
+                                text = " · ",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Text(
+                                text = if (isPremium) "⭐ Premium" else "Plan Free",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Medium,
+                                color = if (isPremium) {
+                                    WiwyAccountOrange
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                            )
+                        }
+                    }
+                }
             }
 
             IconButton(
@@ -301,10 +341,11 @@ private fun AccountCard(
     isPremium: Boolean? = null,
 ) {
     val cardColor by animateColorAsState(
-        targetValue = if (isLoggedIn)
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-        else
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        targetValue = if (isPremium == true) {
+            WiwyAccountOrange.copy(alpha = 0.08f)
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerLow
+        },
         animationSpec = tween(300),
         label = "cardColor"
     )
@@ -327,139 +368,173 @@ private fun AccountCard(
         colors = CardDefaults.cardColors(containerColor = cardColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            // Avatar
-            val presetColor = accountImageUrl?.takeIf { it.startsWith("preset:") }
-                ?.removePrefix("preset:")?.toIntOrNull()
-                ?.let { com.wiwymusic.ui.component.WiwyAvatarPresets.getOrNull(it) }
-            Box(
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(CircleShape)
-                    .background(
-                        presetColor ?: if (isLoggedIn)
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
-                    )
-                    .then(if (isLoggedIn) Modifier.clickable(onClick = onAvatarClick) else Modifier),
-                contentAlignment = Alignment.Center
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                if (isLoggedIn && presetColor != null) {
-                    Icon(
-                        painter = painterResource(R.drawable.person),
-                        contentDescription = null,
-                        modifier = Modifier.size(30.dp),
-                        tint = Color.White,
-                    )
-                } else if (isLoggedIn && accountImageUrl != null) {
-                    AsyncImage(
-                        model = accountImageUrl,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(60.dp)
-                            .clip(CircleShape)
-                    )
-                } else {
-                    Icon(
-                        painter = painterResource(
-                            if (isLoggedIn) R.drawable.account else R.drawable.login
+                val presetColor = accountImageUrl?.takeIf { it.startsWith("preset:") }
+                    ?.removePrefix("preset:")?.toIntOrNull()
+                    ?.let { com.wiwymusic.ui.component.WiwyAvatarPresets.getOrNull(it) }
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .background(
+                            presetColor ?: if (isLoggedIn) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.surfaceContainerHighest
+                            }
+                        )
+                        .then(
+                            if (isLoggedIn) Modifier.clickable(onClick = onAvatarClick)
+                            else Modifier
                         ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (isLoggedIn && presetColor != null) {
+                        Icon(
+                            painter = painterResource(R.drawable.person),
+                            contentDescription = null,
+                            modifier = Modifier.size(30.dp),
+                            tint = Color.White,
+                        )
+                    } else if (isLoggedIn && accountImageUrl != null) {
+                        AsyncImage(
+                            model = accountImageUrl,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(64.dp)
+                                .clip(CircleShape),
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(
+                                if (isLoggedIn) R.drawable.account else R.drawable.login
+                            ),
+                            contentDescription = null,
+                            modifier = Modifier.size(30.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                Spacer(Modifier.width(16.dp))
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        text = if (isLoggedIn) accountName else stringResource(R.string.login),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+
+                    if (isLoggedIn && accountEmail.isNotEmpty()) {
+                        Text(
+                            text = accountEmail,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    } else if (!isLoggedIn) {
+                        Text(
+                            text = stringResource(R.string.not_logged_in),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                if (!isLoggedIn) {
+                    Icon(
+                        painter = painterResource(R.drawable.arrow_forward),
                         contentDescription = null,
-                        modifier = Modifier.size(28.dp),
-                        tint = if (isLoggedIn)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
 
-            Spacer(Modifier.width(16.dp))
-
-            // Account Info
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = if (isLoggedIn) accountName else stringResource(R.string.login),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                if (isLoggedIn && accountEmail.isNotEmpty()) {
-                    Spacer(Modifier.height(2.dp))
-                    Text(
-                        text = "@$accountEmail",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-                if (isLoggedIn && isPremium != null) {
-                    Spacer(Modifier.height(8.dp))
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = if (isPremium)
-                            WiwyAccountOrange.copy(alpha = 0.14f)
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
+            if (isLoggedIn && isPremium != null) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    color = if (isPremium) {
+                        WiwyAccountOrange.copy(alpha = 0.16f)
+                    } else {
+                        MaterialTheme.colorScheme.surfaceContainerHighest
+                    },
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                        ) {
-                            if (isPremium) {
-                                Text("👑", style = MaterialTheme.typography.labelMedium)
-                            }
-                            Column {
-                                Text(
-                                    text = stringResource(R.string.account),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    softWrap = false,
-                                )
-                                Text(
-                                    text = if (isPremium) "Premium" else "Free",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (isPremium) WiwyAccountOrange else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    softWrap = false,
-                                )
-                            }
+                        Icon(
+                            painter = painterResource(
+                                if (isPremium) R.drawable.star else R.drawable.account
+                            ),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = if (isPremium) {
+                                WiwyAccountOrange
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(
+                                    if (isPremium) {
+                                        R.string.account_premium_active
+                                    } else {
+                                        R.string.account_plan_free
+                                    }
+                                ),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isPremium) {
+                                    WiwyAccountOrange
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                },
+                            )
+                            Text(
+                                text = stringResource(
+                                    if (isPremium) {
+                                        R.string.account_premium_active_desc
+                                    } else {
+                                        R.string.account_plan_free_desc
+                                    }
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
                     }
                 }
-                if (!isLoggedIn) {
-                    Spacer(Modifier.height(2.dp))
-                    Text(
-                        text = stringResource(R.string.not_logged_in),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
             }
 
-            // Logout Button or Arrow
             if (isLoggedIn) {
+                HorizontalDivider(
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
+                )
                 OutlinedButton(
                     onClick = onLogout,
+                    modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                        horizontal = 12.dp,
-                        vertical = 8.dp,
-                    ),
                     border = androidx.compose.foundation.BorderStroke(
                         1.dp,
                         MaterialTheme.colorScheme.error.copy(alpha = 0.5f),
@@ -471,22 +546,14 @@ private fun AccountCard(
                     Icon(
                         painter = painterResource(R.drawable.logout),
                         contentDescription = null,
-                        modifier = Modifier.size(16.dp),
+                        modifier = Modifier.size(18.dp),
                     )
-                    Spacer(Modifier.width(6.dp))
+                    Spacer(Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.action_logout),
-                        style = MaterialTheme.typography.labelMedium,
-                        maxLines = 1,
-                        softWrap = false,
+                        fontWeight = FontWeight.SemiBold,
                     )
                 }
-            } else {
-                Icon(
-                    painter = painterResource(R.drawable.arrow_forward),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
         }
     }

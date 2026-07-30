@@ -420,6 +420,10 @@
     <string name="login">Login</string>
     <string name="not_logged_in">Not logged in</string>
     <string name="login_failed">Login failed</string>
+    <string name="account_premium_active">Premium active</string>
+    <string name="account_plan_free">Free plan</string>
+    <string name="account_premium_active_desc">Your account includes all Premium benefits.</string>
+    <string name="account_plan_free_desc">Upgrade your plan to unlock downloads and sync.</string>
     <string name="playback_requires_youtube_music_confirmation">Confirm playback in YouTube Music, then return to WiwyMusic.</string>
     <string name="content_language">Default content language</string>
     <string name="content_country">Default content country</string>
