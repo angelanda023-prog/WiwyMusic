@@ -111,6 +111,8 @@ val AudioQualityKey = stringPreferencesKey("audioQuality")
 
 val NetworkMeteredKey = booleanPreferencesKey("networkMetered")
 
+val MaximumQualityWifiOnlyKey = booleanPreferencesKey("maximumQualityWifiOnly")
+
 val WifiOnlyDownloadKey = booleanPreferencesKey("wifiOnlyDownload")
 
 // WiwyMusic: sesión del backend propio (Supabase)
@@ -120,10 +122,10 @@ val SupabaseUserIdKey = stringPreferencesKey("supabaseUserId")
 val SupabaseUserEmailKey = stringPreferencesKey("supabaseUserEmail")
 
 enum class AudioQuality {
-    AUTO,
+    LOW,
     HIGH,
     HIGHEST,
-    LOW,
+    AUTO,
 }
 
 val PlayerStreamClientKey = stringPreferencesKey("playerStreamClient")

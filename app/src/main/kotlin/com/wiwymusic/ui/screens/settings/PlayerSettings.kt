@@ -47,7 +47,7 @@ import com.wiwymusic.constants.AudioNormalizationKey
 import com.wiwymusic.constants.AudioOffload
 import com.wiwymusic.constants.AudioQuality
 import com.wiwymusic.constants.AudioQualityKey
-import com.wiwymusic.constants.NetworkMeteredKey
+import com.wiwymusic.constants.MaximumQualityWifiOnlyKey
 import com.wiwymusic.constants.AutoDownloadOnLikeKey
 import com.wiwymusic.constants.AutoStartOnBluetoothKey
 import com.wiwymusic.constants.AutoSkipNextOnErrorKey
@@ -93,8 +93,8 @@ fun PlayerSettings(
         PlayerStreamClientKey,
         defaultValue = PlayerStreamClient.ANDROID_VR
     )
-    val (networkMetered, onNetworkMeteredChange) = rememberPreference(
-        NetworkMeteredKey,
+    val (maximumQualityWifiOnly, onMaximumQualityWifiOnlyChange) = rememberPreference(
+        MaximumQualityWifiOnlyKey,
         defaultValue = true
     )
     val (persistentQueue, onPersistentQueueChange) = rememberPreference(
@@ -287,6 +287,14 @@ fun PlayerSettings(
                     AudioQuality.LOW -> stringResource(R.string.audio_quality_low)
                 }
             }
+        )
+
+        SwitchPreference(
+            title = { Text(stringResource(R.string.maximum_quality_wifi_only)) },
+            description = stringResource(R.string.maximum_quality_wifi_only_desc),
+            icon = { Icon(painterResource(R.drawable.wifi), null) },
+            checked = maximumQualityWifiOnly,
+            onCheckedChange = onMaximumQualityWifiOnlyChange,
         )
 
         SwitchPreference(

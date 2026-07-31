@@ -386,9 +386,11 @@
     <string name="enable_simpmusic_lyrics">Activar letras de SimpMusic</string>
     <string name="player_and_audio">Reproductor y audio</string>
     <string name="audio_quality">Calidad de audio</string>
-    <string name="audio_quality_auto">Automático</string>
-    <string name="audio_quality_high">Alta</string>
-    <string name="audio_quality_low">Baja</string>
+    <string name="audio_quality_auto">🟡 Automática (recomendada)</string>
+    <string name="audio_quality_high">🔵 Normal (160 kbps)</string>
+    <string name="audio_quality_low">🟢 Ahorro de datos (96 kbps)</string>
+    <string name="maximum_quality_wifi_only">Máxima calidad solo con Wi-Fi</string>
+    <string name="maximum_quality_wifi_only_desc">Usa calidad Alta con datos móviles y Máxima con Wi-Fi</string>
     <string name="network_metered_title">Tratar la red como de uso medido</string>
     <string name="network_metered_description">Si esta activada, la aplicación preferirá las transmisiones de baja calidad en redes de uso medido</string>
     <string name="queue">Cola</string>

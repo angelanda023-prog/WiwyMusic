@@ -156,7 +156,7 @@
     <string name="configure_supported_links">Configurar enlaces compatibles</string>
     <string name="intent_supported_links_not_found">No se encontró la configuración de enlaces compatibles, por favor configúrala manualmente</string>
     <string name="set_first_lyrics_provider">Proveedor de letras preferido</string>
-    <string name="audio_quality_max">Máxima (beta)</string>
+    <string name="audio_quality_max">🟣 Alta (hasta 320 kbps)</string>
     <string name="enable_similar_content">Activar contenido similar</string>
     <string name="similar_content_desc">Agrega automáticamente más canciones similares cuando se llegue al final de la cola</string>
     <string name="min_playback_duration_title">Duración mínima de reproducción</string>

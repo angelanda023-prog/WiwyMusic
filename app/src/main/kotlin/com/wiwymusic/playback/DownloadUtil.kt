@@ -11,6 +11,7 @@ package com.wiwymusic.playback
 import android.content.Context
 import android.media.MediaCodecList
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.media3.database.DatabaseProvider
@@ -26,6 +27,7 @@ import com.wiwymusic.innertube.YouTube
 import com.wiwymusic.innertube.models.YouTubeClient
 import com.wiwymusic.constants.AudioQuality
 import com.wiwymusic.constants.AudioQualityKey
+import com.wiwymusic.constants.MaximumQualityWifiOnlyKey
 import com.wiwymusic.constants.PlayerStreamClient
 import com.wiwymusic.constants.PlayerStreamClientKey
 import com.wiwymusic.db.MusicDatabase
@@ -36,7 +38,6 @@ import com.wiwymusic.di.PlayerCache
 import com.wiwymusic.utils.YTPlayerUtils
 import com.wiwymusic.utils.StreamClientUtils
 import com.wiwymusic.utils.enumPreference
-import com.wiwymusic.constants.NetworkMeteredKey
 import com.wiwymusic.constants.WifiOnlyDownloadKey
 import com.wiwymusic.utils.dataStore
 import com.wiwymusic.utils.get
@@ -48,6 +49,21 @@ import java.time.LocalDateTime
 import java.util.concurrent.Executor
 import javax.inject.Inject
 import javax.inject.Singleton
+
+internal fun resolvePlaybackAudioQuality(
+    selectedQuality: AudioQuality,
+    maximumQualityWifiOnly: Boolean,
+    isWifi: Boolean,
+): AudioQuality =
+    if (
+        selectedQuality == AudioQuality.HIGHEST &&
+        maximumQualityWifiOnly &&
+        !isWifi
+    ) {
+        AudioQuality.HIGH
+    } else {
+        selectedQuality
+    }
 
 @Singleton
 class DownloadUtil
@@ -129,13 +145,23 @@ constructor(
                 return@Factory dataSpec.withUri(it.first.toUri())
             }
             val playbackData = runBlocking(Dispatchers.IO) {
-                val networkMeteredPref = context.dataStore.get(NetworkMeteredKey, true)
+                val maximumQualityWifiOnly =
+                    context.dataStore.get(MaximumQualityWifiOnlyKey, true)
+                val activeNetwork = connectivityManager.activeNetwork
+                val isWifi = connectivityManager
+                    .getNetworkCapabilities(activeNetwork)
+                    ?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
+                val effectiveAudioQuality = resolvePlaybackAudioQuality(
+                    selectedQuality = audioQuality,
+                    maximumQualityWifiOnly = maximumQualityWifiOnly,
+                    isWifi = isWifi,
+                )
                 YTPlayerUtils.playerResponseForPlayback(
                     mediaId,
-                    audioQuality = audioQuality,
+                    audioQuality = effectiveAudioQuality,
                     preferredStreamClient = preferredStreamClient,
                     connectivityManager = connectivityManager,
-                    networkMetered = networkMeteredPref,
+                    networkMetered = connectivityManager.isActiveNetworkMetered,
                     avoidCodecs = avoidStreamCodecs,
                 )
             }.getOrThrow()
