@@ -1,0 +1,163 @@
+# WiwyMusic — durable AI handoff
+
+Last updated: 2026-07-31 (America/Mexico_City)
+
+## Current production state
+
+- Android app written in Kotlin and Jetpack Compose with Material Design 3.
+- Application ID: `com.wiwymusic`.
+- Production release: `v1.0.34`.
+- `versionName`: `1.0.34`.
+- `versionCode`: `35`.
+- Production commit: `df99b71` (`feat(home): align sections and headers`).
+- GitHub release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.34>
+- OTA asset name: `WiwyMusic.apk`.
+- Production APK SHA-256: `e64fb41830f71ccf3bd580b7a293ca14bab970920ff59c87ff576d61ed2b380d`.
+- Previous production baseline: `v1.0.33`, commit
+  `b6a19833a96c4bd7c1535e29fcec1c94a9e66967`.
+
+The app updater reads stable releases from `angelanda023-prog/WiwyMusic` and expects an
+asset named exactly `WiwyMusic.apk`. Relevant implementation:
+`app/src/main/kotlin/com/wiwymusic/utils/Updater.kt`.
+
+## User decisions that must be preserved
+
+- Do not use old UI mockups. User requested original, code-native UI work.
+- A broad experimental visual redesign was tried and rejected. It was fully reverted before
+  `v1.0.34`; do not restore it automatically.
+- Maintain current architecture and playback behavior.
+- Do not change APIs, databases, services, routes, or playback logic for visual work unless
+  strictly required and explicitly authorized.
+- Keep Spanish UI wording where supplied by user.
+
+## Mini-player protection
+
+Mini-player must remain exactly unchanged unless user gives explicit authorization after
+receiving file, reason, risk, and alternative explanation.
+
+Protected files/components:
+
+- `app/src/main/kotlin/com/wiwymusic/ui/player/MiniPlayer.kt`
+- `app/src/main/kotlin/com/wiwymusic/ui/player/MiniPlayerComponents.kt`
+- `app/src/main/kotlin/com/wiwymusic/ui/player/Player.kt`
+- `app/src/main/kotlin/com/wiwymusic/ui/component/BottomSheet.kt`
+- `app/src/main/kotlin/com/wiwymusic/constants/Dimensions.kt`
+- `app/src/main/kotlin/com/wiwymusic/ui/theme/Theme.kt`
+- `app/src/main/kotlin/com/wiwymusic/ui/theme/Type.kt`
+- Playback service, queue, state, and connection logic.
+
+`MainActivity.kt` is sensitive because it hosts root UI and player integration. In `v1.0.34`,
+user explicitly authorized changing only the main `TopAppBar` title block. Do not use that
+authorization for future changes elsewhere in the file.
+
+If a future change appears to require protected code:
+
+1. Name exact file and component.
+2. Explain why modification is necessary.
+3. Explain risk to mini-player/playback.
+4. Offer an alternative that avoids protected code.
+5. Wait for explicit authorization.
+
+## UI state implemented in v1.0.34
+
+### Home
+
+Files:
+
+- `app/src/main/kotlin/com/wiwymusic/MainActivity.kt`
+- `app/src/main/kotlin/com/wiwymusic/ui/screens/HomeScreen.kt`
+- `app/src/main/res/values-es/strings.xml`
+
+Behavior:
+
+- Main logo and `WiwyMusic` wordmark match Settings: 40 dp logo, 12 dp gap,
+  `Wiwy` in `onSurface`, `Music` in orange `#F5791F`, 22 sp extra-bold text.
+- `Continuar escuchando` heading is always rendered. Its item grid appears when data is not
+  empty.
+- `Fijar en marcación rápida` heading is always rendered immediately below it. Its grid
+  appears when pinned songs are not empty.
+- Spanish resource `keep_listening` is `Continuar escuchando`.
+- Spanish resource `pin_to_speed_dial` is `Fijar en marcación rápida`.
+
+### Music recognition
+
+File:
+
+- `app/src/main/kotlin/com/wiwymusic/ui/screens/musicrecognition/MusicRecognitionScreen.kt`
+
+Behavior:
+
+- Uses a standard Material 3 `TopAppBar` styled consistently with Settings.
+- Header contains 40 dp app logo and title `Identificar canción`.
+- Old `graphic_eq` icon and old `WiwyMusic` header text were removed.
+- Recognition state machine, microphone permission, audio capture, search navigation, and
+  result logic were not changed.
+
+## Audio quality state from v1.0.33
+
+Preserve these four choices and Wi-Fi control:
+
+- Ahorro de datos: 96 kbps.
+- Normal: 160 kbps.
+- Alta: up to 320 kbps.
+- Automática: recommended, adapts to network.
+- Additional switch: `Máxima calidad solo con Wi‑Fi`.
+
+## Build and verification
+
+Common validation:
+
+```bash
+./gradlew :app:compileUniversalDebugKotlin
+./gradlew :app:testUniversalDebugUnitTest
+```
+
+Release build:
+
+```bash
+./gradlew --no-configuration-cache :app:assembleUniversalRelease
+```
+
+Use `--no-configuration-cache` after committing because `app/build.gradle.kts` reads the
+current Git hash during configuration and stores it in `BuildConfig.GIT_COMMIT`.
+
+Before publishing:
+
+- Run unit tests.
+- Confirm `git diff --check` is clean.
+- Confirm only intended files changed.
+- Confirm protected player files are unchanged.
+- Verify APK reports expected `versionName` and `versionCode` with Android `aapt`.
+- Verify signature with Android `apksigner`.
+- Compute SHA-256.
+- Never print signing passwords, tokens, `local.properties`, or `keystore.properties`.
+
+Release APK output:
+
+`app/build/outputs/apk/universal/release/app-universal-release.apk`
+
+## OTA publishing workflow
+
+1. Increment `versionCode` and `versionName` in `app/build.gradle.kts`.
+2. Validate changes and tests.
+3. Commit before final release build so embedded Git hash is correct.
+4. Push commit to `origin/main`.
+5. Build signed universal release with configuration cache disabled.
+6. Verify signature, version, and SHA-256.
+7. Copy/rename asset to `WiwyMusic.apk`.
+8. Create public GitHub release `v<version>` targeting `main`.
+9. Mark release Latest.
+10. Verify GitHub asset digest matches local SHA-256.
+
+Publishing a public APK is an external disclosure. Obtain explicit user authorization before
+creating the GitHub Release.
+
+## Codebase graph
+
+Prefer codebase-memory MCP for code discovery. Project name:
+
+`Users-wiwyzho-Documents-Web-WiwyMusic`
+
+After meaningful code changes, refresh its index so future agents see current symbols and
+relationships.
+
