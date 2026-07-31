@@ -17,7 +17,8 @@
     <string name="quick_picks">Selecciones rápidas</string>
     <string name="quick_picks_empty">Escucha canciones para generar tus selecciones rápidas</string>
     <string name="forgotten_favorites">Tus favoritos del pasado</string>
-    <string name="keep_listening">Sigue escuchando</string>
+    <string name="keep_listening">Continuar escuchando</string>
+    <string name="pin_to_speed_dial">Fijar en marcación rápida</string>
     <string name="your_youtube_playlists">Tus playlists de YouTube</string>
     <string name="similar_to">Similar a</string>
     <string name="new_release_albums">Nuevos lanzamientos</string>

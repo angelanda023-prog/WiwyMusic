@@ -36,6 +36,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -125,13 +126,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -1327,49 +1322,29 @@ class MainActivity : ComponentActivity() {
                                                     }) + WindowInsetsSides.Top
                                                 ),
                                                 title = {
-                                                    val googleSans = FontFamily(
-                                                        Font(
-                                                            R.font.anybody,
-                                                            variationSettings = FontVariation.Settings(
-                                                                FontVariation.weight(650),
-                                                                FontVariation.width(110f),
-                                                                FontVariation.slant(-4f)
-                                                            )
-                                                        )
-                                                    )
-
                                                     Row(
                                                         verticalAlignment = Alignment.CenterVertically,
-                                                        horizontalArrangement = Arrangement.spacedBy(
-                                                            6.dp
-                                                        )
                                                     ) {
-
-                                                        Icon(
+                                                        Image(
                                                             painter = painterResource(R.drawable.opentune),
                                                             contentDescription = null,
-                                                            tint = Color.Unspecified,
-                                                            modifier = Modifier.size(44.dp)
+                                                            modifier = Modifier.size(40.dp),
                                                         )
-
-                                                        Text(
-                                                            text = buildAnnotatedString {
-                                                                withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurface)) {
-                                                                    append("Wiwy")
-                                                                }
-                                                                withStyle(SpanStyle(color = Color(0xFFF5791F))) {
-                                                                    append("Music")
-                                                                }
-                                                            },
-                                                            style = MaterialTheme.typography.titleLarge.copy(
-                                                                fontFamily = googleSans,
+                                                        Spacer(Modifier.width(12.dp))
+                                                        Row {
+                                                            Text(
+                                                                "Wiwy",
                                                                 fontWeight = FontWeight.ExtraBold,
-                                                                fontSize = 24.sp
-                                                            ),
-                                                            maxLines = 1,
-                                                            overflow = TextOverflow.Ellipsis,
-                                                            softWrap = false
-                                                        )
+                                                                fontSize = 22.sp,
+                                                                color = MaterialTheme.colorScheme.onSurface,
+                                                            )
+                                                            Text(
+                                                                "Music",
+                                                                fontWeight = FontWeight.ExtraBold,
+                                                                fontSize = 22.sp,
+                                                                color = Color(0xFFF5791F),
+                                                            )
+                                                        }
                                                     }
                                                 },
                                                 actions = {

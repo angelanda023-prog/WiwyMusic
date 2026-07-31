@@ -34,6 +34,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
@@ -66,13 +67,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
@@ -219,18 +220,21 @@ fun MusicRecognitionScreen(
 
     Scaffold(
         topBar = {
-            LargeFlexibleTopAppBar(
+            TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(R.drawable.graphic_eq),
+                        Image(
+                            painter = painterResource(R.drawable.opentune),
                             contentDescription = null,
-                            tint = Color(0xFFF5791F),
-                            modifier = Modifier.size(28.dp),
+                            modifier = Modifier.size(40.dp),
                         )
-                        Spacer(Modifier.width(8.dp))
-                        Text("Wiwy", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
-                        Text("Music", color = Color(0xFFF5791F), fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+                        Spacer(Modifier.width(12.dp))
+                        Text(
+                            text = "Identificar canción",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                        )
                     }
                 },
                 navigationIcon = {
@@ -252,9 +256,9 @@ fun MusicRecognitionScreen(
                     }
                 },
                 colors =
-                    TopAppBarDefaults.largeTopAppBarColors(
-                        containerColor = Color.Transparent,
-                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                        scrolledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
                     ),
                 scrollBehavior = scrollBehavior,
             )
