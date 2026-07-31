@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.webkit.*
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -57,11 +58,20 @@ fun DiscordLoginScreen(navController: NavController) {
         navController.navigateUp()
     }
 
-    AndroidView(
-        modifier = Modifier
-            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .fillMaxSize(),
-        factory = { context ->
+    androidx.compose.material3.Scaffold(
+        topBar = {
+            WiwySettingsPageHeader(
+                title = stringResource(R.string.action_login),
+                onBack = navController::navigateUp,
+            )
+        },
+    ) { innerPadding ->
+        AndroidView(
+            modifier = Modifier
+                .padding(innerPadding)
+                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+                .fillMaxSize(),
+            factory = { context ->
             WebView(context).apply {
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -197,23 +207,9 @@ fun DiscordLoginScreen(navController: NavController) {
                 webView = this
                 loadUrl("https://discord.com/login")
             }
-        }
-    )
-
-    TopAppBar(
-        title = { Text(stringResource(R.string.action_login)) },
-        navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
-            ) {
-                Icon(
-                    painterResource(R.drawable.arrow_back),
-                    contentDescription = null
-                )
             }
-        }
-    )
+        )
+    }
 
     BackHandler(enabled = webView?.canGoBack() == true) {
         webView?.goBack()

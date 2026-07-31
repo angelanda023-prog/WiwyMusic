@@ -86,14 +86,22 @@ fun StorageSettings(
 
     val totalCache = imageCacheSize + playerCacheSize
 
-    Column(
-        Modifier
-            .windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
+    androidx.compose.material3.Scaffold(
+        topBar = {
+            WiwySettingsPageHeader(
+                title = stringResource(R.string.storage),
+                onBack = navController::navigateUp,
             )
-            .verticalScroll(rememberScrollState())
-    ) {
-        Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
+        },
+    ) { innerPadding ->
+        Column(
+            Modifier
+                .padding(innerPadding)
+                .windowInsetsPadding(
+                    LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
+                )
+                .verticalScroll(rememberScrollState())
+        ) {
 
         CacheCard(
             icon = R.drawable.storage,
@@ -134,18 +142,7 @@ fun StorageSettings(
         }
     }
 
-    TopAppBar(
-        title = { Text(stringResource(R.string.storage)) },
-        navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain,
-            ) {
-                Icon(painterResource(R.drawable.arrow_back), contentDescription = null)
-            }
-        },
-        scrollBehavior = scrollBehavior,
-    )
+    }
 }
 
 @Composable
@@ -161,9 +158,10 @@ fun CacheCard(
             .fillMaxWidth()
             .padding(12.dp),
         colors = androidx.compose.material3.CardDefaults.cardColors(
-            containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surface,
+            containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surfaceContainerLow,
         ),
-        shape = androidx.compose.material3.MaterialTheme.shapes.large
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+        elevation = androidx.compose.material3.CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(Modifier.padding(16.dp)) {
             androidx.compose.foundation.layout.Row(

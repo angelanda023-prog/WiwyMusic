@@ -129,23 +129,9 @@ fun DebugSettings(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(
-                            text = stringResource(R.string.experiment_settings),
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = navController::navigateUp,
-                        onLongClick = navController::backToMain
-                    ) {
-                        Icon(painterResource(R.drawable.arrow_back), contentDescription = null)
-                    }
-                }
+            WiwySettingsPageHeader(
+                title = stringResource(R.string.experiment_settings),
+                onBack = navController::navigateUp,
             )
         }
     ) { innerPadding: PaddingValues ->

@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.RadioButton
 import androidx.compose.foundation.layout.aspectRatio
@@ -332,11 +334,24 @@ fun AppearanceSettings(
         }
     }
 
-    Column(
-        Modifier
-            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState()),
-    ) {
+    androidx.compose.material3.Scaffold(
+        topBar = {
+            WiwySettingsPageHeader(
+                title = stringResource(R.string.appearance),
+                onBack = navController::navigateUp,
+            )
+        },
+    ) { innerPadding ->
+        Column(
+            Modifier
+                .padding(innerPadding)
+                .windowInsetsPadding(
+                    LocalPlayerAwareWindowInsets.current.only(
+                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+                    )
+                )
+                .verticalScroll(rememberScrollState()),
+        ) {
         PreferenceGroupTitle(
             title = stringResource(R.string.theme),
         )
@@ -363,20 +378,7 @@ fun AppearanceSettings(
         }
     }
 
-    TopAppBar(
-        title = { Text(stringResource(R.string.appearance)) },
-        navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain,
-            ) {
-                Icon(
-                    painterResource(R.drawable.arrow_back),
-                    contentDescription = null,
-                )
-            }
-        }
-    )
+    }
 }
 
 @Composable

@@ -236,19 +236,9 @@ fun ThemeCreatorScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(R.string.theme_creator_title)) },
-                navigationIcon = {
-                    IconButton(
-                        onClick = navController::navigateUp,
-                        onLongClick = navController::backToMain,
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.arrow_back),
-                            contentDescription = null,
-                        )
-                    }
-                },
+            WiwySettingsPageHeader(
+                title = stringResource(R.string.theme_creator_title),
+                onBack = navController::navigateUp,
                 actions = {
                     TextButton(
                         onClick = {
@@ -265,7 +255,6 @@ fun ThemeCreatorScreen(
                         Text(text = stringResource(R.string.save))
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
         },
         floatingActionButton = {
@@ -1454,4 +1443,3 @@ private fun PresetSwatches(
         }
     }
 }
-

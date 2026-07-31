@@ -172,18 +172,20 @@ fun PrivacySettings(
         )
     }
 
-    Column(
-        Modifier
-            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
-            .verticalScroll(rememberScrollState())
-    ) {
-        Spacer(
-            Modifier.windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(
-                    WindowInsetsSides.Top
-                )
+    androidx.compose.material3.Scaffold(
+        topBar = {
+            WiwySettingsPageHeader(
+                title = stringResource(R.string.privacy),
+                onBack = navController::navigateUp,
             )
-        )
+        },
+    ) { innerPadding ->
+        Column(
+            Modifier
+                .padding(innerPadding)
+                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+                .verticalScroll(rememberScrollState())
+        ) {
 
         PreferenceGroupTitle(
             title = stringResource(R.string.permissions_title)
@@ -262,18 +264,5 @@ fun PrivacySettings(
         )
     }
 
-    TopAppBar(
-        title = { Text(stringResource(R.string.privacy)) },
-        navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain,
-            ) {
-                Icon(
-                    painterResource(R.drawable.arrow_back),
-                    contentDescription = null,
-                )
-            }
-        }
-    )
+    }
 }

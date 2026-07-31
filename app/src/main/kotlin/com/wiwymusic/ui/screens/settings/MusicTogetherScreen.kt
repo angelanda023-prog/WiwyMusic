@@ -332,11 +332,7 @@ fun MusicTogetherScreen(
             )
             .verticalScroll(rememberScrollState()),
     ) {
-        Spacer(
-            Modifier.windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)
-            )
-        )
+        WiwySettingsHeaderContentSpacer()
 
         // Status card
         StatusCard(
@@ -445,17 +441,9 @@ fun MusicTogetherScreen(
         )
     }
 
-    TopAppBar(
-        title = { Text(stringResource(R.string.music_together)) },
-        navigationIcon = {
-            AtIconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain,
-            ) {
-                Icon(painterResource(R.drawable.arrow_back), null)
-            }
-        },
-        scrollBehavior = scrollBehavior,
+    WiwySettingsPageHeader(
+        title = stringResource(R.string.music_together),
+        onBack = navController::navigateUp,
     )
 }
 

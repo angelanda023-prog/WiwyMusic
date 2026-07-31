@@ -75,7 +75,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.material3.LocalContentColor
@@ -97,12 +96,7 @@ import kotlin.math.roundToInt
 
 val LocalPreferenceInGroup = compositionLocalOf { false }
 
-private val expressiveCardShape: Shape = RoundedCornerShape(
-    topStart = 24.dp,
-    topEnd = 24.dp,
-    bottomStart = 16.dp,
-    bottomEnd = 16.dp
-)
+private val expressiveCardShape: Shape = RoundedCornerShape(24.dp)
 
 private val expressiveBadgeShape: Shape = RoundedCornerShape(
     topStart = 16.dp,
@@ -138,7 +132,6 @@ fun PreferenceEntry(
     val scale by animateFloatAsState(
         targetValue = when {
             !inGroup && isPressed -> 0.97f
-            !inGroup && onClick != null -> 0.99f
             else -> 1f
         },
         animationSpec = spring(
@@ -151,7 +144,7 @@ fun PreferenceEntry(
     val containerColor = if (inGroup) {
         Color.Transparent
     } else {
-        MaterialTheme.colorScheme.surfaceContainer
+        MaterialTheme.colorScheme.surfaceContainerLow
     }
 
     val rowContent: @Composable () -> Unit = {
@@ -230,19 +223,14 @@ fun PreferenceEntry(
             shape = expressiveCardShape,
             color = containerColor,
             tonalElevation = elevation.dp,
-            shadowElevation = if (isPressed) 4.dp else 2.dp,
+            shadowElevation = 0.dp,
             modifier = modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 3.dp)
                 .graphicsLayer {
                     scaleX = scale
                     scaleY = scale
-                }
-                .shadow(
-                    elevation = if (isPressed) 8.dp else 4.dp,
-                    shape = expressiveCardShape,
-                    clip = false
-                ),
+                },
         ) {
             rowContent()
         }
@@ -829,16 +817,10 @@ fun PreferenceGroup(
 
         Surface(
             shape = expressiveCardShape,
-            color = MaterialTheme.colorScheme.surfaceContainer,
-            tonalElevation = 2.dp,
-            shadowElevation = 4.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .shadow(
-                    elevation = 4.dp,
-                    shape = expressiveCardShape,
-                    clip = false
-                ),
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            tonalElevation = 0.dp,
+            shadowElevation = 0.dp,
+            modifier = Modifier.fillMaxWidth(),
         ) {
             CompositionLocalProvider(LocalPreferenceInGroup provides true) {
                 Column(

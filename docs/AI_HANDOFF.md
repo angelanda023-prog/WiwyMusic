@@ -87,11 +87,45 @@ File:
 
 Behavior:
 
-- Uses a standard Material 3 `TopAppBar` styled consistently with Settings.
-- Header contains 40 dp app logo and title `Identificar canción`.
+- Uses the shared `WiwySettingsPageHeader`, exactly matching the Account settings header.
+- Header contains the 40 dp app logo, `WiwyMusic` wordmark, version/plan, right-side back
+  button, and page title `Identificar canción` below the branded row.
 - Old `graphic_eq` icon and old `WiwyMusic` header text were removed.
+- The duplicate in-content `Identificar canción` title was removed.
 - Recognition state machine, microphone permission, audio capture, search navigation, and
   result logic were not changed.
+
+### Unified settings pages in v1.0.35
+
+Single sources of truth:
+
+- `app/src/main/kotlin/com/wiwymusic/ui/screens/settings/WiwySettingsPageComponents.kt`
+  - `WiwySettingsPageHeader`: Account-style branded header and title.
+  - `WiwySettingsCard`: Account-style 24 dp, `surfaceContainerLow`, zero-elevation card.
+- `app/src/main/kotlin/com/wiwymusic/ui/component/Preference.kt`
+  - Settings preference cards/groups use the same 24 dp, `surfaceContainerLow`,
+    zero-elevation treatment.
+- `app/src/main/kotlin/com/wiwymusic/ui/screens/settings/SettingsDimensions.kt`
+  - Settings group card radius is 24 dp.
+
+All destinations opened from Settings now use `WiwySettingsPageHeader`, including Account,
+Appearance, Player, Content, Privacy, Storage, Notifications, Update, About, Backup,
+Changelog, palette/theme tools, integrations, Discord pages, Last.fm, Music Together,
+PoToken pages, widget settings, custom background, recognition, debug, Android Auto, and
+Always-on display. Each page title is rendered below the branded header row. The root
+`SettingsScreen` intentionally keeps its existing Settings search action.
+
+Special cards in Music Recognition, Storage, Update, and About were also normalized to the
+Account card surface, 24 dp radius, and zero elevation. Functional inner controls and preview
+cards retain their semantics.
+
+Validation completed after these changes:
+
+```bash
+./gradlew :app:compileUniversalDebugKotlin
+```
+
+Result: `BUILD SUCCESSFUL`. Protected mini-player/player files remained unchanged.
 
 ## Audio quality state from v1.0.33
 
@@ -160,4 +194,3 @@ Prefer codebase-memory MCP for code discovery. Project name:
 
 After meaningful code changes, refresh its index so future agents see current symbols and
 relationships.
-

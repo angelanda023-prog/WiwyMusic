@@ -70,13 +70,9 @@ fun CustomizeBackground(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.customize_background_title)) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(painterResource(R.drawable.arrow_back), contentDescription = null)
-                    }
-                }
+            WiwySettingsPageHeader(
+                title = stringResource(R.string.customize_background_title),
+                onBack = navController::navigateUp,
             )
         },
     ) { innerPadding ->

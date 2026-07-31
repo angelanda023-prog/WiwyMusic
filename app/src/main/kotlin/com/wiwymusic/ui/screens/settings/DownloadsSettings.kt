@@ -52,7 +52,7 @@ fun DownloadsSettings(
             )
             .verticalScroll(rememberScrollState()),
     ) {
-        Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
+        WiwySettingsHeaderContentSpacer()
 
         EnumListPreference(
             title = { Text(stringResource(R.string.audio_quality)) },
@@ -78,16 +78,8 @@ fun DownloadsSettings(
         )
     }
 
-    TopAppBar(
-        title = { Text(stringResource(R.string.wm_downloads)) },
-        navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain,
-            ) {
-                Icon(painterResource(R.drawable.arrow_back), contentDescription = null)
-            }
-        },
-        scrollBehavior = scrollBehavior,
+    WiwySettingsPageHeader(
+        title = stringResource(R.string.wm_downloads),
+        onBack = navController::navigateUp,
     )
 }

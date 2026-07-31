@@ -923,22 +923,9 @@ fun PalettePickerScreen(
     
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.color_palette)) },
-                navigationIcon = {
-                    IconButton(
-                        onClick = navController::navigateUp,
-                        onLongClick = navController::backToMain
-                    ) {
-                        Icon(
-                            painterResource(R.drawable.arrow_back),
-                            contentDescription = null
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
-                )
+            WiwySettingsPageHeader(
+                title = stringResource(R.string.color_palette),
+                onBack = navController::navigateUp,
             )
         },
         floatingActionButton = {

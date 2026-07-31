@@ -112,24 +112,9 @@ fun AndroidAutoSettings(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
-            LargeFlexibleTopAppBar(
-                title = { Text(stringResource(R.string.android_auto)) },
-                navigationIcon = {
-                    com.wiwymusic.ui.component.IconButton(
-                        onClick = navController::navigateUp,
-                        onLongClick = navController::backToMain,
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.arrow_back),
-                            contentDescription = null,
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.largeTopAppBarColors(
-                    containerColor = Color.Transparent,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                ),
-                scrollBehavior = scrollBehavior,
+            WiwySettingsPageHeader(
+                title = stringResource(R.string.android_auto),
+                onBack = navController::navigateUp,
             )
         },
     ) { paddingValues ->

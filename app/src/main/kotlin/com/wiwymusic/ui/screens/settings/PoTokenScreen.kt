@@ -267,11 +267,7 @@ fun PoTokenScreen(
                 animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
             )
     ) {
-        Spacer(
-            Modifier.windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)
-            )
-        )
+        WiwySettingsHeaderContentSpacer()
 
         SwitchPreference(
             title = { Text(stringResource(R.string.web_client_po_token)) },
@@ -407,19 +403,9 @@ fun PoTokenScreen(
         }
     }
 
-    TopAppBar(
-        title = { Text(stringResource(R.string.po_token_generation)) },
-        navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
-            ) {
-                Icon(
-                    painterResource(R.drawable.arrow_back),
-                    contentDescription = null
-                )
-            }
-        }
+    WiwySettingsPageHeader(
+        title = stringResource(R.string.po_token_generation),
+        onBack = navController::navigateUp,
     )
 }
 

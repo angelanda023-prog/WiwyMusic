@@ -275,13 +275,7 @@ fun LastFMSettings(
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .verticalScroll(rememberScrollState())
     ) {
-        Spacer(
-            Modifier.windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(
-                    WindowInsetsSides.Top
-                )
-            )
-        )
+        WiwySettingsHeaderContentSpacer()
 
         PreferenceGroupTitle(
             title = stringResource(R.string.account),
@@ -516,18 +510,8 @@ fun LastFMSettings(
         )
     }
 
-    TopAppBar(
-        title = { Text(stringResource(R.string.lastfm_integration)) },
-        navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain,
-            ) {
-                Icon(
-                    painterResource(R.drawable.arrow_back),
-                    contentDescription = null,
-                )
-            }
-        }
+    WiwySettingsPageHeader(
+        title = stringResource(R.string.lastfm_integration),
+        onBack = navController::navigateUp,
     )
 }

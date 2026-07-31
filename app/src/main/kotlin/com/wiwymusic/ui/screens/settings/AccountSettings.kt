@@ -166,10 +166,9 @@ fun AccountSettings(
             .background(MaterialTheme.colorScheme.surface)
             .verticalScroll(rememberScrollState())
     ) {
-        // Header Section
-        AccountSettingsHeader(
-            onClose = onClose,
-            isPremium = supaIsPremium,
+        WiwySettingsPageHeader(
+            title = stringResource(R.string.account),
+            onBack = onClose,
         )
 
         Column(
@@ -231,101 +230,6 @@ fun AccountSettings(
         PlaylistSelectionDialog(
             onDismiss = { showPlaylistDialog = false }
         )
-    }
-}
-
-@Composable
-private fun AccountSettingsHeader(
-    onClose: () -> Unit,
-    isPremium: Boolean?,
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
-                        MaterialTheme.colorScheme.surface
-                    )
-                )
-            )
-            .windowInsetsPadding(WindowInsets.statusBars)
-            .padding(top = 8.dp, bottom = 16.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Keep the original logo colors, matching the Settings header.
-                Image(
-                    painter = painterResource(R.drawable.opentune),
-                    contentDescription = null,
-                    modifier = Modifier.size(40.dp),
-                )
-
-                Column {
-                    Row {
-                        Text(
-                            text = "Wiwy",
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 22.sp,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                        Text(
-                            text = "Music",
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 22.sp,
-                            color = WiwyAccountOrange,
-                        )
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "v${BuildConfig.VERSION_NAME}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        if (isPremium != null) {
-                            Text(
-                                text = " · ",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            Text(
-                                text = if (isPremium) "⭐ Premium" else "Plan Free",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Medium,
-                                color = if (isPremium) {
-                                    WiwyAccountOrange
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                },
-                            )
-                        }
-                    }
-                }
-            }
-
-            IconButton(
-                onClick = onClose,
-                colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                )
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.arrow_back),
-                    contentDescription = null,
-                    tint = WiwyAccountOrange
-                )
-            }
-        }
     }
 }
 

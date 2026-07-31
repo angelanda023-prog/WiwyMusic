@@ -25,8 +25,8 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.wiwymusic.R
 import com.wiwymusic.innertube.utils.PoTokenGenerator
-import com.wiwymusic.ui.component.IconButton
 
 class PoTokenExtractionActivity : ComponentActivity() {
 
@@ -215,11 +214,21 @@ class PoTokenExtractionActivity : ComponentActivity() {
             }
         }
 
-        Box(modifier = Modifier.fillMaxSize()) {
-            AndroidView(
+        Scaffold(
+            topBar = {
+                WiwySettingsPageHeader(
+                    title = stringResource(R.string.extracting_from_url),
+                    onBack = { closeCanceled() },
+                )
+            },
+        ) { innerPadding ->
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.systemBars),
+                    .padding(innerPadding),
+            ) {
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
                 factory = { ctx ->
                     WebView(ctx).apply {
                         val cookieManager = CookieManager.getInstance()
@@ -271,22 +280,7 @@ class PoTokenExtractionActivity : ComponentActivity() {
                     webView = view
                     activeWebView = view
                 }
-            )
-
-            TopAppBar(
-                title = { Text(stringResource(R.string.extracting_from_url)) },
-                navigationIcon = {
-                    IconButton(
-                        onClick = { closeCanceled() },
-                        onLongClick = { closeCanceled() }
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.arrow_back),
-                            contentDescription = null,
-                        )
-                    }
-                }
-            )
+                )
 
             ExtendedFloatingActionButton(
                 text = {
@@ -332,6 +326,7 @@ class PoTokenExtractionActivity : ComponentActivity() {
                     MaterialTheme.colorScheme.onSurfaceVariant
                 },
             )
+            }
         }
     }
 }

@@ -68,12 +68,6 @@ fun RecognizeSongScreen(
         }
         Spacer(Modifier.height(24.dp))
         Text(
-            text = stringResource(R.string.wm_recognize),
-            style = MaterialTheme.typography.headlineSmall,
-            textAlign = TextAlign.Center,
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
             text = stringResource(R.string.wm_recognize_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -88,16 +82,8 @@ fun RecognizeSongScreen(
         )
     }
 
-    TopAppBar(
-        title = { Text(stringResource(R.string.wm_recognize)) },
-        navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain,
-            ) {
-                Icon(painterResource(R.drawable.arrow_back), contentDescription = null)
-            }
-        },
-        scrollBehavior = scrollBehavior,
+    WiwySettingsPageHeader(
+        title = stringResource(R.string.wm_recognize),
+        onBack = navController::navigateUp,
     )
 }

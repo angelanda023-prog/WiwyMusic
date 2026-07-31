@@ -56,6 +56,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
@@ -125,6 +126,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.wiwymusic.R
+import com.wiwymusic.ui.screens.settings.WiwySettingsPageHeader
 import com.wiwymusic.shazamkit.Shazam
 import com.wiwymusic.shazamkit.ShazamSignatureGenerator
 import com.wiwymusic.shazamkit.models.RecognitionResult
@@ -213,60 +215,19 @@ fun MusicRecognitionScreen(
         startOrRequestPermission()
     }
 
-    val scrollBehavior = appBarScrollBehavior()
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val useWideContent =
         windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Image(
-                            painter = painterResource(R.drawable.opentune),
-                            contentDescription = null,
-                            modifier = Modifier.size(40.dp),
-                        )
-                        Spacer(Modifier.width(12.dp))
-                        Text(
-                            text = "Identificar canción",
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                        )
-                    }
-                },
-                navigationIcon = {
-                    Surface(
-                        modifier =
-                            Modifier
-                                .padding(horizontal = 8.dp)
-                                .size(40.dp),
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                        onClick = navController::navigateUp,
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                painter = painterResource(R.drawable.arrow_back),
-                                contentDescription = stringResource(R.string.back_button_desc),
-                            )
-                        }
-                    }
-                },
-                colors =
-                    TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-                        scrolledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-                    ),
-                scrollBehavior = scrollBehavior,
+            WiwySettingsPageHeader(
+                title = "Identificar canción",
+                onBack = navController::navigateUp,
             )
         },
         containerColor = Color.Transparent,
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier.fillMaxSize(),
     ) { padding ->
         val primary = MaterialTheme.colorScheme.primary
         val tertiary = MaterialTheme.colorScheme.tertiary
@@ -292,8 +253,7 @@ fun MusicRecognitionScreen(
                 Modifier
                     .fillMaxSize()
                     .background(backgroundBrush)
-                    .padding(padding)
-                    .statusBarsPadding(),
+                    .padding(padding),
         ) {
             val scrollState = rememberScrollState()
             val contentWidthModifier =
@@ -670,13 +630,6 @@ private suspend fun recordMicPcm16Mono(
 private fun IdleHeader() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = "Identificar canción",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.White,
-        )
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
             text = "Escucha la música a tu alrededor",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -715,11 +668,12 @@ private fun ResultFirstSheet(
     ) {
         ElevatedCard(
             modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.extraLarge,
+            shape = RoundedCornerShape(24.dp),
             colors =
                 CardDefaults.elevatedCardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                 ),
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp),
         ) {
             Column {
                 Row(
@@ -1045,10 +999,11 @@ private fun PermissionCard(
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp),
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Text(
@@ -1083,10 +1038,11 @@ private fun FailureCard(
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp),
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Text(

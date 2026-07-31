@@ -125,27 +125,13 @@ fun ChangelogScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        if (updateChannel == UpdateChannel.NIGHTLY)
-                            "Nightly Changelog"
-                        else
-                            stringResource(R.string.changelog)
-                    )
+            WiwySettingsPageHeader(
+                title = if (updateChannel == UpdateChannel.NIGHTLY) {
+                    "Nightly Changelog"
+                } else {
+                    stringResource(R.string.changelog)
                 },
-                navigationIcon = {
-                    IconButton(
-                        onClick = navController::navigateUp,
-                        onLongClick = navController::backToMain,
-                    ) {
-                        Icon(
-                            painterResource(R.drawable.arrow_back),
-                            contentDescription = null,
-                        )
-                    }
-                },
-                scrollBehavior = scrollBehavior
+                onBack = navController::navigateUp,
             )
         }
     ) { paddingValues ->

@@ -15,11 +15,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,9 +29,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -51,7 +53,7 @@ import androidx.navigation.NavController
 import com.wiwymusic.LocalPlayerAwareWindowInsets
 import com.wiwymusic.R
 import com.wiwymusic.constants.WidgetBackgroundMode
-import com.wiwymusic.ui.utils.backToMain
+import com.wiwymusic.ui.screens.settings.WiwySettingsPageHeader
 import com.wiwymusic.widget.WidgetPreferences
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
@@ -91,11 +93,24 @@ fun WidgetSettings(
         it != WidgetBackgroundMode.BLUR || Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     }
 
-    Column(
-        Modifier
-            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState()),
-    ) {
+    Scaffold(
+        topBar = {
+            WiwySettingsPageHeader(
+                title = stringResource(R.string.widget_settings_title),
+                onBack = navController::navigateUp,
+            )
+        },
+    ) { innerPadding ->
+        Column(
+            Modifier
+                .padding(innerPadding)
+                .windowInsetsPadding(
+                    LocalPlayerAwareWindowInsets.current.only(
+                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+                    )
+                )
+                .verticalScroll(rememberScrollState()),
+        ) {
         PreferenceGroupTitle(
             title = stringResource(R.string.widget_preview),
         )
@@ -170,22 +185,8 @@ fun WidgetSettings(
             checked = showProgressBar,
             onCheckedChange = onShowProgressBarChange,
         )
+        }
     }
-
-    TopAppBar(
-        title = { Text(stringResource(R.string.widget_settings_title)) },
-        navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain,
-            ) {
-                Icon(
-                    painterResource(R.drawable.arrow_back),
-                    contentDescription = null,
-                )
-            }
-        },
-    )
 }
 
 /**

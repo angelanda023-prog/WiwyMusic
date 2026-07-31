@@ -38,13 +38,9 @@ fun DiscordExperimental(
 ) {
     Scaffold { inner ->
         Column(Modifier.fillMaxSize()) {
-            TopAppBar(
-                title = { Text(stringResource(R.string.experiment_settings)) },
-                navigationIcon = {
-                    IconButton(onClick = navController::navigateUp) {
-                        Icon(painterResource(R.drawable.arrow_back), contentDescription = null)
-                    }
-                }
+            WiwySettingsPageHeader(
+                title = stringResource(R.string.experiment_settings),
+                onBack = navController::navigateUp,
             )
 
             LazyColumn(

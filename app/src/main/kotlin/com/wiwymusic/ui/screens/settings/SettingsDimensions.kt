@@ -11,7 +11,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.ui.unit.dp
 
 object SettingsDimensions {
-    val GroupCardCornerRadius = 16.dp
+    val GroupCardCornerRadius = 24.dp
     val QuickActionCardCornerRadius = 20.dp
     val IntegrationPillCornerRadius = 14.dp
     val BannerCardCornerRadius = 20.dp

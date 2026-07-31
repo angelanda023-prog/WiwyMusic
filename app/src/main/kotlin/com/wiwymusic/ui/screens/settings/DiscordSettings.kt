@@ -136,19 +136,50 @@ fun DiscordSettings(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            WiwySettingsPageHeader(
+                title = stringResource(R.string.discord_integration),
+                onBack = navController::navigateUp,
+                actions = {
+                    var threeDotMenuExpanded by remember { mutableStateOf(false) }
+
+                    IconButton(onClick = { threeDotMenuExpanded = true }) {
+                        Icon(
+                            painter = painterResource(R.drawable.more_vert),
+                            contentDescription = null,
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = threeDotMenuExpanded,
+                        onDismissRequest = { threeDotMenuExpanded = false },
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.experiment_settings)) },
+                            onClick = {
+                                threeDotMenuExpanded = false
+                                navController.navigate("settings/discord/experimental")
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.experiment),
+                                    contentDescription = null,
+                                )
+                            },
+                        )
+                    }
+                },
+            )
+        },
     ) { innerPadding ->
         Column(
             Modifier
+                .padding(innerPadding)
                 .windowInsetsPadding(
                     LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
                 )
                 .verticalScroll(rememberScrollState())
         ) {
-        Spacer(
-            Modifier.windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)
-            )
-        )
 
     // Developer debug moved to DebugSettings (Settings -> Misc)
 
@@ -784,50 +815,8 @@ if (smallImageType == "custom") {
     )
 }
 
-    TopAppBar(
-        title = { Text(stringResource(R.string.discord_integration)) },
-        navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain,
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.arrow_back),
-                    contentDescription = null
-                )
-            }
-        },
-        actions = {
-            var threeDotMenuExpanded by remember { mutableStateOf(false) }
+}
 
-            IconButton(onClick = { threeDotMenuExpanded = true }) {
-                Icon(
-                    painter = painterResource(R.drawable.more_vert),
-                    contentDescription = null
-                )
-            }
-
-            DropdownMenu(
-                expanded = threeDotMenuExpanded,
-                onDismissRequest = { threeDotMenuExpanded = false }
-            ) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.experiment_settings)) },
-                    onClick = {
-                        threeDotMenuExpanded = false
-                        navController.navigate("settings/discord/experimental")
-                    },
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(R.drawable.experiment),
-                            contentDescription = null
-                        )
-                    }
-                )
-            }
-        }
-      )
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
