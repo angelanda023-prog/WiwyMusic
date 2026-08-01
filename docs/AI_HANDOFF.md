@@ -39,9 +39,55 @@ admin panel.
 - Previous production baseline: `v1.0.40`, commit
   `3fcfee0`.
 
-The app updater reads stable releases from `angelanda023-prog/WiwyMusic` and expects an
-asset named exactly `WiwyMusic.apk`. Relevant implementation:
-`app/src/main/kotlin/com/wiwymusic/utils/Updater.kt`.
+The currently installed production APK still reads stable releases from GitHub. A hardened
+updater migration is staged locally (see the section below); it must first be delivered once
+through the existing GitHub channel before later OTAs can use the repository-neutral endpoint.
+
+## APK hardening and rollback baseline — staged after v1.0.41
+
+Rollback is fixed to the unchanged production release:
+
+- Tag: `v1.0.41`.
+- Commit: `474de8f`.
+- APK SHA-256: `d1a6c76cf0353a345c67d776bad903333f31d5970f330ace4a9efed74419f927`.
+- An exact copy is stored privately in R2 as `ota/WiwyMusic.apk`.
+- R2 metadata is stored as `ota/releases.json`.
+- Public repository-neutral endpoints:
+  - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/releases`
+  - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/download`
+- OTA bridge Worker version: `8ac43778-7375-4fe4-b3a7-f71becf31d79`.
+- Admin source commit: `2ecffc0` (`feat: serve OTA files through Worker`).
+
+Staged Android hardening:
+
+- Stable update checks and APK downloads use only the Cloudflare endpoint.
+- GitHub owner, repository name, release scraping, and commit-history requests were removed
+  from runtime code.
+- Release notes remain generic and do not reveal implementation details.
+- Release `BuildConfig.GIT_COMMIT` is the neutral value `release`; debug builds retain their
+  useful local commit suffix.
+- R8 code optimization/obfuscation and resource shrinking remain enabled.
+- `LASTFM_API_KEY`, `LASTFM_SECRET`, and `TOGETHER_BEARER_TOKEN` were audited without printing
+  values and were empty in the production build environment. No playback file was modified.
+- Supabase URL and publishable/anonymous key remain in the client by design; authorization is
+  enforced by Supabase RLS and RPC policies, not by treating those public values as secrets.
+
+Verification of the staged APK:
+
+- `compileUniversalDebugKotlin`: successful.
+- `testUniversalDebugUnitTest`: successful.
+- `assembleUniversalRelease` with R8: successful.
+- APK Signature Scheme v2: valid, one signer.
+- No `angelanda023-prog`, own GitHub repository URL, or local Git commit was found in DEX.
+- Local staged APK SHA-256: `bd3b122b94c3851ef3ac1561a603fee77d31266528d109f4aed1112d2b35bb29`.
+- This staged APK has **not** been published as an OTA and still carries version `1.0.41`
+  (`versionCode` 42). Bump the version before publishing.
+
+Migration rule: the first hardened release must also be uploaded to the existing GitHub
+release channel so installed `v1.0.41` clients can discover it. After those clients update,
+future stable releases are published by uploading the signed APK and updated
+`WiwyMusic-Admin/ota/releases.json` to the two R2 object keys above. Never replace metadata
+before the corresponding APK upload completes and its remote SHA-256 is verified.
 
 ## User decisions that must be preserved
 

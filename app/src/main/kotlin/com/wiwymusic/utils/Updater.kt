@@ -68,15 +68,9 @@ data class UpdateInfo(
     val publishedAt: String,
 )
 
-// ============================================================================
-// WiwyMusic — Repositorio de actualizaciones OTA
-// Las actualizaciones se descargan de los Releases de ESTE repo de GitHub.
-// Cambia OWNER/REPO por los tuyos y sube el APK a un Release con este nombre.
-// ============================================================================
-const val GITHUB_OWNER = "angelanda023-prog"
-const val GITHUB_REPO = "WiwyMusic"
-
-private const val APK_ASSET_NAME = "WiwyMusic.apk"
+private const val OTA_BASE_URL = "https://wiwymusic-admin.angelanda023.workers.dev/api/ota"
+private const val OTA_RELEASES_URL = "$OTA_BASE_URL/releases"
+private const val OTA_DOWNLOAD_URL = "$OTA_BASE_URL/download"
 private const val NIGHTLY_JSON_URL = "https://pub-2218e6bbd5b948e1b5d882cf4d92086d.r2.dev/update.json"
 const val GENERIC_UPDATE_MESSAGE =
     "Esta actualización incluye mejoras de rendimiento, estabilidad y experiencia general."
@@ -269,10 +263,10 @@ object Updater {
         cachedEtag: String?,
     ): ReleasesNetworkResult {
         val response: HttpResponse =
-            client.get("https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases?per_page=$perPage") {
+            client.get("$OTA_RELEASES_URL?per_page=$perPage") {
                 headers {
-                    append("Accept", "application/vnd.github+json")
-                    append("User-Agent", "OpenTune")
+                    append("Accept", "application/json")
+                    append("User-Agent", "WiwyMusic")
                     if (!cachedEtag.isNullOrBlank()) {
                         append("If-None-Match", cachedEtag)
                     }
@@ -409,7 +403,7 @@ object Updater {
 
         if (isSameVersion(latestVersionName, currentVersionName)) return null
 
-        val downloadUrl = resolveApkDownloadUrl(latest.tagName)
+        val downloadUrl = resolveApkDownloadUrl()
 
         return UpdateInfo(
             tagName        = latest.tagName,
@@ -438,66 +432,13 @@ object Updater {
         }
     }
 
-    /**
-     * Consulta los assets del release [tagName] y devuelve la URL de descarga
-     * de `app-universal-release.apk`. Si la llamada falla o el asset no está listado,
-     * usa la URL canónica de GitHub como fallback.
-     */
-    private suspend fun resolveApkDownloadUrl(tagName: String): String {
-        val fallback =
-            "https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/$tagName/$APK_ASSET_NAME"
-
-        return runCatching {
-            val response = client.get(
-                "https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/tags/$tagName"
-            ) {
-                headers {
-                    append("Accept", "application/vnd.github+json")
-                    append("User-Agent", "OpenTune")
-                }
-            }.bodyAsText()
-
-            val assets = JSONObject(response).optJSONArray("assets") ?: return@runCatching fallback
-
-            for (i in 0 until assets.length()) {
-                val asset = assets.getJSONObject(i)
-                if (asset.optString("name").equals(APK_ASSET_NAME, ignoreCase = true)) {
-                    return@runCatching asset.optString("browser_download_url", fallback)
-                }
-            }
-            fallback
-        }.getOrDefault(fallback)
-    }
+    private fun resolveApkDownloadUrl(): String = OTA_DOWNLOAD_URL
 
     // ─────────────────────────────────────────────────────────────────────────
 
+    @Suppress("UNUSED_PARAMETER")
     suspend fun getCommitHistory(count: Int = 20, branch: String = "master"): Result<List<GitCommit>> =
-        runCatching {
-            val response =
-                client.get("https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/commits?sha=$branch&per_page=$count") {
-                    headers {
-                        append("Accept", "application/vnd.github+json")
-                        append("User-Agent", "OpenTune")
-                    }
-                }.bodyAsText()
-            val jsonArray = JSONArray(response)
-            val commits = mutableListOf<GitCommit>()
-            for (i in 0 until jsonArray.length()) {
-                val commitObj = jsonArray.getJSONObject(i)
-                val commit = commitObj.getJSONObject("commit")
-                val authorObj = commit.optJSONObject("author")
-                commits.add(
-                    GitCommit(
-                        sha = commitObj.optString("sha", "").take(7),
-                        message = commit.optString("message", "").lines().firstOrNull() ?: "",
-                        author = authorObj?.optString("name", "Unknown") ?: "Unknown",
-                        date = authorObj?.optString("date", "") ?: "",
-                        url = commitObj.optString("html_url", "")
-                    )
-                )
-            }
-            commits
-        }
+        Result.success(emptyList())
 
     fun getLatestDownloadUrl(): String {
         val channel = runBlocking {
@@ -505,7 +446,7 @@ object Updater {
         }
         return when (channel) {
             UpdateChannel.STABLE -> {
-                "https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest/download/$APK_ASSET_NAME"
+                OTA_DOWNLOAD_URL
             }
             UpdateChannel.NIGHTLY -> {
                 cachedNightlyInfo?.apkUrl
@@ -592,8 +533,7 @@ object Updater {
 
                 else -> {
                     Timber.w(
-                        "getAllReleases: unexpected HTTP ${networkResult.status.value} from GitHub " +
-                            "(likely rate-limited, unauthenticated requests are capped at 60/hour per IP)",
+                        "getAllReleases: unexpected HTTP ${networkResult.status.value} from OTA service",
                     )
                     val fallback = cachedReleases
                     if (fallback != null) {

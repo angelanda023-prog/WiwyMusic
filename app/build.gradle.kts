@@ -159,6 +159,7 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
+            buildConfigField("String", "GIT_COMMIT", "\"release\"")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
