@@ -11,11 +11,36 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
 - Current Android release source commit: `e7e1a40` (`fix: refresh OTA on foreground`).
+- Prepared unreleased Android commit: `7385e6b` (`fix: persist premium plan across sessions`).
 - Previous hardening commit: `654626c` (`security: hide OTA repository details`).
 - Admin repository: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`.
 - Admin OTA metadata commit: `af13c50` (`chore: publish OTA metadata for v1.0.45`).
 - Admin OTA documentation commit: `1b4018e` (`docs: record v1.0.45 OTA artifact`).
 - Production APK is `v1.0.45`, `versionCode` 46, distributed through Cloudflare R2.
+
+## Premium session restoration — prepared as v1.1.0, not published
+
+Rollback snapshot:
+
+- Git tag: `snapshot-before-premium-session-fix-v1.0.45`.
+- Exact commit: `4c43747`.
+- The tag is pushed to `origin` and restores the documented published `v1.0.45` source.
+
+Prepared behavior:
+
+- Premium and Free remain the two account plans. `profiles.is_premium = true` renders
+  `⭐ Premium`; `false` renders `Plan Free`.
+- The most recently confirmed plan is cached together with its Supabase user ID. It is restored
+  only for the same user, preventing one account's plan from leaking into another account.
+- A process restart, OTA installation, temporary network interruption, or token renewal no
+  longer erases an already confirmed Premium/Free label while the profile reconnects.
+- Initial profile loading waits for saved-session restoration to finish. It reruns whenever the
+  access token changes, fixing the startup race where the old token could return HTTP 401 and
+  leave the plan as unknown.
+- Successful REST refreshes and Supabase Realtime changes update both the in-memory state and
+  the per-user cache. Server subscriptions, redeem codes, and Premium authorization are unchanged.
+- Prepared version is `1.1.0`, `versionCode` 47. Debug compilation and unit tests pass.
+- No mini-player, full-player, playback service, queue, or protected component file was changed.
 
 ## Foreground OTA refresh — published in v1.0.45
 
@@ -190,6 +215,9 @@ upload completes and its remote SHA-256 is verified.
 - Do not change APIs, databases, services, routes, or playback logic for visual work unless
   strictly required and explicitly authorized.
 - Keep Spanish UI wording where supplied by user.
+- Versioning rule requested on 2026-08-01: after the `1.0.x` line (for example `1.0.20`), the
+  next feature version is `1.1.0`; do not continue it as another `1.0.x` patch unless the user
+  explicitly requests that.
 
 ## Mini-player protection
 
