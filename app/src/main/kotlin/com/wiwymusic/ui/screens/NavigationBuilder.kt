@@ -14,6 +14,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
@@ -108,11 +109,31 @@ fun NavGraphBuilder.navigationBuilder(
     latestVersionName: String,
     onActivateSearch: () -> Unit = {},
 ) {
-    composable(Screens.Home.route) {
+    composable(
+        route = Screens.Home.route,
+        enterTransition = {
+            fadeIn(tween(250)) + slideInHorizontally(tween(350)) { it }
+        },
+        popEnterTransition = {
+            fadeIn(tween(250)) + slideInHorizontally(tween(350)) { it }
+        },
+        exitTransition = { fadeOut(tween(180)) },
+        popExitTransition = { fadeOut(tween(180)) },
+    ) {
         // WiwyMusic: Inicio con estilo naranja y datos reales
         WiwyHomeScreen(navController)
     }
-    composable(Screens.Search.route) {
+    composable(
+        route = Screens.Search.route,
+        enterTransition = {
+            fadeIn(tween(250)) + slideInVertically(tween(350)) { -it }
+        },
+        popEnterTransition = {
+            fadeIn(tween(250)) + slideInVertically(tween(350)) { -it }
+        },
+        exitTransition = { fadeOut(tween(180)) },
+        popExitTransition = { fadeOut(tween(180)) },
+    ) {
         // WiwyMusic: página Buscar completa (cabecera + barra + secciones)
         WiwySearchLanding(
             navController = navController,
@@ -126,6 +147,14 @@ fun NavGraphBuilder.navigationBuilder(
     }
     composable(
         Screens.Library.route,
+        enterTransition = {
+            fadeIn(tween(250)) + slideInVertically(tween(350)) { it }
+        },
+        popEnterTransition = {
+            fadeIn(tween(250)) + slideInVertically(tween(350)) { it }
+        },
+        exitTransition = { fadeOut(tween(180)) },
+        popExitTransition = { fadeOut(tween(180)) },
     ) {
         // WiwyMusic: Biblioteca tipo mockup (Favoritos, Playlists, Álbumes, Artistas, Historial)
         WiwyLibraryScreen(navController)
@@ -349,7 +378,17 @@ fun NavGraphBuilder.navigationBuilder(
     ) {
         YouTubeBrowseScreen(navController)
     }
-    composable("settings") {
+    composable(
+        route = "settings",
+        enterTransition = {
+            fadeIn(tween(250)) + slideInHorizontally(tween(350)) { it }
+        },
+        popEnterTransition = {
+            fadeIn(tween(250)) + slideInHorizontally(tween(350)) { it }
+        },
+        exitTransition = { fadeOut(tween(180)) },
+        popExitTransition = { fadeOut(tween(180)) },
+    ) {
         SettingsScreen(navController, scrollBehavior, latestVersionName)
     }
     composable("settings/appearance") {

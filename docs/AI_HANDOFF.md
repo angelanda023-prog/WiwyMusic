@@ -137,6 +137,19 @@ Preserve these four choices and Wi-Fi control:
 - Automática: recommended, adapts to network.
 - Additional switch: `Máxima calidad solo con Wi‑Fi`.
 
+## UI changes in v1.0.36
+
+- `AboutScreen` uses a full-size native `LazyColumn` without duplicated nested-scroll
+  connections, allowing every contributor card to remain reachable.
+- `WiwyProfileAvatar` is now an accessible button. Tapping any shared header avatar opens
+  `AvatarPickerSheet` to take a photo, choose one from the gallery, or select a preset.
+- Main navigation destination transitions are defined in `NavigationBuilder`:
+  - Settings and Home enter from right to left.
+  - Playlist/Library enters from bottom to top.
+  - Search enters from top to bottom.
+- `MainActivity.kt` and all protected mini-player/player files remain unchanged.
+- Validation: `./gradlew :app:compileUniversalDebugKotlin` completed successfully.
+
 ## Build and verification
 
 Common validation:
