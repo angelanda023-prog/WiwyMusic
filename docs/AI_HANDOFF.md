@@ -158,6 +158,18 @@ Worker was deployed at <https://wiwymusic-admin.angelanda023.workers.dev> with C
 version `f22e09d5-b33a-45bf-b34a-f25c72768d68`. Android reporting was published in OTA
 `v1.0.38`; remote asset digest matches the production SHA-256 above.
 
+### Follow-up behavior after v1.0.38
+
+- Admin Worker version `c67f0ac0-e14c-46e9-9a9d-a71a4ef2a144` treats a fresh
+  `is_playing` heartbeat as online even when the APK is in background.
+- Online/playing users sort above inactive users; remaining users sort by latest activity.
+- Supabase Realtime remains the primary refresh path; a 10-second panel refresh is fallback.
+- Android heartbeat interval is 15 seconds for faster background-playing freshness.
+- Update screen hides changelog and commit-history entry points.
+- Every in-app update prompt uses a generic improvements message and does not expose release
+  details. Future GitHub OTA descriptions should also remain generic.
+- Android portion is compiled and tested locally but is not published in an OTA yet.
+
 ## UI changes in v1.0.36
 
 - `AboutScreen` uses a full-size native `LazyColumn` without duplicated nested-scroll

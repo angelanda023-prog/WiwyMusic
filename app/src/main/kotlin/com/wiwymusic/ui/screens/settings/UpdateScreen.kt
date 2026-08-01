@@ -8,10 +8,7 @@ package com.wiwymusic.ui.screens.settings
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,11 +24,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -57,14 +51,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
@@ -75,15 +66,12 @@ import com.wiwymusic.constants.UpdateChannel
 import com.wiwymusic.constants.UpdateChannelKey
 import com.wiwymusic.ui.component.EnumListPreference
 import com.wiwymusic.ui.component.IconButton
-import com.wiwymusic.ui.component.PreferenceGroupTitle
 import com.wiwymusic.ui.utils.backToMain
+import com.wiwymusic.utils.GENERIC_UPDATE_MESSAGE
 import com.wiwymusic.utils.GitCommit
 import com.wiwymusic.utils.UpdateInfo
 import com.wiwymusic.utils.Updater
 import com.wiwymusic.utils.rememberEnumPreference
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.TimeZone
 
 // ─── Estado de comprobación de actualización ──────────────────────────────────
 
@@ -104,7 +92,6 @@ fun UpdateScreen(
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
     val context = LocalContext.current
-    val uriHandler = LocalUriHandler.current
     val coroutineScope = rememberCoroutineScope()
 
     var nightlyInstallUrl by remember {
@@ -116,9 +103,7 @@ fun UpdateScreen(
     )
 
     var commits by remember { mutableStateOf<List<GitCommit>>(emptyList()) }
-    var isLoadingCommits by remember { mutableStateOf(true) }
     var latestVersion by remember { mutableStateOf<String?>(null) }
-    var isExpanded by remember { mutableStateOf(true) }
 
     var updateCheckState by remember { mutableStateOf<UpdateCheckState>(UpdateCheckState.Idle) }
     var showUpdateDialog by remember { mutableStateOf(false) }
@@ -153,7 +138,6 @@ fun UpdateScreen(
             UpdateAvailableDialog(
                 info = info,
                 onDownload    = { showUpdateDialog = false; com.wiwymusic.utils.AppUpdateInstaller.downloadAndInstall(context, info.downloadUrl) },
-                onViewRelease = { showUpdateDialog = false; uriHandler.openUri(info.releasePageUrl) },
                 onDismiss     = { showUpdateDialog = false }
             )
         }
@@ -171,7 +155,6 @@ fun UpdateScreen(
         coroutineScope.launch {
             Updater.getLatestVersionName().onSuccess { latestVersion = it }
             Updater.getCommitHistory(30).onSuccess { commits = it }.onFailure { commits = emptyList() }
-            isLoadingCommits = false
         }
     }
 
@@ -186,8 +169,6 @@ fun UpdateScreen(
             nightlyInstallUrl = "https://pub-2218e6bbd5b948e1b5d882cf4d92086d.r2.dev/app-universal-release.apk"
         }
     }
-
-    val rotationAngle by animateFloatAsState(if (isExpanded) 180f else 0f, label = "rotation")
 
     // ── Layout ────────────────────────────────────────────────────────────────
     Scaffold(
@@ -310,18 +291,6 @@ fun UpdateScreen(
                 )
             }
 
-            item {
-                Spacer(Modifier.height(8.dp))
-                Button(
-                    onClick = { navController.navigate("settings/changelog") },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(painterResource(R.drawable.update), null, Modifier.size(18.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.view_changelog))
-                }
-            }
-
             // ── Card nightly ──────────────────────────────────────────────────
             item {
                 AnimatedVisibility(visible = updateChannel == UpdateChannel.NIGHTLY) {
@@ -350,60 +319,6 @@ fun UpdateScreen(
                             }
                         }
                     }
-                }
-            }
-
-            // ── Historial de commits ──────────────────────────────────────────
-            item {
-                Spacer(Modifier.height(16.dp))
-                PreferenceGroupTitle(title = stringResource(R.string.commit_history))
-            }
-
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth().animateContentSize(),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                ) {
-                    Column {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { isExpanded = !isExpanded }
-                                .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(painterResource(R.drawable.history), null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                                Spacer(Modifier.width(12.dp))
-                                Text(stringResource(R.string.recent_commits), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium)
-                            }
-                            Icon(painterResource(R.drawable.expand_more), null, modifier = Modifier.rotate(rotationAngle))
-                        }
-                        AnimatedVisibility(visible = isExpanded) {
-                            Column {
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(horizontal = 16.dp),
-                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                                )
-                                if (isLoadingCommits) {
-                                    Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                                        CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (isExpanded && !isLoadingCommits) {
-                items(commits) { commit ->
-                    CommitItem(commit = commit, onClick = { uriHandler.openUri(commit.url) })
                 }
             }
 
@@ -470,7 +385,6 @@ private fun UpdateCheckButton(
 private fun UpdateAvailableDialog(
     info: UpdateInfo,
     onDownload: () -> Unit,
-    onViewRelease: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     AlertDialog(
@@ -489,17 +403,12 @@ private fun UpdateAvailableDialog(
                         Text(info.versionName, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
                 }
-                if (!info.releaseNotes.isNullOrBlank()) {
-                    HorizontalDivider()
-                    Text("Novedades", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
-                    val notes = info.releaseNotes.let { if (it.length > 300) it.take(300) + "…" else it }
-                    Text(
-                        text = notes,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.height(120.dp).verticalScroll(rememberScrollState())
-                    )
-                }
+                HorizontalDivider()
+                Text(
+                    text = GENERIC_UPDATE_MESSAGE,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         },
         confirmButton = {
@@ -509,12 +418,7 @@ private fun UpdateAvailableDialog(
                 Text("Descargar APK")
             }
         },
-        dismissButton = {
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                TextButton(onClick = onViewRelease) { Text("Ver release") }
-                TextButton(onClick = onDismiss)    { Text("Ahora no") }
-            }
-        }
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Ahora no") } }
     )
 }
 
@@ -548,45 +452,4 @@ private fun BuildChannelInfoDialog(
         confirmButton = { TextButton(onClick = onConfirm) { Text(stringResource(android.R.string.ok)) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(android.R.string.cancel)) } }
     )
-}
-
-// ─── CommitItem ───────────────────────────────────────────────────────────────
-
-@Composable
-private fun CommitItem(commit: GitCommit, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        onClick = onClick
-    ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.Top) {
-            Box(Modifier.padding(top = 4.dp).size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
-                Text(commit.message, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Spacer(Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(commit.sha, style = MaterialTheme.typography.labelSmall, fontFamily = FontFamily.Monospace, color = MaterialTheme.colorScheme.primary)
-                    Text("•", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(commit.author, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    if (commit.date.isNotEmpty()) {
-                        Text("•", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(formatCommitDate(commit.date), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-            }
-            Icon(painterResource(R.drawable.arrow_forward), null, Modifier.padding(start = 8.dp).size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
-        }
-    }
-}
-
-private fun formatCommitDate(isoDate: String): String = try {
-    val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
-        timeZone = TimeZone.getTimeZone("UTC")
-    }
-    SimpleDateFormat("MMM d", Locale.getDefault()).format(inputFormat.parse(isoDate)!!)
-} catch (e: Exception) {
-    isoDate.take(10)
 }

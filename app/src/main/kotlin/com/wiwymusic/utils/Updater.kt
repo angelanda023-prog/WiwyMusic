@@ -78,6 +78,8 @@ const val GITHUB_REPO = "WiwyMusic"
 
 private const val APK_ASSET_NAME = "WiwyMusic.apk"
 private const val NIGHTLY_JSON_URL = "https://pub-2218e6bbd5b948e1b5d882cf4d92086d.r2.dev/update.json"
+const val GENERIC_UPDATE_MESSAGE =
+    "Esta actualización incluye mejoras de rendimiento, estabilidad y experiencia general."
 
 private data class ReleasesNetworkResult(
     val status: HttpStatusCode,
@@ -349,12 +351,7 @@ object Updater {
         }
     }
 
-    suspend fun getLatestReleaseNotes(): Result<String?> = runCatching {
-        when (getCurrentUpdateChannel()) {
-            UpdateChannel.STABLE -> getLatestReleaseInfo().getOrThrow().body
-            UpdateChannel.NIGHTLY -> fetchNightlyJson().getOrThrow().changelog
-        }
-    }
+    suspend fun getLatestReleaseNotes(): Result<String?> = Result.success(GENERIC_UPDATE_MESSAGE)
 
     suspend fun getLatestReleaseInfo(forceRefresh: Boolean = false): Result<ReleaseInfo> = runCatching {
         when (getCurrentUpdateChannel()) {
@@ -419,7 +416,7 @@ object Updater {
             versionName    = latestVersionName,
             downloadUrl    = downloadUrl,
             releasePageUrl = latest.htmlUrl,
-            releaseNotes   = latest.body,
+            releaseNotes   = GENERIC_UPDATE_MESSAGE,
             publishedAt    = latest.publishedAt,
         )
     }
@@ -435,7 +432,7 @@ object Updater {
                 versionName    = nightly.versionName,
                 downloadUrl    = nightly.apkUrl,
                 releasePageUrl = nightly.apkUrl,
-                releaseNotes   = nightly.changelog,
+                releaseNotes   = GENERIC_UPDATE_MESSAGE,
                 publishedAt    = nightly.publishedAt,
             )
         }

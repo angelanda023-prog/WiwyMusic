@@ -32,7 +32,7 @@ import timber.log.Timber
  * Lee la MediaSession pública de la propia app como cualquier controlador Android.
  */
 object AdminPresenceReporter : DefaultLifecycleObserver, Player.Listener {
-    private const val HEARTBEAT_MS = 30_000L
+    private const val HEARTBEAT_MS = 15_000L
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val sendMutex = Mutex()
