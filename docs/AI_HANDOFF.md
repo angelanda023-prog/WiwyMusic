@@ -137,6 +137,27 @@ Preserve these four choices and Wi-Fi control:
 - Automática: recommended, adapts to network.
 - Additional switch: `Máxima calidad solo con Wi‑Fi`.
 
+## Admin live presence (backend deployed; Android OTA pending)
+
+Android reports authenticated-user presence to the Supabase `app_presence` table through
+`AdminPresenceReporter.kt`. It uses a separate read-only `MediaController` client plus the
+process lifecycle, so no protected mini-player, playback service, queue, state, or connection
+file was modified. The report contains app foreground state, playback state, current song
+metadata, and a heartbeat timestamp. `SupabaseAuth.upsertAppPresence` performs the RLS-bound
+upsert using the user's own JWT and retries once after token refresh on HTTP 401.
+
+The companion admin project is `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`. Its Users table,
+user detail, and dashboard now show online APK users, current playback, last activity, and
+Premium days remaining. Days are derived from `subscriptions.expires_at` and refreshed every
+30 seconds, so the count decreases automatically. Migration
+`supabase/migrations/0002_app_presence.sql` creates the table, owner-only RLS policies, index,
+and Realtime publication entry.
+
+Migration `0002_app_presence.sql` was applied to production Supabase on 2026-07-31. The admin
+Worker was deployed at <https://wiwymusic-admin.angelanda023.workers.dev> with Cloudflare
+version `f22e09d5-b33a-45bf-b34a-f25c72768d68`. Android reporting still requires publishing
+the `v1.0.38` OTA.
+
 ## UI changes in v1.0.36
 
 - `AboutScreen` uses a full-size native `LazyColumn` without duplicated nested-scroll

@@ -140,6 +140,23 @@ object SupabaseAuth {
         }
     }
 
+    /** Actualiza la presencia que puede consultar exclusivamente el panel admin. */
+    suspend fun upsertAppPresence(body: JSONObject): Result<Unit> {
+        val currentSession = _session.value
+            ?: return Result.failure(IllegalStateException("Sin sesión"))
+
+        val firstAttempt = postPresence(currentSession, body)
+        val failure = firstAttempt.exceptionOrNull()
+        if (failure !is HttpStatusException || failure.code != HttpURLConnection.HTTP_UNAUTHORIZED) {
+            return firstAttempt
+        }
+
+        val refreshResult = refreshAccessToken()
+        if (refreshResult.isFailure) return Result.failure(failure)
+        val refreshedSession = _session.value ?: return Result.failure(failure)
+        return postPresence(refreshedSession, body)
+    }
+
     // ── Interno ────────────────────────────────────────────────────────────────
 
     private suspend fun post(path: String, body: JSONObject): Result<JSONObject> =
@@ -168,6 +185,35 @@ object SupabaseAuth {
                 JSONObject(text)
             }
         }
+
+    private suspend fun postPresence(session: Session, body: JSONObject): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val conn = (URL("$BASE_URL/rest/v1/app_presence?on_conflict=user_id").openConnection() as HttpURLConnection).apply {
+                    requestMethod = "POST"
+                    setRequestProperty("apikey", ANON_KEY)
+                    setRequestProperty("Authorization", "Bearer ${session.accessToken}")
+                    setRequestProperty("Content-Type", "application/json")
+                    setRequestProperty("Accept", "application/json")
+                    setRequestProperty("Prefer", "resolution=merge-duplicates,return=minimal")
+                    doOutput = true
+                    connectTimeout = 15_000
+                    readTimeout = 15_000
+                }
+                try {
+                    conn.outputStream.use { it.write(body.toString().toByteArray(Charsets.UTF_8)) }
+                    val code = conn.responseCode
+                    if (code !in 200..299) {
+                        val text = conn.errorStream?.bufferedReader()?.use { it.readText() }.orEmpty()
+                        throw HttpStatusException(code, parseError(text, code))
+                    }
+                } finally {
+                    conn.disconnect()
+                }
+            }
+        }
+
+    private class HttpStatusException(val code: Int, message: String) : Exception(message)
 
     private suspend fun persistSession(json: JSONObject) {
         val accessToken = json.getString("access_token")
