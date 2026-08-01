@@ -11,11 +11,38 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
 - Current Android release source commit: `ab6d98e` (`fix: show bottom navigation on upward scroll`).
+- Prepared unreleased Android commit: `e7e1a40` (`fix: refresh OTA on foreground`).
 - Previous hardening commit: `654626c` (`security: hide OTA repository details`).
 - Admin repository: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`.
 - Admin OTA metadata commit: `a9d3f86` (`chore: publish OTA metadata for v1.0.44`).
 - Admin OTA documentation commit: `f316cb5` (`docs: record v1.0.44 OTA artifact`).
 - Production APK is `v1.0.44`, `versionCode` 45, distributed through Cloudflare R2.
+
+## Foreground OTA refresh — prepared as v1.0.45, not published
+
+Rollback snapshot:
+
+- Git tag: `snapshot-before-foreground-ota-refresh-20260801`.
+- Exact commit: `43cae41`.
+- The tag is pushed to `origin` and restores the documented published `v1.0.44` source.
+
+Prepared behavior:
+
+- Opening the application or returning it to the foreground forces a fresh stable OTA metadata
+  request instead of reusing the three-hour release cache.
+- The foreground loop performs another fresh request every 180 minutes while the application
+  remains foregrounded and is cancelled when it leaves the foreground.
+- The existing ten-second DataStore deduplication window prevents activity/process startup from
+  causing duplicate requests.
+- The latest foreground result is exposed as a `StateFlow` and observed by `MainActivity`, so an
+  available update opens the existing in-app update sheet even if system update notifications
+  are disabled.
+- The update-notification preference still controls system notifications and the six-hour
+  WorkManager fallback; disabling it no longer disables foreground in-app checks.
+- `Updater.getLatestVersionName(forceRefresh)` passes the foreground refresh request through to
+  the stable release fetch. Manual checks retain their existing forced-refresh behavior.
+- Prepared version is `1.0.45`, `versionCode` 46. Debug compilation and unit tests pass.
+- No mini-player, full-player, playback service, queue, or protected component file was changed.
 
 ## Bottom navigation directional auto-hide — published in v1.0.44
 
