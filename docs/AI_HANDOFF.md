@@ -6,15 +6,15 @@ Last updated: 2026-07-31 (America/Mexico_City)
 
 - Android app written in Kotlin and Jetpack Compose with Material Design 3.
 - Application ID: `com.wiwymusic`.
-- Production release: `v1.0.37`.
-- `versionName`: `1.0.37`.
-- `versionCode`: `38`.
-- Production commit: `7c434a5` (`feat(settings): animate page navigation`).
-- GitHub release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.37>
+- Production release: `v1.0.38`.
+- `versionName`: `1.0.38`.
+- `versionCode`: `39`.
+- Production commit: `13b01cd` (`feat(admin): report live app presence`).
+- GitHub release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.38>
 - OTA asset name: `WiwyMusic.apk`.
-- Production APK SHA-256: `82a1020dd393f29b70495314fad320b96d450b58090c5141e7e948f53fd20548`.
-- Previous production baseline: `v1.0.36`, commit
-  `a1a03ac`.
+- Production APK SHA-256: `b6bf04deec397a1567016efd1d3890847c84a60580cd2c3bb7ff68e836a4a699`.
+- Previous production baseline: `v1.0.37`, commit
+  `7c434a5`.
 
 The app updater reads stable releases from `angelanda023-prog/WiwyMusic` and expects an
 asset named exactly `WiwyMusic.apk`. Relevant implementation:
@@ -137,7 +137,7 @@ Preserve these four choices and Wi-Fi control:
 - Automática: recommended, adapts to network.
 - Additional switch: `Máxima calidad solo con Wi‑Fi`.
 
-## Admin live presence (backend deployed; Android OTA pending)
+## Admin live presence (deployed in v1.0.38)
 
 Android reports authenticated-user presence to the Supabase `app_presence` table through
 `AdminPresenceReporter.kt`. It uses a separate read-only `MediaController` client plus the
@@ -155,8 +155,8 @@ and Realtime publication entry.
 
 Migration `0002_app_presence.sql` was applied to production Supabase on 2026-07-31. The admin
 Worker was deployed at <https://wiwymusic-admin.angelanda023.workers.dev> with Cloudflare
-version `f22e09d5-b33a-45bf-b34a-f25c72768d68`. Android reporting still requires publishing
-the `v1.0.38` OTA.
+version `f22e09d5-b33a-45bf-b34a-f25c72768d68`. Android reporting was published in OTA
+`v1.0.38`; remote asset digest matches the production SHA-256 above.
 
 ## UI changes in v1.0.36
 
