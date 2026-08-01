@@ -857,6 +857,17 @@ class MainActivity : ComponentActivity() {
                                 }
                                 return Offset.Zero
                             }
+
+                            override fun onPostScroll(
+                                consumed: Offset,
+                                available: Offset,
+                                source: NestedScrollSource,
+                            ): Offset {
+                                if (available.y < -0.5f) {
+                                    bottomNavigationScrollEvents.tryEmit(false)
+                                }
+                                return Offset.Zero
+                            }
                         }
                     }
 
