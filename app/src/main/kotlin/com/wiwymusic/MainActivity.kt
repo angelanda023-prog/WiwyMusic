@@ -845,7 +845,7 @@ class MainActivity : ComponentActivity() {
 
                     var bottomNavigationHiddenByScroll by remember { mutableStateOf(false) }
                     val bottomNavigationScrollEvents = remember {
-                        MutableSharedFlow<Unit>(
+                        MutableSharedFlow<Boolean>(
                             extraBufferCapacity = 1,
                             onBufferOverflow = BufferOverflow.DROP_OLDEST,
                         )
@@ -853,8 +853,10 @@ class MainActivity : ComponentActivity() {
                     val bottomNavigationScrollConnection = remember(bottomNavigationScrollEvents) {
                         object : NestedScrollConnection {
                             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                                if (kotlin.math.abs(available.y) > 0.5f) {
-                                    bottomNavigationScrollEvents.tryEmit(Unit)
+                                if (available.y < -0.5f) {
+                                    bottomNavigationScrollEvents.tryEmit(true)
+                                } else if (available.y > 0.5f) {
+                                    bottomNavigationScrollEvents.tryEmit(false)
                                 }
                                 return Offset.Zero
                             }
@@ -862,10 +864,8 @@ class MainActivity : ComponentActivity() {
                     }
 
                     LaunchedEffect(bottomNavigationScrollEvents) {
-                        bottomNavigationScrollEvents.collectLatest {
-                            bottomNavigationHiddenByScroll = true
-                            delay(180L)
-                            bottomNavigationHiddenByScroll = false
+                        bottomNavigationScrollEvents.collectLatest { shouldHide ->
+                            bottomNavigationHiddenByScroll = shouldHide
                         }
                     }
 
