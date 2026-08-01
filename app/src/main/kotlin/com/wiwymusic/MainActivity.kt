@@ -117,6 +117,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
@@ -162,11 +165,13 @@ import coil3.toBitmap
 import com.valentinilk.shimmer.LocalShimmerTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import com.wiwymusic.utils.PreferenceStore
@@ -838,8 +843,43 @@ class MainActivity : ComponentActivity() {
                     val floatingBarsBottomPadding = FloatingToolbarBottomPadding
                     val navVisibleHeight = if (slimNav) SlimFloatingToolbarHeight else FloatingToolbarHeight
 
+                    var bottomNavigationHiddenByScroll by remember { mutableStateOf(false) }
+                    val bottomNavigationScrollEvents = remember {
+                        MutableSharedFlow<Unit>(
+                            extraBufferCapacity = 1,
+                            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+                        )
+                    }
+                    val bottomNavigationScrollConnection = remember(bottomNavigationScrollEvents) {
+                        object : NestedScrollConnection {
+                            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                                if (kotlin.math.abs(available.y) > 0.5f) {
+                                    bottomNavigationScrollEvents.tryEmit(Unit)
+                                }
+                                return Offset.Zero
+                            }
+                        }
+                    }
+
+                    LaunchedEffect(bottomNavigationScrollEvents) {
+                        bottomNavigationScrollEvents.collectLatest {
+                            bottomNavigationHiddenByScroll = true
+                            delay(180L)
+                            bottomNavigationHiddenByScroll = false
+                        }
+                    }
+
+                    LaunchedEffect(currentRoute) {
+                        bottomNavigationHiddenByScroll = false
+                    }
+
                     val bottomNavigationBarHeight by animateDpAsState(
-                        targetValue = if (shouldShowNavigationBar && !useRail) navVisibleHeight else 0.dp,
+                        targetValue =
+                            if (shouldShowNavigationBar && !useRail && !bottomNavigationHiddenByScroll) {
+                                navVisibleHeight
+                            } else {
+                                0.dp
+                            },
                         animationSpec = NavigationBarAnimationSpec,
                         label = "",
                     )
@@ -1692,6 +1732,7 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .nestedScroll(searchBarScrollBehavior.nestedScrollConnection)
+                                    .nestedScroll(bottomNavigationScrollConnection)
                             ) {
                                 var transitionDirection =
                                     AnimatedContentTransitionScope.SlideDirection.Left

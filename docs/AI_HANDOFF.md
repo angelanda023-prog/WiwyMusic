@@ -17,6 +17,26 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Admin OTA documentation commit: `273c032` (`docs: record v1.0.42 OTA artifacts`).
 - Production APK is `v1.0.42`, `versionCode` 43. The repository-hiding bridge is complete.
 
+## Bottom navigation auto-hide — prepared for v1.0.43
+
+Rollback snapshot created before this experiment:
+
+- Git tag: `snapshot-before-bottom-nav-autohide-20260801`.
+- Exact commit: `a0abc58948b4f979c829889d628876c9852baeff`.
+- The tag is pushed to `origin` and restores the complete state after published `v1.0.42`.
+
+Prepared behavior:
+
+- The floating bottom navigation toolbar hides while nested content scrolls in either direction.
+- Scroll events are collected without changing screen content state on every frame.
+- After 180 ms without a new scroll event, the toolbar returns with the existing bottom-to-top
+  spring slide animation.
+- Route changes immediately restore the toolbar.
+- Layout insets and mini-player anchors remain unchanged, avoiding content or player jumps.
+- Only the bottom navigation logic inside `MainActivity.kt` is changed; no mini-player,
+  full-player, playback service, queue, or protected component file is modified.
+- Debug compilation and unit tests passed before the release version bump.
+
 ## Artist onboarding performance — published in v1.0.42
 
 File: `app/src/main/kotlin/com/wiwymusic/ui/screens/auth/WiwyOnboardingScreen.kt`.
