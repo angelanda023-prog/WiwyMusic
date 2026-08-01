@@ -12,6 +12,7 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Android branch: `main`.
 - Current Android release source commit: `e7e1a40` (`fix: refresh OTA on foreground`).
 - Prepared unreleased Android commit: `7385e6b` (`fix: persist premium plan across sessions`).
+- Prepared bottom-navigation commit: `32cfb5d` (`fix: show bottom nav at scroll end`).
 - Previous hardening commit: `654626c` (`security: hide OTA repository details`).
 - Admin repository: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`.
 - Admin OTA metadata commit: `af13c50` (`chore: publish OTA metadata for v1.0.45`).
@@ -39,6 +40,10 @@ Prepared behavior:
   leave the plan as unknown.
 - Successful REST refreshes and Supabase Realtime changes update both the in-memory state and
   the per-user cache. Server subscriptions, redeem codes, and Premium authorization are unchanged.
+- The bottom navigation still hides while scrolling downward and returns immediately when
+  scrolling upward. A post-scroll boundary check now also restores it upon reaching the bottom.
+- Screens without scrollable content keep the bottom navigation visible because their unconsumed
+  scroll is treated as a boundary rather than an active downward content scroll.
 - Prepared version is `1.1.0`, `versionCode` 47. Debug compilation and unit tests pass.
 - No mini-player, full-player, playback service, queue, or protected component file was changed.
 
