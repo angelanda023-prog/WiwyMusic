@@ -1,7 +1,7 @@
 /*
  * WiwyMusic — Fase A: onboarding "¿Qué te gusta escuchar?".
  * Grid de artistas traídos dinámicamente de InnerTube (sin login de YouTube).
- * El usuario elige ≥10 y se guardan en su cuenta (Supabase).
+ * El usuario elige entre 1 y 10 y se guardan en su cuenta (Supabase).
  */
 
 package com.wiwymusic.ui.screens.auth
@@ -61,16 +61,24 @@ import com.wiwymusic.innertube.YouTube
 import com.wiwymusic.innertube.models.ArtistItem
 import com.wiwymusic.utils.UserPrefs
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 private val WiwyOrange = Color(0xFFF5791F)
 private const val MIN_ARTISTS = 1
 private const val MAX_ARTISTS = 10
+private const val ARTIST_REQUEST_TIMEOUT_MS = 5_000L
+
+private object OnboardingArtistCache {
+    var artists: List<ArtistItem> = emptyList()
+}
 
 @Composable
 fun WiwyOnboardingScreen(onDone: () -> Unit) {
@@ -87,11 +95,14 @@ fun WiwyOnboardingScreen(onDone: () -> Unit) {
     var searchResults by remember { mutableStateOf<List<ArtistItem>>(emptyList()) }
     var searching by remember { mutableStateOf(false) }
 
-    LaunchedEffectArtists { list ->
-        artists = list
-        list.forEach { byId[it.id] = it }
-        loading = false
-    }
+    LaunchedEffectArtists(
+        onProgress = { list ->
+            artists = list
+            list.forEach { byId[it.id] = it }
+            if (list.isNotEmpty()) loading = false
+        },
+        onFinished = { loading = false },
+    )
 
     // Búsqueda de artistas (con debounce)
     LaunchedEffect(query) {
@@ -104,11 +115,13 @@ fun WiwyOnboardingScreen(onDone: () -> Unit) {
         searching = true
         delay(350)
         val results = withContext(Dispatchers.IO) {
-            YouTube.search(q, YouTube.SearchFilter.FILTER_ARTIST)
-                .getOrNull()?.items
-                ?.filterIsInstance<ArtistItem>()
-                ?.take(24)
-                .orEmpty()
+            withTimeoutOrNull(ARTIST_REQUEST_TIMEOUT_MS) {
+                YouTube.search(q, YouTube.SearchFilter.FILTER_ARTIST)
+                    .getOrNull()?.items
+                    ?.filterIsInstance<ArtistItem>()
+                    ?.take(24)
+                    .orEmpty()
+            }.orEmpty()
         }
         results.forEach { byId[it.id] = it }
         searchResults = results
@@ -304,28 +317,61 @@ private fun ArtistPickCard(artist: ArtistItem, selected: Boolean, onClick: () ->
     }
 }
 
-/** Carga los artistas del onboarding desde InnerTube (varios géneros semilla). */
+/**
+ * Carga artistas desde InnerTube de forma progresiva. Solo mantiene tres peticiones activas,
+ * publica cada lote apenas termina y reutiliza el resultado mientras viva el proceso.
+ */
 @Composable
-private fun LaunchedEffectArtists(onLoaded: (List<ArtistItem>) -> Unit) {
+private fun LaunchedEffectArtists(
+    onProgress: (List<ArtistItem>) -> Unit,
+    onFinished: () -> Unit,
+) {
     androidx.compose.runtime.LaunchedEffect(Unit) {
+        OnboardingArtistCache.artists.takeIf { it.isNotEmpty() }?.let { cached ->
+            onProgress(cached)
+            onFinished()
+            return@LaunchedEffect
+        }
+
         val seeds = listOf(
             "pop", "rock", "reggaeton", "regional mexicano", "corridos",
             "trap latino", "electronica", "hip hop", "cumbia", "indie",
             "k-pop", "banda",
-        )
-        val result = withContext(Dispatchers.IO) {
-            coroutineScope {
-                seeds.map { seed ->
-                    async {
-                        YouTube.search(seed, YouTube.SearchFilter.FILTER_ARTIST)
-                            .getOrNull()?.items
-                            ?.filterIsInstance<ArtistItem>()
-                            ?.take(7)
-                            .orEmpty()
+        ).shuffled()
+        val accumulated = linkedMapOf<String, ArtistItem>()
+        val semaphore = Semaphore(permits = 3)
+        val results = Channel<List<ArtistItem>>(capacity = Channel.UNLIMITED)
+
+        coroutineScope {
+            val jobs = seeds.map { seed ->
+                launch(Dispatchers.IO) {
+                    val batch = semaphore.withPermit {
+                        withTimeoutOrNull(ARTIST_REQUEST_TIMEOUT_MS) {
+                            YouTube.search(seed, YouTube.SearchFilter.FILTER_ARTIST)
+                                .getOrNull()?.items
+                                ?.filterIsInstance<ArtistItem>()
+                                ?.take(7)
+                                .orEmpty()
+                        }.orEmpty()
                     }
-                }.awaitAll().flatten().distinctBy { it.id }
+                    results.send(batch)
+                }
+            }
+            launch {
+                jobs.joinAll()
+                results.close()
+            }
+
+            for (batch in results) {
+                var changed = false
+                batch.forEach { artist ->
+                    if (accumulated.putIfAbsent(artist.id, artist) == null) changed = true
+                }
+                if (changed) onProgress(accumulated.values.toList())
             }
         }
-        onLoaded(result.shuffled())
+
+        OnboardingArtistCache.artists = accumulated.values.toList()
+        onFinished()
     }
 }

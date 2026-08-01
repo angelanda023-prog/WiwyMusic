@@ -15,8 +15,22 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Admin repository: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`.
 - Admin OTA source commit: `2ecffc0` (`feat: serve OTA files through Worker`).
 - Production APK remains `v1.0.41`; commits after `474de8f` are not published in an Android OTA.
-- The first unpublished bridge release must use a new version, expected next values:
-  `versionName` `1.0.42`, `versionCode` `43`, tag `v1.0.42`.
+- Bridge release is now prepared as `versionName` `1.0.42`, `versionCode` `43`, tag `v1.0.42`.
+
+## Artist onboarding performance — prepared for v1.0.42
+
+File: `app/src/main/kotlin/com/wiwymusic/ui/screens/auth/WiwyOnboardingScreen.kt`.
+
+- Initial artist discovery no longer blocks on all 12 genre searches.
+- Results render progressively as each request finishes.
+- At most three InnerTube artist searches run concurrently.
+- Each initial or manual artist search has a five-second timeout.
+- Completed discovery results are reused while the application process remains alive.
+- Duplicate artist IDs are merged while preserving the progressively received order.
+- Artist selection limits, Supabase persistence, login flow, and onboarding completion behavior
+  remain unchanged.
+- Debug compilation and unit tests passed before the release version bump.
+- No protected mini-player/player file was modified.
 
 ## Premium redeem codes — published in v1.0.40
 
