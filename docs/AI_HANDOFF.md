@@ -6,15 +6,15 @@ Last updated: 2026-07-31 (America/Mexico_City)
 
 - Android app written in Kotlin and Jetpack Compose with Material Design 3.
 - Application ID: `com.wiwymusic`.
-- Production release: `v1.0.35`.
-- `versionName`: `1.0.35`.
-- `versionCode`: `36`.
-- Production commit: `4930a43` (`feat(settings): unify page design`).
-- GitHub release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.35>
+- Production release: `v1.0.36`.
+- `versionName`: `1.0.36`.
+- `versionCode`: `37`.
+- Production commit: `a1a03ac` (`feat(ui): refine navigation and profile`).
+- GitHub release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.36>
 - OTA asset name: `WiwyMusic.apk`.
-- Production APK SHA-256: `bf3192df75513e4f3a29c47460e26835304b13617b6ec4a2d3f6b070916ce0a8`.
-- Previous production baseline: `v1.0.34`, commit
-  `df99b71`.
+- Production APK SHA-256: `f41ef0fd074a9e3ed88d0ecb579cf2d081d69e5613f9195fab54cba6afd963a4`.
+- Previous production baseline: `v1.0.35`, commit
+  `4930a43`.
 
 The app updater reads stable releases from `angelanda023-prog/WiwyMusic` and expects an
 asset named exactly `WiwyMusic.apk`. Relevant implementation:
