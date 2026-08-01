@@ -10,14 +10,14 @@ build, deployment, migration, or release. Do not create competing project-memory
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
-- Current Android release source commit: `27dcd9f` (`feat: hide bottom navigation while scrolling`).
+- Current Android release source commit: `ab6d98e` (`fix: show bottom navigation on upward scroll`).
 - Previous hardening commit: `654626c` (`security: hide OTA repository details`).
 - Admin repository: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`.
-- Admin OTA metadata commit: `2aa0c1f` (`chore: publish OTA metadata for v1.0.43`).
-- Admin OTA documentation commit: `14b86ef` (`docs: record v1.0.43 OTA artifact`).
-- Production APK is `v1.0.43`, `versionCode` 44, distributed through Cloudflare R2.
+- Admin OTA metadata commit: `a9d3f86` (`chore: publish OTA metadata for v1.0.44`).
+- Admin OTA documentation commit: `f316cb5` (`docs: record v1.0.44 OTA artifact`).
+- Production APK is `v1.0.44`, `versionCode` 45, distributed through Cloudflare R2.
 
-## Bottom navigation auto-hide — published in v1.0.43
+## Bottom navigation directional auto-hide — published in v1.0.44
 
 Rollback snapshot created before this experiment:
 
@@ -25,12 +25,18 @@ Rollback snapshot created before this experiment:
 - Exact commit: `a0abc58948b4f979c829889d628876c9852baeff`.
 - The tag is pushed to `origin` and restores the complete state after published `v1.0.42`.
 
-Prepared behavior:
+Additional rollback snapshot created before the directional correction:
 
-- The floating bottom navigation toolbar hides while nested content scrolls in either direction.
-- Scroll events are collected without changing screen content state on every frame.
-- After 180 ms without a new scroll event, the toolbar returns with the existing bottom-to-top
-  spring slide animation.
+- Git tag: `snapshot-bottom-nav-v1.0.43`.
+- Exact commit: `7da1cb3`.
+- The tag is pushed to `origin` and restores the published `v1.0.43` behavior.
+
+Current behavior:
+
+- The floating bottom navigation toolbar hides only when nested content scrolls downward.
+- It returns immediately when the user scrolls upward, using the existing bottom-to-top spring
+  slide animation; it no longer waits for scrolling to stop.
+- Direction events are collected without consuming or altering the nested content scroll.
 - Route changes immediately restore the toolbar.
 - Layout insets and mini-player anchors remain unchanged, avoiding content or player jumps.
 - Only the bottom navigation logic inside `MainActivity.kt` is changed; no mini-player,
@@ -81,19 +87,19 @@ admin panel.
 
 - Android app written in Kotlin and Jetpack Compose with Material Design 3.
 - Application ID: `com.wiwymusic`.
-- Production release: `v1.0.43` (R2 stable OTA).
-- `versionName`: `1.0.43`.
-- `versionCode`: `44`.
-- Production commit: `27dcd9f` (`feat: hide bottom navigation while scrolling`).
+- Production release: `v1.0.44` (R2 stable OTA).
+- `versionName`: `1.0.44`.
+- `versionCode`: `45`.
+- Production commit: `ab6d98e` (`fix: show bottom navigation on upward scroll`).
 - Last GitHub bridge release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.42>
 - OTA asset name: `WiwyMusic.apk`.
-- Production APK SHA-256: `2b8171091b88866bc60d37b56fcbe25451ca86c5974c9d2896a3f2e4e933f233`.
-- Previous production baseline: `v1.0.42`, commit `dedacc2`, SHA-256
-  `7b186d299f85393dbca89a9c4fd68ed001e976f702fb75bf6f271c312214a25e`.
+- Production APK SHA-256: `5168eecef9c67984a1b63d96df31b2c6a3691e4a50ab2d3d8c093565aa3492d4`.
+- Previous production baseline: `v1.0.43`, commit `27dcd9f`, SHA-256
+  `2b8171091b88866bc60d37b56fcbe25451ca86c5974c9d2896a3f2e4e933f233`.
 
 The bridge release was published through both GitHub and R2. Clients upgrading from `v1.0.41`
 can discover `v1.0.42` through the old GitHub updater; after installation, the Cloudflare
-endpoint offers current stable `v1.0.43`.
+endpoint offers current stable `v1.0.44`.
 
 ## APK hardening and rollback baseline — published in v1.0.42
 
@@ -104,9 +110,10 @@ Rollback is fixed to the unchanged production release:
 - APK SHA-256: `d1a6c76cf0353a345c67d776bad903333f31d5970f330ace4a9efed74419f927`.
 - An exact rollback copy is stored privately in R2 as
   `ota/archive/v1.0.41/WiwyMusic.apk`.
-- Versioned copies exist at `ota/archive/v1.0.42/WiwyMusic.apk` and
-  `ota/archive/v1.0.43/WiwyMusic.apk`; current `v1.0.43` is served from `ota/WiwyMusic.apk`.
-- R2 metadata `ota/releases.json` points to `v1.0.43` with the generic improvements message.
+- Versioned copies exist at `ota/archive/v1.0.42/WiwyMusic.apk`,
+  `ota/archive/v1.0.43/WiwyMusic.apk`, and `ota/archive/v1.0.44/WiwyMusic.apk`; current
+  `v1.0.44` is served from `ota/WiwyMusic.apk`.
+- R2 metadata `ota/releases.json` points to `v1.0.44` with the generic improvements message.
 - Public repository-neutral endpoints:
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/releases`
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/download`
