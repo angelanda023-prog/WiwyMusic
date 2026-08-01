@@ -6,15 +6,15 @@ Last updated: 2026-07-31 (America/Mexico_City)
 
 - Android app written in Kotlin and Jetpack Compose with Material Design 3.
 - Application ID: `com.wiwymusic`.
-- Production release: `v1.0.38`.
-- `versionName`: `1.0.38`.
-- `versionCode`: `39`.
-- Production commit: `13b01cd` (`feat(admin): report live app presence`).
-- GitHub release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.38>
+- Production release: `v1.0.39`.
+- `versionName`: `1.0.39`.
+- `versionCode`: `40`.
+- Production commit: `5084d68` (`build: prepare v1.0.39`).
+- GitHub release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.39>
 - OTA asset name: `WiwyMusic.apk`.
-- Production APK SHA-256: `b6bf04deec397a1567016efd1d3890847c84a60580cd2c3bb7ff68e836a4a699`.
-- Previous production baseline: `v1.0.37`, commit
-  `7c434a5`.
+- Production APK SHA-256: `0cc2374e0afa25e1ac8ea775b21b62dc2e3bff071208f20d770013b1093621e4`.
+- Previous production baseline: `v1.0.38`, commit
+  `13b01cd`.
 
 The app updater reads stable releases from `angelanda023-prog/WiwyMusic` and expects an
 asset named exactly `WiwyMusic.apk`. Relevant implementation:
@@ -158,7 +158,7 @@ Worker was deployed at <https://wiwymusic-admin.angelanda023.workers.dev> with C
 version `f22e09d5-b33a-45bf-b34a-f25c72768d68`. Android reporting was published in OTA
 `v1.0.38`; remote asset digest matches the production SHA-256 above.
 
-### Follow-up behavior after v1.0.38
+### Follow-up behavior published in v1.0.39
 
 - Admin Worker version `c67f0ac0-e14c-46e9-9a9d-a71a4ef2a144` treats a fresh
   `is_playing` heartbeat as online even when the APK is in background.
@@ -168,7 +168,8 @@ version `f22e09d5-b33a-45bf-b34a-f25c72768d68`. Android reporting was published 
 - Update screen hides changelog and commit-history entry points.
 - Every in-app update prompt uses a generic improvements message and does not expose release
   details. Future GitHub OTA descriptions should also remain generic.
-- Android portion is compiled and tested locally but is not published in an OTA yet.
+- Android portion was published in OTA `v1.0.39`; asset digest matches the production
+  SHA-256 above.
 
 ## UI changes in v1.0.36
 
