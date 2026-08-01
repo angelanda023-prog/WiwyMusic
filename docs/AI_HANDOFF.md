@@ -1,6 +1,22 @@
-# WiwyMusic — durable AI handoff
+# WiwyMusic — project context and durable AI handoff
 
 Last updated: 2026-08-01 (America/Mexico_City)
+
+This is the single source of truth for any editor, IDE assistant, or AI working on WiwyMusic.
+Read it completely before inspecting or changing code. Update it after every meaningful change,
+build, deployment, migration, or release. Do not create competing project-memory documents.
+
+## Current source state
+
+- Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
+- Android branch: `main`.
+- Current Android source commit: `7385eed` (`feat: check OTA while app is active`).
+- Previous hardening commit: `654626c` (`security: hide OTA repository details`).
+- Admin repository: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`.
+- Admin OTA source commit: `2ecffc0` (`feat: serve OTA files through Worker`).
+- Production APK remains `v1.0.41`; commits after `474de8f` are not published in an Android OTA.
+- The first unpublished bridge release must use a new version, expected next values:
+  `versionName` `1.0.42`, `versionCode` `43`, tag `v1.0.42`.
 
 ## Premium redeem codes — published in v1.0.40
 
@@ -19,8 +35,9 @@ admin panel.
 - Existing Premium days are extended. Lifetime Premium is never replaced by a timed code.
 - Applied production migration:
   `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin/supabase/migrations/0003_unlimited_redeem_codes.sql`.
-- Admin Worker version `9e8c7604-ad91-4948-b43b-ac124c8b95fa` is deployed at
-  <https://wiwymusic-admin.angelanda023.workers.dev>.
+- Premium-code support was deployed in historical Admin Worker version
+  `9e8c7604-ad91-4948-b43b-ac124c8b95fa`; the current Worker version is recorded in the
+  hardening section below.
 - Android feature was introduced in OTA `v1.0.40`; placement cleanup is published in
   `v1.0.41` (`versionCode` 42).
 - Protected mini-player/player files were not modified.
@@ -84,8 +101,10 @@ Verification of the staged APK:
 - APK Signature Scheme v2: valid, one signer.
 - No `angelanda023-prog`, own GitHub repository URL, or local Git commit was found in DEX.
 - Local staged APK SHA-256: `bd3b122b94c3851ef3ac1561a603fee77d31266528d109f4aed1112d2b35bb29`.
-- This staged APK has **not** been published as an OTA and still carries version `1.0.41`
-  (`versionCode` 42). Bump the version before publishing.
+- That APK was built from the hardening state before commit `7385eed`; it proves repository
+  removal but does not contain the later 180-minute foreground cadence.
+- No final release APK containing commit `7385eed` exists yet. The next release must be rebuilt
+  after bumping the version. Do not publish the old local APK as a new OTA.
 
 Migration rule: the first hardened release must also be uploaded to the existing GitHub
 release channel so installed `v1.0.41` clients can discover it. After those clients update,
@@ -282,8 +301,8 @@ Release build:
 ./gradlew --no-configuration-cache :app:assembleUniversalRelease
 ```
 
-Use `--no-configuration-cache` after committing because `app/build.gradle.kts` reads the
-current Git hash during configuration and stores it in `BuildConfig.GIT_COMMIT`.
+Use `--no-configuration-cache` because `app/build.gradle.kts` invokes Git during configuration.
+Debug builds use that hash; release builds override `BuildConfig.GIT_COMMIT` with `release`.
 
 Before publishing:
 
@@ -302,19 +321,43 @@ Release APK output:
 
 ## OTA publishing workflow
 
-1. Increment `versionCode` and `versionName` in `app/build.gradle.kts`.
-2. Validate changes and tests.
-3. Commit before final release build so embedded Git hash is correct.
-4. Push commit to `origin/main`.
-5. Build signed universal release with configuration cache disabled.
-6. Verify signature, version, and SHA-256.
-7. Copy/rename asset to `WiwyMusic.apk`.
-8. Create public GitHub release `v<version>` targeting `main`.
-9. Mark release Latest.
-10. Verify GitHub asset digest matches local SHA-256.
+### First repository-hiding bridge release
+
+Installed `v1.0.41` clients still discover updates through GitHub. Therefore the first hardened
+release must exist in both R2 and GitHub. Publish in this exact order:
+
+1. Increment `versionCode` and `versionName` in `app/build.gradle.kts`; expected next values are
+   `43` and `1.0.42`.
+2. Run debug compilation, unit tests, and `git diff --check`.
+3. Confirm protected player files are unchanged.
+4. Commit and push the final source.
+5. Build the signed universal release with `--no-configuration-cache`.
+6. Verify version, signature, and SHA-256. Inspect DEX again for the private repository owner,
+   private repository URL, and local commit.
+7. Upload the APK to remote R2 key `ota/WiwyMusic.apk` using `--remote`.
+8. Update `WiwyMusic-Admin/ota/releases.json` with the new version and only the generic
+   improvements message; upload it to remote R2 key `ota/releases.json`.
+9. Download `/api/ota/download` and verify its SHA-256 matches the local APK. Verify
+   `/api/ota/releases` returns the new version.
+10. Create the GitHub bridge release `v1.0.42`, asset name exactly `WiwyMusic.apk`, generic
+    release text, and mark it Latest. This one GitHub release lets existing clients migrate.
+11. Verify the GitHub asset SHA-256 also matches.
+
+Never update R2 metadata before the matching APK is uploaded and verified; otherwise clients
+may discover a version whose file is missing or stale.
+
+### Later stable releases
+
+After the bridge is installed, stable clients use Cloudflare only. Repeat steps 1–9 above.
+GitHub is no longer part of the in-app OTA lookup or download path. The Android client checks
+on each transition to foreground, deduplicates startup checks within 10 seconds, repeats every
+180 minutes while foregrounded, and retains the six-hour background WorkManager fallback.
+
+R2 operational commands and rollback digest are also recorded in:
+`/Users/wiwyzho/Documents/Web/WiwyMusic-Admin/ota/README.md`.
 
 Publishing a public APK is an external disclosure. Obtain explicit user authorization before
-creating the GitHub Release.
+uploading a new R2 APK, changing live R2 metadata, or creating a GitHub Release.
 
 ## Codebase graph
 
