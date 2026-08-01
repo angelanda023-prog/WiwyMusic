@@ -18,6 +18,20 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Admin OTA documentation commit: `478381d` (`docs: record v1.1.0 OTA artifact`).
 - Production APK is `v1.1.0`, `versionCode` 47, distributed through Cloudflare R2.
 
+## Premium/Free plan label and Account layout — prepared, not published
+
+- Root Settings and the shared settings-page header always render the authenticated plan beside
+  the installed version as exactly `Premium` or `Free`; the label is no longer hidden while the
+  nullable profile state finishes loading.
+- Opening Settings or Account triggers a fresh profile read for the current Supabase user/token,
+  so a previously incomplete startup refresh can recover without restarting the application.
+- Account always renders `Premium` or `Free` in the plan area previously adjacent to the logout
+  control. The logout button was removed from the account card and placed immediately below the
+  `Canjear código` card.
+- Debug compilation and unit tests pass. Production remains the previously published `v1.1.0`;
+  no new OTA has been built or uploaded for this prepared change.
+- No mini-player, full-player, playback service, queue, or protected component file was changed.
+
 ## Premium session restoration — published in v1.1.0
 
 Rollback snapshot:

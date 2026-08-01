@@ -126,6 +126,13 @@ fun SettingsScreen(
     val shouldShowPermissionHint = !isStorageGranted || !isNotificationGranted
     val hasUpdate = Updater.isNewerVersion(latestVersionName, BuildConfig.VERSION_NAME)
     val isPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
+    val supaSession by com.wiwymusic.utils.SupabaseAuth.session.collectAsState()
+
+    LaunchedEffect(supaSession?.userId, supaSession?.accessToken) {
+        if (supaSession != null) {
+            com.wiwymusic.utils.UserPrefs.refresh()
+        }
+    }
 
     val resetSearch: () -> Unit = {
         isSearching = false
@@ -231,23 +238,21 @@ fun SettingsScreen(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         textDecoration = TextDecoration.Underline,
                                     )
-                                    if (isPremium != null) {
-                                        Text(
-                                            " · ",
-                                            fontSize = 12.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        )
-                                        Text(
-                                            if (isPremium == true) "⭐ Premium" else "Plan Free",
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Medium,
-                                            color = if (isPremium == true) {
-                                                Color(0xFFF5791F)
-                                            } else {
-                                                MaterialTheme.colorScheme.onSurfaceVariant
-                                            },
-                                        )
-                                    }
+                                    Text(
+                                        " · ",
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    Text(
+                                        if (isPremium == true) "Premium" else "Free",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = if (isPremium == true) {
+                                            Color(0xFFF5791F)
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                        },
+                                    )
                                 }
                             }
                         }

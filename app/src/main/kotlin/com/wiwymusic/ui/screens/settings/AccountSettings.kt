@@ -154,6 +154,12 @@ fun AccountSettings(
     val supaAvatar by com.wiwymusic.utils.UserPrefs.avatarUrl.collectAsState()
     val supaIsPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
 
+    LaunchedEffect(supaSession?.userId, supaSession?.accessToken) {
+        if (supaSession != null) {
+            com.wiwymusic.utils.UserPrefs.refresh()
+        }
+    }
+
     var showToken by remember { mutableStateOf(false) }
     var showTokenEditor by remember { mutableStateOf(false) }
     var showPlaylistDialog by remember { mutableStateOf(false) }
@@ -188,9 +194,6 @@ fun AccountSettings(
                         onClose()
                         navController.navigate("auth")
                     }
-                },
-                onLogout = {
-                    supaScope.launch { com.wiwymusic.utils.SupabaseAuth.signOut() }
                 }
             )
             RedeemCodeCard(
@@ -199,6 +202,13 @@ fun AccountSettings(
                     navController.navigate("auth")
                 },
             )
+            if (supaLoggedIn) {
+                AccountLogoutButton(
+                    onLogout = {
+                        supaScope.launch { com.wiwymusic.utils.SupabaseAuth.signOut() }
+                    },
+                )
+            }
             if (showAvatarPicker) {
                 com.wiwymusic.ui.component.AvatarPickerSheet(onDismiss = { showAvatarPicker = false })
             }
@@ -246,7 +256,6 @@ private fun AccountCard(
     accountEmail: String,
     accountImageUrl: String?,
     onAccountClick: () -> Unit,
-    onLogout: () -> Unit,
     onAvatarClick: () -> Unit = {},
     isPremium: Boolean? = null,
 ) {
@@ -377,11 +386,12 @@ private fun AccountCard(
                 }
             }
 
-            if (isLoggedIn && isPremium != null) {
+            if (isLoggedIn) {
+                val premium = isPremium == true
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    color = if (isPremium) {
+                    color = if (premium) {
                         WiwyAccountOrange.copy(alpha = 0.16f)
                     } else {
                         MaterialTheme.colorScheme.surfaceContainerHighest
@@ -394,11 +404,11 @@ private fun AccountCard(
                     ) {
                         Icon(
                             painter = painterResource(
-                                if (isPremium) R.drawable.star else R.drawable.account
+                                if (premium) R.drawable.star else R.drawable.account
                             ),
                             contentDescription = null,
                             modifier = Modifier.size(20.dp),
-                            tint = if (isPremium) {
+                            tint = if (premium) {
                                 WiwyAccountOrange
                             } else {
                                 MaterialTheme.colorScheme.onSurfaceVariant
@@ -406,16 +416,10 @@ private fun AccountCard(
                         )
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = stringResource(
-                                    if (isPremium) {
-                                        R.string.account_premium_active
-                                    } else {
-                                        R.string.account_plan_free
-                                    }
-                                ),
+                                text = if (premium) "Premium" else "Free",
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = if (isPremium) {
+                                color = if (premium) {
                                     WiwyAccountOrange
                                 } else {
                                     MaterialTheme.colorScheme.onSurface
@@ -423,7 +427,7 @@ private fun AccountCard(
                             )
                             Text(
                                 text = stringResource(
-                                    if (isPremium) {
+                                    if (premium) {
                                         R.string.account_premium_active_desc
                                     } else {
                                         R.string.account_plan_free_desc
@@ -437,35 +441,34 @@ private fun AccountCard(
                 }
             }
 
-            if (isLoggedIn) {
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
-                )
-                OutlinedButton(
-                    onClick = onLogout,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp),
-                    border = androidx.compose.foundation.BorderStroke(
-                        1.dp,
-                        MaterialTheme.colorScheme.error.copy(alpha = 0.5f),
-                    ),
-                    colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error,
-                    ),
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.logout),
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(R.string.action_logout),
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                }
-            }
         }
+    }
+}
+
+@Composable
+private fun AccountLogoutButton(onLogout: () -> Unit) {
+    OutlinedButton(
+        onClick = onLogout,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.error.copy(alpha = 0.5f),
+        ),
+        colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+            contentColor = MaterialTheme.colorScheme.error,
+        ),
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.logout),
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(
+            text = stringResource(R.string.action_logout),
+            fontWeight = FontWeight.SemiBold,
+        )
     }
 }
 
