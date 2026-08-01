@@ -31,6 +31,7 @@ import com.wiwymusic.ui.theme.ThemeSeedPaletteCodec
 import com.wiwymusic.utils.dataStore
 import com.wiwymusic.utils.PreferenceStore
 import com.wiwymusic.utils.AdminPresenceReporter
+import com.wiwymusic.utils.UpdateNotificationManager
 import com.wiwymusic.utils.get
 import com.wiwymusic.utils.reportException
 import com.wiwymusic.innertube.YouTube
@@ -89,6 +90,7 @@ class App : Application(), SingletonImageLoader.Factory {
         }
         PreferenceStore.start(this)
         AdminPresenceReporter.initialize(this)
+        UpdateNotificationManager.initializeForegroundChecks(this)
         // WiwyMusic: carga la sesión del backend propio (Supabase)
         CoroutineScope(Dispatchers.IO).launch {
             runCatching { com.wiwymusic.utils.SupabaseAuth.loadSession() }

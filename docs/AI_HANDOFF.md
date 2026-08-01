@@ -61,6 +61,10 @@ Rollback is fixed to the unchanged production release:
 Staged Android hardening:
 
 - Stable update checks and APK downloads use only the Cloudflare endpoint.
+- Update notification checks run when the app process enters the foreground and every
+  180 minutes while it remains foregrounded. A 10-second deduplication window prevents the
+  existing activity-start check from creating a duplicate request. The foreground loop stops
+  when the app leaves the foreground; the existing six-hour WorkManager fallback remains.
 - GitHub owner, repository name, release scraping, and commit-history requests were removed
   from runtime code.
 - Release notes remain generic and do not reveal implementation details.
