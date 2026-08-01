@@ -4,7 +4,11 @@ Last updated: 2026-08-01 (America/Mexico_City)
 
 ## Premium redeem codes — published in v1.0.40
 
-- Android shows one reusable `RedeemCodeCard` in root Settings and Account.
+Placement follow-up published in v1.0.41: root Settings no longer renders `RedeemCodeCard`;
+only Account keeps the redemption card. This cleanup does not change redemption logic or the
+admin panel.
+
+- Android shows one reusable `RedeemCodeCard` only in Account.
 - The card requires a Supabase login, calls `redeem_premium_code`, refreshes
   `profiles.is_premium`, and shows a code-native confetti celebration with total Premium
   days remaining.
@@ -17,22 +21,23 @@ Last updated: 2026-08-01 (America/Mexico_City)
   `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin/supabase/migrations/0003_unlimited_redeem_codes.sql`.
 - Admin Worker version `9e8c7604-ad91-4948-b43b-ac124c8b95fa` is deployed at
   <https://wiwymusic-admin.angelanda023.workers.dev>.
-- Android feature is included in OTA `v1.0.40` (`versionCode` 41).
+- Android feature was introduced in OTA `v1.0.40`; placement cleanup is published in
+  `v1.0.41` (`versionCode` 42).
 - Protected mini-player/player files were not modified.
 
 ## Current production state
 
 - Android app written in Kotlin and Jetpack Compose with Material Design 3.
 - Application ID: `com.wiwymusic`.
-- Production release: `v1.0.40`.
-- `versionName`: `1.0.40`.
-- `versionCode`: `41`.
-- Production commit: `3fcfee0` (`build: prepare v1.0.40`).
-- GitHub release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.40>
+- Production release: `v1.0.41`.
+- `versionName`: `1.0.41`.
+- `versionCode`: `42`.
+- Production commit: release commit containing `build: prepare v1.0.41`.
+- GitHub release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.41>
 - OTA asset name: `WiwyMusic.apk`.
-- Production APK SHA-256: `1af81fde4c16f228f7742483750c5dae765c3fa493f0252fcdc58190bd77646d`.
-- Previous production baseline: `v1.0.39`, commit
-  `5084d68`.
+- Production APK SHA-256: recorded after release verification.
+- Previous production baseline: `v1.0.40`, commit
+  `3fcfee0`.
 
 The app updater reads stable releases from `angelanda023-prog/WiwyMusic` and expects an
 asset named exactly `WiwyMusic.apk`. Relevant implementation:
