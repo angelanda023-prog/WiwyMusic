@@ -281,7 +281,6 @@ import java.net.URLEncoder
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.random.Random
-import kotlin.time.Duration.Companion.days
 import androidx.core.graphics.toColorInt
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import com.wiwymusic.constants.EnableHapticFeedbackKey
@@ -479,6 +478,12 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
+            val foregroundLatestVersion by UpdateNotificationManager.latestVersion.collectAsState()
+
+            LaunchedEffect(foregroundLatestVersion) {
+                foregroundLatestVersion?.let { latestVersionName = it }
+            }
+
             // WiwyMusic: pide de una sola vez, al abrir la app, todos los permisos
             // que necesita (notificaciones, audio local, micrófono para
             // reconocimiento de canciones, Bluetooth) en vez de ir pidiéndolos
@@ -513,14 +518,6 @@ class MainActivity : ComponentActivity() {
                     allPermissionsLauncher.launch(toRequest.toTypedArray())
                 }
 
-                if (System.currentTimeMillis() - Updater.lastCheckTime > 1.days.inWholeMilliseconds) {
-                    Updater.getLatestVersionName()
-                        .onSuccess { latestVersionName = it }
-                        .onFailure { e ->
-                            Timber.w(e, "MainActivity: update check failed")
-                        }
-                }
-                UpdateNotificationManager.checkForUpdates(this@MainActivity)
             }
 
             // Use remembered instances so the same state object is used everywhere

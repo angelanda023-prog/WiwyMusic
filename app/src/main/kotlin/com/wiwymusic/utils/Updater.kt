@@ -333,10 +333,10 @@ object Updater {
             ?: emptyList()
     }
 
-    suspend fun getLatestVersionName(): Result<String> = runCatching {
+    suspend fun getLatestVersionName(forceRefresh: Boolean = false): Result<String> = runCatching {
         when (getCurrentUpdateChannel()) {
             UpdateChannel.STABLE -> {
-                val latest = getLatestReleaseInfo().getOrThrow()
+                val latest = getLatestReleaseInfo(forceRefresh = forceRefresh).getOrThrow()
                 preferredReleaseVersionNameOrNull(latest) ?: latest.name.ifBlank { latest.tagName }
             }
             UpdateChannel.NIGHTLY -> {

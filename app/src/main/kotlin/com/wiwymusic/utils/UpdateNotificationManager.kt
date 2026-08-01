@@ -32,6 +32,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -60,6 +62,8 @@ object UpdateNotificationManager : DefaultLifecycleObserver {
     private var applicationContext: Context? = null
     private var foregroundJob: Job? = null
     private var foregroundChecksInitialized = false
+    private val _latestVersion = MutableStateFlow<String?>(null)
+    val latestVersion = _latestVersion.asStateFlow()
 
     @Synchronized
     fun initializeForegroundChecks(context: Context) {
@@ -137,12 +141,11 @@ object UpdateNotificationManager : DefaultLifecycleObserver {
         val dataStore = context.dataStore
 
         val isEnabled = dataStore.data.map { it[EnableUpdateNotificationKey] ?: false }.first()
-        if (!isEnabled) {
+        if (isEnabled) {
+            schedulePeriodicUpdateCheck(context)
+        } else {
             cancelPeriodicUpdateCheck(context)
-            return
         }
-
-        schedulePeriodicUpdateCheck(context)
 
         val updateChannel = dataStore.data.map {
             it[UpdateChannelKey]?.let { value ->
@@ -160,9 +163,10 @@ object UpdateNotificationManager : DefaultLifecycleObserver {
 
         dataStore.edit { it[LastUpdateCheckKey] = now }
 
-        Updater.getLatestVersionName()
+        Updater.getLatestVersionName(forceRefresh = forceOpenCheck)
             .onSuccess { latestVersion ->
-                if (Updater.isNewerVersion(latestVersion, BuildConfig.VERSION_NAME)) {
+                _latestVersion.value = latestVersion
+                if (isEnabled && Updater.isNewerVersion(latestVersion, BuildConfig.VERSION_NAME)) {
                     notifyIfNewVersion(context, latestVersion)
                 }
             }
