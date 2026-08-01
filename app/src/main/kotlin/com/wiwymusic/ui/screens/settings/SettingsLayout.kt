@@ -66,6 +66,8 @@ data class SettingsContentState(
     val onRequestPermission: () -> Unit,
     val isPremium: Boolean? = null,
     val onPremiumBannerClick: () -> Unit = {},
+    val showRedeemCodeCard: Boolean = false,
+    val onRedeemLoginRequested: () -> Unit = {},
 )
 
 @Composable
@@ -201,6 +203,17 @@ private fun CompactSettingsLayout(
                 ) {
                     SettingsPermissionBanner(
                         onRequestPermission = state.onRequestPermission,
+                        modifier = Modifier
+                            .padding(horizontal = pad)
+                            .padding(bottom = spacing),
+                    )
+                }
+            }
+
+            if (state.showRedeemCodeCard) {
+                item(key = "redeemCode") {
+                    RedeemCodeCard(
+                        onLoginRequested = state.onRedeemLoginRequested,
                         modifier = Modifier
                             .padding(horizontal = pad)
                             .padding(bottom = spacing),
@@ -360,6 +373,15 @@ private fun MediumSettingsLayout(
                     }
                 }
 
+                if (state.showRedeemCodeCard) {
+                    item(key = "redeemCode") {
+                        RedeemCodeCard(
+                            onLoginRequested = state.onRedeemLoginRequested,
+                            modifier = Modifier.padding(bottom = spacing),
+                        )
+                    }
+                }
+
             }
 
             if (state.quickActions.isNotEmpty()) {
@@ -496,6 +518,15 @@ private fun ExpandedSettingsLayout(
                     ) {
                         SettingsPermissionBanner(
                             onRequestPermission = state.onRequestPermission,
+                            modifier = Modifier.padding(bottom = spacing),
+                        )
+                    }
+                }
+
+                if (state.showRedeemCodeCard) {
+                    item(key = "redeemCode") {
+                        RedeemCodeCard(
+                            onLoginRequested = state.onRedeemLoginRequested,
                             modifier = Modifier.padding(bottom = spacing),
                         )
                     }

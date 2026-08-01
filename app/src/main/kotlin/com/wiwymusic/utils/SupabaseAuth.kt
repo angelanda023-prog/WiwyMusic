@@ -39,6 +39,12 @@ object SupabaseAuth {
         val email: String,
     )
 
+    data class RedeemResult(
+        val grantedDays: Int,
+        val daysRemaining: Int,
+        val expiresAt: String,
+    )
+
     private val _session = MutableStateFlow<Session?>(null)
     val session: StateFlow<Session?> = _session.asStateFlow()
     val isLoggedIn: Boolean get() = _session.value != null
@@ -157,6 +163,26 @@ object SupabaseAuth {
         return postPresence(refreshedSession, body)
     }
 
+    /** Canjea un código Premium usando sesión del usuario. */
+    suspend fun redeemPremiumCode(code: String): Result<RedeemResult> {
+        val normalizedCode = code.trim().uppercase()
+        if (normalizedCode.isBlank()) {
+            return Result.failure(IllegalArgumentException("Escribe un código"))
+        }
+        val currentSession = _session.value
+            ?: return Result.failure(IllegalStateException("Inicia sesión para canjear un código"))
+
+        val firstAttempt = postRedeemCode(currentSession, normalizedCode)
+        val failure = firstAttempt.exceptionOrNull()
+        if (failure !is HttpStatusException || failure.code != HttpURLConnection.HTTP_UNAUTHORIZED) {
+            return firstAttempt
+        }
+
+        if (refreshAccessToken().isFailure) return Result.failure(failure)
+        val refreshedSession = _session.value ?: return Result.failure(failure)
+        return postRedeemCode(refreshedSession, normalizedCode)
+    }
+
     // ── Interno ────────────────────────────────────────────────────────────────
 
     private suspend fun post(path: String, body: JSONObject): Result<JSONObject> =
@@ -207,6 +233,50 @@ object SupabaseAuth {
                         val text = conn.errorStream?.bufferedReader()?.use { it.readText() }.orEmpty()
                         throw HttpStatusException(code, parseError(text, code))
                     }
+                } finally {
+                    conn.disconnect()
+                }
+            }
+        }
+
+    private suspend fun postRedeemCode(session: Session, code: String): Result<RedeemResult> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val conn = (URL("$BASE_URL/rest/v1/rpc/redeem_premium_code").openConnection() as HttpURLConnection).apply {
+                    requestMethod = "POST"
+                    setRequestProperty("apikey", ANON_KEY)
+                    setRequestProperty("Authorization", "Bearer ${session.accessToken}")
+                    setRequestProperty("Content-Type", "application/json")
+                    setRequestProperty("Accept", "application/json")
+                    doOutput = true
+                    connectTimeout = 20_000
+                    readTimeout = 20_000
+                }
+                try {
+                    val body = JSONObject().put("p_code", code)
+                    conn.outputStream.use { it.write(body.toString().toByteArray(Charsets.UTF_8)) }
+                    val httpCode = conn.responseCode
+                    val text = (if (httpCode in 200..299) conn.inputStream else conn.errorStream)
+                        ?.bufferedReader()?.use { it.readText() }.orEmpty()
+                    if (httpCode !in 200..299) {
+                        throw HttpStatusException(httpCode, parseError(text, httpCode))
+                    }
+
+                    val json = JSONObject(text)
+                    if (!json.optBoolean("success", false)) {
+                        val message = when (json.optString("error")) {
+                            "already_redeemed" -> "Ya canjeaste este código"
+                            "lifetime_premium" -> "Tu cuenta ya tiene Premium de por vida"
+                            "not_authenticated" -> "Inicia sesión para canjear un código"
+                            else -> "Código inválido, usado o revocado"
+                        }
+                        throw IllegalArgumentException(message)
+                    }
+                    RedeemResult(
+                        grantedDays = json.getInt("granted_days"),
+                        daysRemaining = json.getInt("days_remaining"),
+                        expiresAt = json.optString("expires_at"),
+                    )
                 } finally {
                     conn.disconnect()
                 }

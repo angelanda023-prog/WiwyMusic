@@ -375,6 +375,14 @@
     <string name="account_premium_active">Premium activo</string>
     <string name="account_plan_free">Plan Free</string>
     <string name="account_premium_active_desc">Tu cuenta tiene todos los beneficios Premium.</string>
+    <string name="redeem_code_title">Canjear código</string>
+    <string name="redeem_code_description">Ingresa un código generado por el administrador.</string>
+    <string name="redeem_code_label">Código Premium</string>
+    <string name="redeem_code_action">Canjear código</string>
+    <string name="redeem_code_login">Inicia sesión para canjear</string>
+    <string name="redeem_code_success_title">¡Premium activado!</string>
+    <string name="redeem_code_success_days">Ahora tienes %1$d días de Premium.</string>
+    <string name="redeem_code_success_action">Disfrutar Premium</string>
     <string name="account_plan_free_desc">Actualiza tu plan para desbloquear descargas y sincronización.</string>
     <string name="content_language">Idioma por defecto del contenido</string>
     <string name="content_country">País por defecto del contenido</string>

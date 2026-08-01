@@ -190,6 +190,8 @@ fun SettingsScreen(
         },
         isPremium = isPremium,
         onPremiumBannerClick = { navController.navigate("settings/account") },
+        showRedeemCodeCard = true,
+        onRedeemLoginRequested = { navController.navigate("auth") },
     )
 
     Scaffold(
@@ -347,4 +349,3 @@ fun SettingsScreen(
         }
     }
 }
-

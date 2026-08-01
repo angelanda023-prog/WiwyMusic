@@ -193,6 +193,12 @@ fun AccountSettings(
                     supaScope.launch { com.wiwymusic.utils.SupabaseAuth.signOut() }
                 }
             )
+            RedeemCodeCard(
+                onLoginRequested = {
+                    onClose()
+                    navController.navigate("auth")
+                },
+            )
             if (showAvatarPicker) {
                 com.wiwymusic.ui.component.AvatarPickerSheet(onDismiss = { showAvatarPicker = false })
             }
