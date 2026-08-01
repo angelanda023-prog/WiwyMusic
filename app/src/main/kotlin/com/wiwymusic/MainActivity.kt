@@ -1896,16 +1896,17 @@ class MainActivity : ComponentActivity() {
                         }
                         // Estado de onboarding (Fase A)
                         val onboarded by com.wiwymusic.utils.UserPrefs.onboarded.collectAsState()
-                        LaunchedEffect(supaSession?.userId) {
+                        LaunchedEffect(supaLoaded, supaSession?.userId, supaSession?.accessToken) {
                             val session = supaSession
-                            if (session != null) {
+                            if (supaLoaded && session != null) {
+                                com.wiwymusic.utils.UserPrefs.restoreCachedPremium(session.userId)
                                 com.wiwymusic.utils.UserPrefs.refresh()
                                 // Fase C: aprender de lo que realmente escuchas y adaptar el inicio
                                 runCatching { com.wiwymusic.utils.UserPrefs.learnFromHistory(database) }
                                 // Plan Premium en tiempo real: se cancela solo al cambiar la key
                                 // (logout/cambio de cuenta) gracias a la concurrencia estructurada de LaunchedEffect.
                                 com.wiwymusic.utils.UserPrefs.startPremiumRealtimeSync(this, session.userId)
-                            } else com.wiwymusic.utils.UserPrefs.reset()
+                            } else if (supaLoaded) com.wiwymusic.utils.UserPrefs.reset()
                         }
                         if (supaLoaded && supaSession == null) {
                             androidx.compose.material3.Surface(

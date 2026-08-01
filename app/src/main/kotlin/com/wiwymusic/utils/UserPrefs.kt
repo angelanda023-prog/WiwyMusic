@@ -4,6 +4,10 @@
 
 package com.wiwymusic.utils
 
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import com.wiwymusic.App
 import com.wiwymusic.db.MusicDatabase
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -35,6 +39,8 @@ object UserPrefs {
 
     private const val BASE_URL = "https://yfthptxqqazqyngfjpvp.supabase.co"
     private const val ANON_KEY = "sb_publishable_Y7BpaQliciyuNM3gEJjinw_2v7Xh4Po"
+    private val CachedPremiumUserIdKey = stringPreferencesKey("cached_premium_user_id")
+    private val CachedPremiumStatusKey = booleanPreferencesKey("cached_premium_status")
 
     data class ArtistPick(val id: String, val name: String, val thumbnailUrl: String?)
 
@@ -56,6 +62,24 @@ object UserPrefs {
         _avatarUrl.value = null
         _isPremium.value = null
         stopPremiumRealtimeSync()
+    }
+
+    suspend fun restoreCachedPremium(userId: String) {
+        val dataStore = App.instance.dataStore
+        val cachedUserId = dataStore.getAsync(CachedPremiumUserIdKey)
+        _isPremium.value = if (cachedUserId == userId) {
+            dataStore.getAsync(CachedPremiumStatusKey)
+        } else {
+            null
+        }
+    }
+
+    private suspend fun updatePremium(userId: String, value: Boolean) {
+        _isPremium.value = value
+        App.instance.dataStore.edit { preferences ->
+            preferences[CachedPremiumUserIdKey] = userId
+            preferences[CachedPremiumStatusKey] = value
+        }
     }
 
     /**
@@ -88,11 +112,12 @@ object UserPrefs {
                 val arr = JSONArray(text)
                 if (arr.length() > 0) {
                     val o = arr.getJSONObject(0)
-                    _isPremium.value = o.optBoolean("is_premium", false)
+                    updatePremium(session.userId, o.optBoolean("is_premium", false))
                     _onboarded.value = o.optBoolean("onboarded", false)
                     _avatarUrl.value = o.optString("avatar_url").takeIf { it.isNotBlank() && it != "null" }
                 } else {
                     // No hay fila de perfil todavía: cuenta legítimamente nueva.
+                    updatePremium(session.userId, false)
                     _onboarded.value = false
                 }
             }
@@ -411,7 +436,7 @@ object UserPrefs {
         realtimeSession = null
     }
 
-    private fun handleRealtimeMessage(text: String) {
+    private suspend fun handleRealtimeMessage(text: String) {
         runCatching {
             val msg = JSONObject(text)
             if (msg.optString("event") != "postgres_changes") return
@@ -421,7 +446,8 @@ object UserPrefs {
             for (i in 0 until changes.length()) {
                 val record = changes.optJSONObject(i)?.optJSONObject("record") ?: continue
                 if (record.has("is_premium")) {
-                    _isPremium.value = record.optBoolean("is_premium", false)
+                    val userId = SupabaseAuth.session.value?.userId ?: continue
+                    updatePremium(userId, record.optBoolean("is_premium", false))
                 }
             }
         }
