@@ -10,16 +10,15 @@ build, deployment, migration, or release. Do not create competing project-memory
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
-- Current Android release source commit: `e7e1a40` (`fix: refresh OTA on foreground`).
-- Prepared unreleased Android commit: `7385e6b` (`fix: persist premium plan across sessions`).
-- Prepared bottom-navigation commit: `32cfb5d` (`fix: show bottom nav at scroll end`).
+- Current Android release source commit: `32cfb5d` (`fix: show bottom nav at scroll end`).
+- Premium session fix commit: `7385e6b` (`fix: persist premium plan across sessions`).
 - Previous hardening commit: `654626c` (`security: hide OTA repository details`).
 - Admin repository: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`.
-- Admin OTA metadata commit: `af13c50` (`chore: publish OTA metadata for v1.0.45`).
-- Admin OTA documentation commit: `1b4018e` (`docs: record v1.0.45 OTA artifact`).
-- Production APK is `v1.0.45`, `versionCode` 46, distributed through Cloudflare R2.
+- Admin OTA metadata commit: `39d063d` (`chore: publish OTA metadata for v1.1.0`).
+- Admin OTA documentation commit: `478381d` (`docs: record v1.1.0 OTA artifact`).
+- Production APK is `v1.1.0`, `versionCode` 47, distributed through Cloudflare R2.
 
-## Premium session restoration — prepared as v1.1.0, not published
+## Premium session restoration — published in v1.1.0
 
 Rollback snapshot:
 
@@ -27,7 +26,7 @@ Rollback snapshot:
 - Exact commit: `4c43747`.
 - The tag is pushed to `origin` and restores the documented published `v1.0.45` source.
 
-Prepared behavior:
+Published behavior:
 
 - Premium and Free remain the two account plans. `profiles.is_premium = true` renders
   `⭐ Premium`; `false` renders `Plan Free`.
@@ -44,7 +43,8 @@ Prepared behavior:
   scrolling upward. A post-scroll boundary check now also restores it upon reaching the bottom.
 - Screens without scrollable content keep the bottom navigation visible because their unconsumed
   scroll is treated as a boundary rather than an active downward content scroll.
-- Prepared version is `1.1.0`, `versionCode` 47. Debug compilation and unit tests pass.
+- Published version is `1.1.0`, `versionCode` 47. Debug compilation, unit tests, signed R8
+  build, signature verification, direct R2 verification, and public SHA-256 verification pass.
 - No mini-player, full-player, playback service, queue, or protected component file was changed.
 
 ## Foreground OTA refresh — published in v1.0.45
@@ -144,19 +144,19 @@ admin panel.
 
 - Android app written in Kotlin and Jetpack Compose with Material Design 3.
 - Application ID: `com.wiwymusic`.
-- Production release: `v1.0.45` (R2 stable OTA).
-- `versionName`: `1.0.45`.
-- `versionCode`: `46`.
-- Production commit: `e7e1a40` (`fix: refresh OTA on foreground`).
+- Production release: `v1.1.0` (R2 stable OTA).
+- `versionName`: `1.1.0`.
+- `versionCode`: `47`.
+- Production commit: `32cfb5d` (`fix: show bottom nav at scroll end`).
 - Last GitHub bridge release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.42>
 - OTA asset name: `WiwyMusic.apk`.
-- Production APK SHA-256: `8c31cb964e3368feef2cd7c12f60af19876a7f1e1edce97d45ea2de713b364ee`.
-- Previous production baseline: `v1.0.44`, commit `ab6d98e`, SHA-256
-  `5168eecef9c67984a1b63d96df31b2c6a3691e4a50ab2d3d8c093565aa3492d4`.
+- Production APK SHA-256: `48ed2fe470000c40eab41652da067a68cf12feeceb65b88e724c45be1437c83a`.
+- Previous production baseline: `v1.0.45`, commit `e7e1a40`, SHA-256
+  `8c31cb964e3368feef2cd7c12f60af19876a7f1e1edce97d45ea2de713b364ee`.
 
 The bridge release was published through both GitHub and R2. Clients upgrading from `v1.0.41`
 can discover `v1.0.42` through the old GitHub updater; after installation, the Cloudflare
-endpoint offers current stable `v1.0.45`.
+endpoint offers current stable `v1.1.0`.
 
 ## APK hardening and rollback baseline — published in v1.0.42
 
@@ -169,9 +169,9 @@ Rollback is fixed to the unchanged production release:
   `ota/archive/v1.0.41/WiwyMusic.apk`.
 - Versioned copies exist at `ota/archive/v1.0.42/WiwyMusic.apk`,
   `ota/archive/v1.0.43/WiwyMusic.apk`, `ota/archive/v1.0.44/WiwyMusic.apk`, and
-  `ota/archive/v1.0.45/WiwyMusic.apk`; current `v1.0.45` is served from
-  `ota/WiwyMusic.apk`.
-- R2 metadata `ota/releases.json` points to `v1.0.45` with the generic improvements message.
+  `ota/archive/v1.0.45/WiwyMusic.apk`, plus `ota/archive/v1.1.0/WiwyMusic.apk`; current
+  `v1.1.0` is served from `ota/WiwyMusic.apk`.
+- R2 metadata `ota/releases.json` points to `v1.1.0` with the generic improvements message.
 - Public repository-neutral endpoints:
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/releases`
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/download`
