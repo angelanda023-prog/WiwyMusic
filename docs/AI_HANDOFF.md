@@ -27,12 +27,12 @@ Last updated: 2026-08-01 (America/Mexico_City)
 - Production release: `v1.0.40`.
 - `versionName`: `1.0.40`.
 - `versionCode`: `41`.
-- Production commit: release commit containing `build: prepare v1.0.40`.
+- Production commit: `3fcfee0` (`build: prepare v1.0.40`).
 - GitHub release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.40>
 - OTA asset name: `WiwyMusic.apk`.
-- Production APK SHA-256: `0cc2374e0afa25e1ac8ea775b21b62dc2e3bff071208f20d770013b1093621e4`.
-- Previous production baseline: `v1.0.38`, commit
-  `13b01cd`.
+- Production APK SHA-256: `1af81fde4c16f228f7742483750c5dae765c3fa493f0252fcdc58190bd77646d`.
+- Previous production baseline: `v1.0.39`, commit
+  `5084d68`.
 
 The app updater reads stable releases from `angelanda023-prog/WiwyMusic` and expects an
 asset named exactly `WiwyMusic.apk`. Relevant implementation:
