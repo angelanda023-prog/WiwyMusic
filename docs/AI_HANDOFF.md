@@ -10,14 +10,14 @@ build, deployment, migration, or release. Do not create competing project-memory
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
-- Current Android release source commit: `dedacc2` (`perf: stream onboarding artist results`).
+- Current Android release source commit: `27dcd9f` (`feat: hide bottom navigation while scrolling`).
 - Previous hardening commit: `654626c` (`security: hide OTA repository details`).
 - Admin repository: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`.
-- Admin OTA metadata commit: `e84c2c5` (`chore: publish OTA metadata for v1.0.42`).
-- Admin OTA documentation commit: `273c032` (`docs: record v1.0.42 OTA artifacts`).
-- Production APK is `v1.0.42`, `versionCode` 43. The repository-hiding bridge is complete.
+- Admin OTA metadata commit: `2aa0c1f` (`chore: publish OTA metadata for v1.0.43`).
+- Admin OTA documentation commit: `14b86ef` (`docs: record v1.0.43 OTA artifact`).
+- Production APK is `v1.0.43`, `versionCode` 44, distributed through Cloudflare R2.
 
-## Bottom navigation auto-hide — prepared for v1.0.43
+## Bottom navigation auto-hide — published in v1.0.43
 
 Rollback snapshot created before this experiment:
 
@@ -35,7 +35,8 @@ Prepared behavior:
 - Layout insets and mini-player anchors remain unchanged, avoiding content or player jumps.
 - Only the bottom navigation logic inside `MainActivity.kt` is changed; no mini-player,
   full-player, playback service, queue, or protected component file is modified.
-- Debug compilation and unit tests passed before the release version bump.
+- Debug compilation, unit tests, signed R8 build, signature verification, and remote SHA-256
+  verification passed.
 
 ## Artist onboarding performance — published in v1.0.42
 
@@ -80,19 +81,19 @@ admin panel.
 
 - Android app written in Kotlin and Jetpack Compose with Material Design 3.
 - Application ID: `com.wiwymusic`.
-- Production release: `v1.0.42`.
-- `versionName`: `1.0.42`.
-- `versionCode`: `43`.
-- Production commit: `dedacc2` (`perf: stream onboarding artist results`).
-- GitHub bridge release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.42>
+- Production release: `v1.0.43` (R2 stable OTA).
+- `versionName`: `1.0.43`.
+- `versionCode`: `44`.
+- Production commit: `27dcd9f` (`feat: hide bottom navigation while scrolling`).
+- Last GitHub bridge release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.42>
 - OTA asset name: `WiwyMusic.apk`.
-- Production APK SHA-256: `7b186d299f85393dbca89a9c4fd68ed001e976f702fb75bf6f271c312214a25e`.
-- Previous production baseline: `v1.0.41`, commit `474de8f`, SHA-256
-  `d1a6c76cf0353a345c67d776bad903333f31d5970f330ace4a9efed74419f927`.
+- Production APK SHA-256: `2b8171091b88866bc60d37b56fcbe25451ca86c5974c9d2896a3f2e4e933f233`.
+- Previous production baseline: `v1.0.42`, commit `dedacc2`, SHA-256
+  `7b186d299f85393dbca89a9c4fd68ed001e976f702fb75bf6f271c312214a25e`.
 
 The bridge release was published through both GitHub and R2. Clients upgrading from `v1.0.41`
-can discover `v1.0.42` through the old GitHub updater; after installation, stable update checks
-and downloads use the repository-neutral Cloudflare endpoint.
+can discover `v1.0.42` through the old GitHub updater; after installation, the Cloudflare
+endpoint offers current stable `v1.0.43`.
 
 ## APK hardening and rollback baseline — published in v1.0.42
 
@@ -103,9 +104,9 @@ Rollback is fixed to the unchanged production release:
 - APK SHA-256: `d1a6c76cf0353a345c67d776bad903333f31d5970f330ace4a9efed74419f927`.
 - An exact rollback copy is stored privately in R2 as
   `ota/archive/v1.0.41/WiwyMusic.apk`.
-- The current `v1.0.42` copy is archived as `ota/archive/v1.0.42/WiwyMusic.apk` and served from
-  `ota/WiwyMusic.apk`.
-- R2 metadata `ota/releases.json` points to `v1.0.42` with the generic improvements message.
+- Versioned copies exist at `ota/archive/v1.0.42/WiwyMusic.apk` and
+  `ota/archive/v1.0.43/WiwyMusic.apk`; current `v1.0.43` is served from `ota/WiwyMusic.apk`.
+- R2 metadata `ota/releases.json` points to `v1.0.43` with the generic improvements message.
 - Public repository-neutral endpoints:
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/releases`
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/download`
