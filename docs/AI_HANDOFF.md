@@ -1,16 +1,34 @@
 # WiwyMusic — durable AI handoff
 
-Last updated: 2026-07-31 (America/Mexico_City)
+Last updated: 2026-08-01 (America/Mexico_City)
+
+## Premium redeem codes — published in v1.0.40
+
+- Android shows one reusable `RedeemCodeCard` in root Settings and Account.
+- The card requires a Supabase login, calls `redeem_premium_code`, refreshes
+  `profiles.is_premium`, and shows a code-native confetti celebration with total Premium
+  days remaining.
+- Admin supports only 7, 15, 30, 60, 90, 180, and 365-day codes. A code may be normal
+  (one total redemption) or unlimited (many users, once per user), and active unlimited
+  codes can be revoked.
+- Blank admin code input generates a random `WIWY-*` code; custom codes remain supported.
+- Existing Premium days are extended. Lifetime Premium is never replaced by a timed code.
+- Applied production migration:
+  `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin/supabase/migrations/0003_unlimited_redeem_codes.sql`.
+- Admin Worker version `9e8c7604-ad91-4948-b43b-ac124c8b95fa` is deployed at
+  <https://wiwymusic-admin.angelanda023.workers.dev>.
+- Android feature is included in OTA `v1.0.40` (`versionCode` 41).
+- Protected mini-player/player files were not modified.
 
 ## Current production state
 
 - Android app written in Kotlin and Jetpack Compose with Material Design 3.
 - Application ID: `com.wiwymusic`.
-- Production release: `v1.0.39`.
-- `versionName`: `1.0.39`.
-- `versionCode`: `40`.
-- Production commit: `5084d68` (`build: prepare v1.0.39`).
-- GitHub release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.39>
+- Production release: `v1.0.40`.
+- `versionName`: `1.0.40`.
+- `versionCode`: `41`.
+- Production commit: release commit containing `build: prepare v1.0.40`.
+- GitHub release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.40>
 - OTA asset name: `WiwyMusic.apk`.
 - Production APK SHA-256: `0cc2374e0afa25e1ac8ea775b21b62dc2e3bff071208f20d770013b1093621e4`.
 - Previous production baseline: `v1.0.38`, commit
