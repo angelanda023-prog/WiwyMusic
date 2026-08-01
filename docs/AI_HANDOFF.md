@@ -32,10 +32,10 @@ admin panel.
 - Production release: `v1.0.41`.
 - `versionName`: `1.0.41`.
 - `versionCode`: `42`.
-- Production commit: release commit containing `build: prepare v1.0.41`.
+- Production commit: `474de8f` (`build: prepare v1.0.41`).
 - GitHub release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.41>
 - OTA asset name: `WiwyMusic.apk`.
-- Production APK SHA-256: recorded after release verification.
+- Production APK SHA-256: `d1a6c76cf0353a345c67d776bad903333f31d5970f330ace4a9efed74419f927`.
 - Previous production baseline: `v1.0.40`, commit
   `3fcfee0`.
 
