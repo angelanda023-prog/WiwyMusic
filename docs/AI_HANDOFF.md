@@ -150,6 +150,16 @@ Preserve these four choices and Wi-Fi control:
 - `MainActivity.kt` and all protected mini-player/player files remain unchanged.
 - Validation: `./gradlew :app:compileUniversalDebugKotlin` completed successfully.
 
+### Settings navigation in v1.0.37
+
+- Every destination opened inside Settings now uses the shared `settingsPage` navigation
+  transition in `NavigationBuilder.kt`.
+- Forward navigation enters from right to left; back navigation reverses toward the right.
+- This includes Appearance and its tools, Widget, Content, Player, Storage, Privacy, Backup,
+  integrations, Update/Changelog, About, Account, Downloads, Notifications, recognition,
+  PoToken, and custom background.
+- Validation: `./gradlew :app:compileUniversalDebugKotlin` completed successfully.
+
 ## Build and verification
 
 Common validation:

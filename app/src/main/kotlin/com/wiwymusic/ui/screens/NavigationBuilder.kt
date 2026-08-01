@@ -45,6 +45,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
@@ -100,6 +101,29 @@ import com.wiwymusic.ui.screens.settings.AndroidAutoSettings
 import com.wiwymusic.ui.utils.ShowMediaInfo
 import com.wiwymusic.utils.rememberEnumPreference
 import com.wiwymusic.utils.rememberPreference
+
+private fun NavGraphBuilder.settingsPage(
+    route: String,
+    content: @Composable (NavBackStackEntry) -> Unit,
+) {
+    composable(
+        route = route,
+        enterTransition = {
+            fadeIn(tween(250)) + slideInHorizontally(tween(350)) { it }
+        },
+        exitTransition = {
+            fadeOut(tween(200)) + slideOutHorizontally(tween(300)) { -it / 3 }
+        },
+        popEnterTransition = {
+            fadeIn(tween(250)) + slideInHorizontally(tween(350)) { -it / 3 }
+        },
+        popExitTransition = {
+            fadeOut(tween(200)) + slideOutHorizontally(tween(300)) { it }
+        },
+    ) { backStackEntry ->
+        content(backStackEntry)
+    }
+}
 
 @RequiresApi(Build.VERSION_CODES.R)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -391,30 +415,16 @@ fun NavGraphBuilder.navigationBuilder(
     ) {
         SettingsScreen(navController, scrollBehavior, latestVersionName)
     }
-    composable("settings/appearance") {
+    settingsPage("settings/appearance") {
         AppearanceSettings(navController, scrollBehavior)
     }
-    composable("settings/appearance/palette_picker") {
+    settingsPage("settings/appearance/palette_picker") {
         PalettePickerScreen(navController)
     }
-    composable("settings/appearance/theme_creator") {
+    settingsPage("settings/appearance/theme_creator") {
         ThemeCreatorScreen(navController)
     }
-    composable(
-        route = "settings/appearance/always_on_display",
-        enterTransition = {
-            fadeIn(tween(300)) + slideInHorizontally { it / 3 }
-        },
-        exitTransition = {
-            fadeOut(tween(200)) + slideOutHorizontally { -it / 3 }
-        },
-        popEnterTransition = {
-            fadeIn(tween(300)) + slideInHorizontally { -it / 3 }
-        },
-        popExitTransition = {
-            fadeOut(tween(200)) + slideOutHorizontally { it / 3 }
-        },
-    ) {
+    settingsPage("settings/appearance/always_on_display") {
         AODSettings(navController, scrollBehavior)
     }
 
@@ -430,75 +440,75 @@ fun NavGraphBuilder.navigationBuilder(
         SpotifyPlaylistScreen(navController, scrollBehavior)
     }
 
-    composable("settings/widget") {
+    settingsPage("settings/widget") {
         WidgetSettings(navController, scrollBehavior)
     }
-    composable("settings/content") {
+    settingsPage("settings/content") {
         ContentSettings(navController, scrollBehavior)
     }
-    composable("settings/player") {
+    settingsPage("settings/player") {
         PlayerSettings(navController, scrollBehavior)
     }
-    composable("settings/storage") {
+    settingsPage("settings/storage") {
         StorageSettings(navController, scrollBehavior)
     }
-    composable("settings/privacy") {
+    settingsPage("settings/privacy") {
         PrivacySettings(navController, scrollBehavior)
     }
-    composable("settings/backup_restore") {
+    settingsPage("settings/backup_restore") {
         BackupAndRestore(navController, scrollBehavior)
     }
-    composable("settings/discord") {
+    settingsPage("settings/discord") {
         DiscordSettings(navController, scrollBehavior)
     }
-    composable("settings/integration") {
+    settingsPage("settings/integration") {
         IntegrationScreen(navController, scrollBehavior)
     }
-    composable("settings/music_together") {
+    settingsPage("settings/music_together") {
         MusicTogetherScreen(navController, scrollBehavior)
     }
-    composable("settings/lastfm") {
+    settingsPage("settings/lastfm") {
         LastFMSettings(navController, scrollBehavior)
     }
-    composable("settings/discord/experimental") {
+    settingsPage("settings/discord/experimental") {
         com.wiwymusic.ui.screens.settings.DiscordExperimental(navController)
     }
-    composable("settings/misc") {
+    settingsPage("settings/misc") {
         DebugSettings(navController)
     }
-    composable("settings/update") {
+    settingsPage("settings/update") {
         UpdateScreen(navController, scrollBehavior)
     }
-    composable("settings/changelog") {
+    settingsPage("settings/changelog") {
         ChangelogScreen(navController, scrollBehavior)
     }
-    composable("settings/discord/login") {
+    settingsPage("settings/discord/login") {
         DiscordLoginScreen(navController)
     }
-    composable("settings/android_auto") {
+    settingsPage("settings/android_auto") {
         AndroidAutoSettings(
             navController,
             scrollBehavior,
             context = androidx.compose.ui.platform.LocalContext.current
         )
     }
-    composable("settings/about") {
+    settingsPage("settings/about") {
         AboutScreen(navController, scrollBehavior)
     }
-    composable("settings/account") {
+    settingsPage("settings/account") {
         com.wiwymusic.ui.screens.settings.AccountSettings(
             navController = navController,
             onClose = { navController.navigateUp() },
             latestVersionName = com.wiwymusic.BuildConfig.VERSION_NAME,
         )
     }
-    composable("settings/downloads") {
+    settingsPage("settings/downloads") {
         com.wiwymusic.ui.screens.settings.DownloadsSettings(navController, scrollBehavior)
     }
-    composable("settings/notifications") {
+    settingsPage("settings/notifications") {
         com.wiwymusic.ui.screens.settings.NotificationsSettings(navController, scrollBehavior)
     }
-    composable("settings/recognize") {
+    settingsPage("settings/recognize") {
         com.wiwymusic.ui.screens.settings.RecognizeSongScreen(navController, scrollBehavior)
     }
     composable(Screens.DownloadQueue.route) {
@@ -511,10 +521,10 @@ fun NavGraphBuilder.navigationBuilder(
     composable("download_queue_list") {
         DownloadQueueScreen(navController)
     }
-    composable("settings/po_token") {
+    settingsPage("settings/po_token") {
         PoTokenScreen(navController, scrollBehavior)
     }
-    composable("customize_background") {
+    settingsPage("customize_background") {
         CustomizeBackground(navController)
     }
     composable(
