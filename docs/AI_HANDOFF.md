@@ -10,14 +10,14 @@ build, deployment, migration, or release. Do not create competing project-memory
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
-- Current Android source commit: `7385eed` (`feat: check OTA while app is active`).
+- Current Android release source commit: `dedacc2` (`perf: stream onboarding artist results`).
 - Previous hardening commit: `654626c` (`security: hide OTA repository details`).
 - Admin repository: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`.
-- Admin OTA source commit: `2ecffc0` (`feat: serve OTA files through Worker`).
-- Production APK remains `v1.0.41`; commits after `474de8f` are not published in an Android OTA.
-- Bridge release is now prepared as `versionName` `1.0.42`, `versionCode` `43`, tag `v1.0.42`.
+- Admin OTA metadata commit: `e84c2c5` (`chore: publish OTA metadata for v1.0.42`).
+- Admin OTA documentation commit: `273c032` (`docs: record v1.0.42 OTA artifacts`).
+- Production APK is `v1.0.42`, `versionCode` 43. The repository-hiding bridge is complete.
 
-## Artist onboarding performance — prepared for v1.0.42
+## Artist onboarding performance — published in v1.0.42
 
 File: `app/src/main/kotlin/com/wiwymusic/ui/screens/auth/WiwyOnboardingScreen.kt`.
 
@@ -29,7 +29,7 @@ File: `app/src/main/kotlin/com/wiwymusic/ui/screens/auth/WiwyOnboardingScreen.kt
 - Duplicate artist IDs are merged while preserving the progressively received order.
 - Artist selection limits, Supabase persistence, login flow, and onboarding completion behavior
   remain unchanged.
-- Debug compilation and unit tests passed before the release version bump.
+- Debug compilation, unit tests, and the signed R8 release build passed.
 - No protected mini-player/player file was modified.
 
 ## Premium redeem codes — published in v1.0.40
@@ -60,36 +60,39 @@ admin panel.
 
 - Android app written in Kotlin and Jetpack Compose with Material Design 3.
 - Application ID: `com.wiwymusic`.
-- Production release: `v1.0.41`.
-- `versionName`: `1.0.41`.
-- `versionCode`: `42`.
-- Production commit: `474de8f` (`build: prepare v1.0.41`).
-- GitHub release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.41>
+- Production release: `v1.0.42`.
+- `versionName`: `1.0.42`.
+- `versionCode`: `43`.
+- Production commit: `dedacc2` (`perf: stream onboarding artist results`).
+- GitHub bridge release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.42>
 - OTA asset name: `WiwyMusic.apk`.
-- Production APK SHA-256: `d1a6c76cf0353a345c67d776bad903333f31d5970f330ace4a9efed74419f927`.
-- Previous production baseline: `v1.0.40`, commit
-  `3fcfee0`.
+- Production APK SHA-256: `7b186d299f85393dbca89a9c4fd68ed001e976f702fb75bf6f271c312214a25e`.
+- Previous production baseline: `v1.0.41`, commit `474de8f`, SHA-256
+  `d1a6c76cf0353a345c67d776bad903333f31d5970f330ace4a9efed74419f927`.
 
-The currently installed production APK still reads stable releases from GitHub. A hardened
-updater migration is staged locally (see the section below); it must first be delivered once
-through the existing GitHub channel before later OTAs can use the repository-neutral endpoint.
+The bridge release was published through both GitHub and R2. Clients upgrading from `v1.0.41`
+can discover `v1.0.42` through the old GitHub updater; after installation, stable update checks
+and downloads use the repository-neutral Cloudflare endpoint.
 
-## APK hardening and rollback baseline — staged after v1.0.41
+## APK hardening and rollback baseline — published in v1.0.42
 
 Rollback is fixed to the unchanged production release:
 
 - Tag: `v1.0.41`.
 - Commit: `474de8f`.
 - APK SHA-256: `d1a6c76cf0353a345c67d776bad903333f31d5970f330ace4a9efed74419f927`.
-- An exact copy is stored privately in R2 as `ota/WiwyMusic.apk`.
-- R2 metadata is stored as `ota/releases.json`.
+- An exact rollback copy is stored privately in R2 as
+  `ota/archive/v1.0.41/WiwyMusic.apk`.
+- The current `v1.0.42` copy is archived as `ota/archive/v1.0.42/WiwyMusic.apk` and served from
+  `ota/WiwyMusic.apk`.
+- R2 metadata `ota/releases.json` points to `v1.0.42` with the generic improvements message.
 - Public repository-neutral endpoints:
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/releases`
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/download`
 - OTA bridge Worker version: `8ac43778-7375-4fe4-b3a7-f71becf31d79`.
 - Admin source commit: `2ecffc0` (`feat: serve OTA files through Worker`).
 
-Staged Android hardening:
+Published Android hardening:
 
 - Stable update checks and APK downloads use only the Cloudflare endpoint.
 - Update notification checks run when the app process enters the foreground and every
@@ -107,24 +110,20 @@ Staged Android hardening:
 - Supabase URL and publishable/anonymous key remain in the client by design; authorization is
   enforced by Supabase RLS and RPC policies, not by treating those public values as secrets.
 
-Verification of the staged APK:
+Verification of the published APK:
 
 - `compileUniversalDebugKotlin`: successful.
 - `testUniversalDebugUnitTest`: successful.
 - `assembleUniversalRelease` with R8: successful.
 - APK Signature Scheme v2: valid, one signer.
 - No `angelanda023-prog`, own GitHub repository URL, or local Git commit was found in DEX.
-- Local staged APK SHA-256: `bd3b122b94c3851ef3ac1561a603fee77d31266528d109f4aed1112d2b35bb29`.
-- That APK was built from the hardening state before commit `7385eed`; it proves repository
-  removal but does not contain the later 180-minute foreground cadence.
-- No final release APK containing commit `7385eed` exists yet. The next release must be rebuilt
-  after bumping the version. Do not publish the old local APK as a new OTA.
+- Local, R2, GitHub download, and GitHub asset digest all match SHA-256
+  `7b186d299f85393dbca89a9c4fd68ed001e976f702fb75bf6f271c312214a25e`.
+- Verified package `com.wiwymusic`, `versionName` `1.0.42`, `versionCode` 43.
 
-Migration rule: the first hardened release must also be uploaded to the existing GitHub
-release channel so installed `v1.0.41` clients can discover it. After those clients update,
-future stable releases are published by uploading the signed APK and updated
-`WiwyMusic-Admin/ota/releases.json` to the two R2 object keys above. Never replace metadata
-before the corresponding APK upload completes and its remote SHA-256 is verified.
+Migration is complete. Future stable releases use R2 for in-app discovery and download. Keep
+the `v1.0.41` archive object for rollback. Never replace metadata before the corresponding APK
+upload completes and its remote SHA-256 is verified.
 
 ## User decisions that must be preserved
 
@@ -335,37 +334,31 @@ Release APK output:
 
 ## OTA publishing workflow
 
-### First repository-hiding bridge release
+### Completed repository-hiding bridge
 
-Installed `v1.0.41` clients still discover updates through GitHub. Therefore the first hardened
-release must exist in both R2 and GitHub. Publish in this exact order:
-
-1. Increment `versionCode` and `versionName` in `app/build.gradle.kts`; expected next values are
-   `43` and `1.0.42`.
-2. Run debug compilation, unit tests, and `git diff --check`.
-3. Confirm protected player files are unchanged.
-4. Commit and push the final source.
-5. Build the signed universal release with `--no-configuration-cache`.
-6. Verify version, signature, and SHA-256. Inspect DEX again for the private repository owner,
-   private repository URL, and local commit.
-7. Upload the APK to remote R2 key `ota/WiwyMusic.apk` using `--remote`.
-8. Update `WiwyMusic-Admin/ota/releases.json` with the new version and only the generic
-   improvements message; upload it to remote R2 key `ota/releases.json`.
-9. Download `/api/ota/download` and verify its SHA-256 matches the local APK. Verify
-   `/api/ota/releases` returns the new version.
-10. Create the GitHub bridge release `v1.0.42`, asset name exactly `WiwyMusic.apk`, generic
-    release text, and mark it Latest. This one GitHub release lets existing clients migrate.
-11. Verify the GitHub asset SHA-256 also matches.
-
-Never update R2 metadata before the matching APK is uploaded and verified; otherwise clients
-may discover a version whose file is missing or stale.
+`v1.0.42` was uploaded to R2 first, its remote SHA-256 was verified, and only then was its R2
+metadata activated. The same APK was published once through GitHub as the Latest bridge release
+for installed `v1.0.41` clients. Both remote assets match the local signed APK.
 
 ### Later stable releases
 
-After the bridge is installed, stable clients use Cloudflare only. Repeat steps 1–9 above.
-GitHub is no longer part of the in-app OTA lookup or download path. The Android client checks
-on each transition to foreground, deduplicates startup checks within 10 seconds, repeats every
-180 minutes while foregrounded, and retains the six-hour background WorkManager fallback.
+After the bridge is installed, stable clients use Cloudflare only. For every later version:
+
+1. Increment `versionCode` and `versionName`.
+2. Compile, test, inspect the diff, and confirm protected files are unchanged.
+3. Commit and push source, then build the signed universal release with R8.
+4. Verify package version, signature, SHA-256, and absence of private repository strings.
+5. Archive the APK under `ota/archive/v<version>/WiwyMusic.apk`.
+6. Upload and remotely verify `ota/WiwyMusic.apk`.
+7. Only after APK verification, update and upload `ota/releases.json` with generic text.
+8. Verify both public OTA endpoints. GitHub is not needed for later in-app OTAs.
+
+The Android client checks on each transition to foreground, deduplicates startup checks within
+10 seconds, repeats every 180 minutes while foregrounded, and retains the six-hour background
+WorkManager fallback.
+
+Never update R2 metadata before the matching APK is uploaded and verified; otherwise clients
+may discover a version whose file is missing or stale.
 
 R2 operational commands and rollback digest are also recorded in:
 `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin/ota/README.md`.
