@@ -10,15 +10,14 @@ build, deployment, migration, or release. Do not create competing project-memory
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
-- Current Android release source commit: `ab6d98e` (`fix: show bottom navigation on upward scroll`).
-- Prepared unreleased Android commit: `e7e1a40` (`fix: refresh OTA on foreground`).
+- Current Android release source commit: `e7e1a40` (`fix: refresh OTA on foreground`).
 - Previous hardening commit: `654626c` (`security: hide OTA repository details`).
 - Admin repository: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`.
-- Admin OTA metadata commit: `a9d3f86` (`chore: publish OTA metadata for v1.0.44`).
-- Admin OTA documentation commit: `f316cb5` (`docs: record v1.0.44 OTA artifact`).
-- Production APK is `v1.0.44`, `versionCode` 45, distributed through Cloudflare R2.
+- Admin OTA metadata commit: `af13c50` (`chore: publish OTA metadata for v1.0.45`).
+- Admin OTA documentation commit: `1b4018e` (`docs: record v1.0.45 OTA artifact`).
+- Production APK is `v1.0.45`, `versionCode` 46, distributed through Cloudflare R2.
 
-## Foreground OTA refresh — prepared as v1.0.45, not published
+## Foreground OTA refresh — published in v1.0.45
 
 Rollback snapshot:
 
@@ -26,7 +25,7 @@ Rollback snapshot:
 - Exact commit: `43cae41`.
 - The tag is pushed to `origin` and restores the documented published `v1.0.44` source.
 
-Prepared behavior:
+Published behavior:
 
 - Opening the application or returning it to the foreground forces a fresh stable OTA metadata
   request instead of reusing the three-hour release cache.
@@ -41,7 +40,8 @@ Prepared behavior:
   WorkManager fallback; disabling it no longer disables foreground in-app checks.
 - `Updater.getLatestVersionName(forceRefresh)` passes the foreground refresh request through to
   the stable release fetch. Manual checks retain their existing forced-refresh behavior.
-- Prepared version is `1.0.45`, `versionCode` 46. Debug compilation and unit tests pass.
+- Published version is `1.0.45`, `versionCode` 46. Debug compilation, unit tests, signed R8
+  build, signature verification, and remote SHA-256 verification pass.
 - No mini-player, full-player, playback service, queue, or protected component file was changed.
 
 ## Bottom navigation directional auto-hide — published in v1.0.44
@@ -114,19 +114,19 @@ admin panel.
 
 - Android app written in Kotlin and Jetpack Compose with Material Design 3.
 - Application ID: `com.wiwymusic`.
-- Production release: `v1.0.44` (R2 stable OTA).
-- `versionName`: `1.0.44`.
-- `versionCode`: `45`.
-- Production commit: `ab6d98e` (`fix: show bottom navigation on upward scroll`).
+- Production release: `v1.0.45` (R2 stable OTA).
+- `versionName`: `1.0.45`.
+- `versionCode`: `46`.
+- Production commit: `e7e1a40` (`fix: refresh OTA on foreground`).
 - Last GitHub bridge release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.42>
 - OTA asset name: `WiwyMusic.apk`.
-- Production APK SHA-256: `5168eecef9c67984a1b63d96df31b2c6a3691e4a50ab2d3d8c093565aa3492d4`.
-- Previous production baseline: `v1.0.43`, commit `27dcd9f`, SHA-256
-  `2b8171091b88866bc60d37b56fcbe25451ca86c5974c9d2896a3f2e4e933f233`.
+- Production APK SHA-256: `8c31cb964e3368feef2cd7c12f60af19876a7f1e1edce97d45ea2de713b364ee`.
+- Previous production baseline: `v1.0.44`, commit `ab6d98e`, SHA-256
+  `5168eecef9c67984a1b63d96df31b2c6a3691e4a50ab2d3d8c093565aa3492d4`.
 
 The bridge release was published through both GitHub and R2. Clients upgrading from `v1.0.41`
 can discover `v1.0.42` through the old GitHub updater; after installation, the Cloudflare
-endpoint offers current stable `v1.0.44`.
+endpoint offers current stable `v1.0.45`.
 
 ## APK hardening and rollback baseline — published in v1.0.42
 
@@ -138,9 +138,10 @@ Rollback is fixed to the unchanged production release:
 - An exact rollback copy is stored privately in R2 as
   `ota/archive/v1.0.41/WiwyMusic.apk`.
 - Versioned copies exist at `ota/archive/v1.0.42/WiwyMusic.apk`,
-  `ota/archive/v1.0.43/WiwyMusic.apk`, and `ota/archive/v1.0.44/WiwyMusic.apk`; current
-  `v1.0.44` is served from `ota/WiwyMusic.apk`.
-- R2 metadata `ota/releases.json` points to `v1.0.44` with the generic improvements message.
+  `ota/archive/v1.0.43/WiwyMusic.apk`, `ota/archive/v1.0.44/WiwyMusic.apk`, and
+  `ota/archive/v1.0.45/WiwyMusic.apk`; current `v1.0.45` is served from
+  `ota/WiwyMusic.apk`.
+- R2 metadata `ota/releases.json` points to `v1.0.45` with the generic improvements message.
 - Public repository-neutral endpoints:
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/releases`
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/download`
