@@ -10,22 +10,23 @@ build, deployment, migration, or release. Do not create competing project-memory
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
-- Current Android release source commit: `49a0b0d` (`build: bump version to 1.1.5`).
+- Current Android release source commit: `80dd31a` (`build: bump version to 1.1.6`).
+- Premium player controls commit: `304dcf7` (`feat(player): gate premium controls`).
 - Account/player change commit: `ee6ee9a` (`feat: personalize accounts and playback UI`).
 - Full-player download shortcut commit: `8756ad9` (`feat(player): add download shortcut`).
 - Premium session fix commit: `7385e6b` (`fix: persist premium plan across sessions`).
 - Previous hardening commit: `654626c` (`security: hide OTA repository details`).
 - Admin repository: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`.
-- Admin OTA metadata commit: `eda8975` (`chore: publish OTA metadata for v1.1.5`).
-- Admin OTA documentation commit: `8a01fd5` (`docs: record v1.1.5 OTA artifact`, local;
+- Admin OTA metadata commit: `4d17cac` (`chore: publish OTA metadata for v1.1.6`).
+- Admin OTA documentation commit: `b74dd3d` (`docs: record v1.1.6 OTA artifact`, local;
   the admin repository has no Git remote configured).
 - Admin OTA archive-routing commit: `9d3d466` (`fix(ota): serve published archive`, local;
   deployed Worker version `91b47c42-f0fa-4479-ad9f-814402d554bf`).
 - Admin panel UI commit: `ae42e23` (`feat(admin): improve premium management`, local;
   the admin repository has no Git remote configured).
-- Production APK is `v1.1.5`, `versionCode` 52, distributed through Cloudflare R2.
+- Production APK is `v1.1.6`, `versionCode` 53, distributed through Cloudflare R2.
 
-## Premium player controls — prepared locally, not published
+## Premium player controls — published in v1.1.6
 
 - On 2026-08-02 the user explicitly authorized a UI-only Premium gate in the protected
   full-player and queue components. This authorization covers only Download, Lyrics, Sleep
@@ -46,9 +47,10 @@ build, deployment, migration, or release. Do not create competing project-memory
   implementation, equalizer dialog, playback controls, and mini-player files remain intact.
 - Shared UI lives in `ui/component/PremiumFeatureDialog.kt`; English and Spanish strings were
   added to their existing resource files.
-- Validation passed: `git diff --check`, `:app:compileUniversalDebugKotlin`,
-  `:app:testUniversalDebugUnitTest`, and `:app:assembleUniversalDebug`. No OTA has been
-  published for this prepared change.
+- Published version is `1.1.6`, `versionCode` 53. Debug compilation, unit tests, signed R8
+  release build, signature, private-string scan, immutable R2 archive, public metadata, and
+  public download verification passed. Production SHA-256 is
+  `821e1ed514b70ee9a2c61a170c91710ee39b800ec3a3df88081ad06d14af8cb0`.
 
 ## Local playback fix — published in v1.1.3
 
@@ -293,19 +295,19 @@ admin panel.
 
 - Android app written in Kotlin and Jetpack Compose with Material Design 3.
 - Application ID: `com.wiwymusic`.
-- Production release: `v1.1.5` (R2 stable OTA).
-- `versionName`: `1.1.5`.
-- `versionCode`: `52`.
-- Production commit: `49a0b0d` (`build: bump version to 1.1.5`).
+- Production release: `v1.1.6` (R2 stable OTA).
+- `versionName`: `1.1.6`.
+- `versionCode`: `53`.
+- Production commit: `80dd31a` (`build: bump version to 1.1.6`).
 - Last GitHub bridge release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.42>
 - OTA asset name: `WiwyMusic.apk`.
-- Production APK SHA-256: `10de1de5bfc14ed469cd8ce615ee573cb7a6e074432e487eab6ffc16e58e7d40`.
-- Previous production baseline: `v1.1.4`, commit `59d6e60`, SHA-256
-  `f581b7f79bc7e2438ac350f48600485d70a1d585d3ea6fe875c5a30d69b50281`.
+- Production APK SHA-256: `821e1ed514b70ee9a2c61a170c91710ee39b800ec3a3df88081ad06d14af8cb0`.
+- Previous production baseline: `v1.1.5`, commit `49a0b0d`, SHA-256
+  `10de1de5bfc14ed469cd8ce615ee573cb7a6e074432e487eab6ffc16e58e7d40`.
 
 The bridge release was published through both GitHub and R2. Clients upgrading from `v1.0.41`
 can discover `v1.0.42` through the old GitHub updater; after installation, the Cloudflare
-endpoint offers current stable `v1.1.5`.
+endpoint offers current stable `v1.1.6`.
 
 ## APK hardening and rollback baseline — published in v1.0.42
 
@@ -320,10 +322,11 @@ Rollback is fixed to the unchanged production release:
   `ota/archive/v1.0.43/WiwyMusic.apk`, `ota/archive/v1.0.44/WiwyMusic.apk`, and
   `ota/archive/v1.0.45/WiwyMusic.apk`, `ota/archive/v1.1.0/WiwyMusic.apk`,
   `ota/archive/v1.1.1/WiwyMusic.apk`, `ota/archive/v1.1.2/WiwyMusic.apk`,
-  `ota/archive/v1.1.3/WiwyMusic.apk`, `ota/archive/v1.1.4/WiwyMusic.apk`, and
-  `ota/archive/v1.1.5/WiwyMusic.apk`; current `v1.1.5` is served from its immutable archive
+  `ota/archive/v1.1.3/WiwyMusic.apk`, `ota/archive/v1.1.4/WiwyMusic.apk`,
+  `ota/archive/v1.1.5/WiwyMusic.apk`, and `ota/archive/v1.1.6/WiwyMusic.apk`; current `v1.1.6`
+  is served from its immutable archive
   through `/api/ota/download`.
-- R2 metadata `ota/releases.json` points to `v1.1.5` with the generic improvements message.
+- R2 metadata `ota/releases.json` points to `v1.1.6` with the generic improvements message.
 - Public repository-neutral endpoints:
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/releases`
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/download`
