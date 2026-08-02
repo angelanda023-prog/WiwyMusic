@@ -25,6 +25,31 @@ build, deployment, migration, or release. Do not create competing project-memory
   the admin repository has no Git remote configured).
 - Production APK is `v1.1.5`, `versionCode` 52, distributed through Cloudflare R2.
 
+## Premium player controls — prepared locally, not published
+
+- On 2026-08-02 the user explicitly authorized a UI-only Premium gate in the protected
+  full-player and queue components. This authorization covers only Download, Lyrics, Sleep
+  timer, and Equalizer presentation/click handling; it does not authorize playback, queue,
+  mini-player, service, dimensions, animations, or player-connection changes.
+- Free accounts keep all four controls visible with a small lock badge. Tapping one opens the
+  shared localized `PremiumFeatureDialog` and does not execute the underlying action.
+- Premium accounts retain the previous Download, Lyrics, Sleep timer, and Equalizer behavior.
+  A nullable/loading plan is treated as locked to avoid granting Premium access before the
+  profile is confirmed.
+- The Download gate is applied to every full-player style in `PlayerTopActions`. Lyrics and
+  Sleep timer are gated in the shared `Queue` callbacks and display locks in every applicable
+  queue style, including V7/V8 lyrics. Equalizer is gated in the existing player quick-action
+  menu.
+- Modified protected UI files: `ui/player/PlayerComponents.kt`, `ui/player/Queue.kt`, and
+  `ui/player/QueueComponents.kt`. The changes are limited to plan observation, lock overlays,
+  and guarded callbacks. Existing download/service commands, lyric sheet callback, sleep timer
+  implementation, equalizer dialog, playback controls, and mini-player files remain intact.
+- Shared UI lives in `ui/component/PremiumFeatureDialog.kt`; English and Spanish strings were
+  added to their existing resource files.
+- Validation passed: `git diff --check`, `:app:compileUniversalDebugKotlin`,
+  `:app:testUniversalDebugUnitTest`, and `:app:assembleUniversalDebug`. No OTA has been
+  published for this prepared change.
+
 ## Local playback fix — published in v1.1.3
 
 - On 2026-08-02 the user reported `UnexpectedLoaderException`, source error code `2000`, for

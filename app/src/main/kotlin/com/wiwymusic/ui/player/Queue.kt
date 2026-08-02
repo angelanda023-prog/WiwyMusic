@@ -96,6 +96,7 @@ import com.wiwymusic.ui.component.BottomSheetState
 import com.wiwymusic.ui.component.LocalBottomSheetPageState
 import com.wiwymusic.ui.component.LocalMenuState
 import com.wiwymusic.ui.component.MediaMetadataListItem
+import com.wiwymusic.ui.component.PremiumFeatureDialog
 import com.wiwymusic.ui.menu.PlayerMenu
 import com.wiwymusic.ui.menu.SelectionMediaMetadataMenu
 import com.wiwymusic.ui.utils.ShowMediaInfo
@@ -169,6 +170,8 @@ fun Queue(
     var dismissJob: Job? by remember { mutableStateOf(null) }
 
     var showSleepTimerDialog by remember { mutableStateOf(false) }
+    val isPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
+    var premiumFeature by remember { mutableStateOf<String?>(null) }
     var sleepTimerValue by remember { mutableStateOf(30f) }
     val sleepTimerEnabled = remember(
         playerConnection.service.sleepTimer.triggerTime,
@@ -176,7 +179,34 @@ fun Queue(
     ) {
         playerConnection.service.sleepTimer.isActive
     }
+    val lyricsLabel = stringResource(R.string.lyrics)
+    val sleepTimerLabel = stringResource(R.string.sleep_timer)
+    val requestLyrics = {
+        if (isPremium == true) {
+            onShowLyrics()
+        } else {
+            premiumFeature = lyricsLabel
+        }
+    }
+    val requestSleepTimer = {
+        if (isPremium == true) {
+            if (sleepTimerEnabled) {
+                playerConnection.service.sleepTimer.clear()
+            } else {
+                showSleepTimerDialog = true
+            }
+        } else {
+            premiumFeature = sleepTimerLabel
+        }
+    }
     var sleepTimerTimeLeft by remember { mutableStateOf(0L) }
+
+    premiumFeature?.let { featureName ->
+        PremiumFeatureDialog(
+            featureName = featureName,
+            onDismiss = { premiumFeature = null },
+        )
+    }
 
     val (showCodecOnPlayer) = rememberPreference(
         key = booleanPreferencesKey("show_codec_on_player"),
@@ -213,15 +243,10 @@ fun Queue(
                         sleepTimerTimeLeft = sleepTimerTimeLeft,
                         repeatMode = repeatMode,
                         mediaMetadata = mediaMetadata,
+                        showPremiumLock = isPremium != true,
                         onExpandQueue = { state.expandSoft() },
-                        onSleepTimerClick = {
-                            if (sleepTimerEnabled) {
-                                playerConnection.service.sleepTimer.clear()
-                            } else {
-                                showSleepTimerDialog = true
-                            }
-                        },
-                        onShowLyrics = onShowLyrics,
+                        onSleepTimerClick = requestSleepTimer,
+                        onShowLyrics = requestLyrics,
                         onRepeatModeClick = { playerConnection.player.toggleRepeatMode() },
                         onMenuClick = {
                             menuState.show {
@@ -250,15 +275,10 @@ fun Queue(
                         textBackgroundColor = TextBackgroundColor,
                         sleepTimerEnabled = sleepTimerEnabled,
                         sleepTimerTimeLeft = sleepTimerTimeLeft,
+                        showPremiumLock = isPremium != true,
                         onExpandQueue = { state.expandSoft() },
-                        onSleepTimerClick = {
-                            if (sleepTimerEnabled) {
-                                playerConnection.service.sleepTimer.clear()
-                            } else {
-                                showSleepTimerDialog = true
-                            }
-                        },
-                        onShowLyrics = onShowLyrics,
+                        onSleepTimerClick = requestSleepTimer,
+                        onShowLyrics = requestLyrics,
                         onMenuClick = {
                             menuState.show {
                                 PlayerMenu(
@@ -286,15 +306,10 @@ fun Queue(
                         textBackgroundColor = TextBackgroundColor,
                         sleepTimerEnabled = sleepTimerEnabled,
                         sleepTimerTimeLeft = sleepTimerTimeLeft,
+                        showPremiumLock = isPremium != true,
                         onExpandQueue = { state.expandSoft() },
-                        onSleepTimerClick = {
-                            if (sleepTimerEnabled) {
-                                playerConnection.service.sleepTimer.clear()
-                            } else {
-                                showSleepTimerDialog = true
-                            }
-                        },
-                        onShowLyrics = onShowLyrics,
+                        onSleepTimerClick = requestSleepTimer,
+                        onShowLyrics = requestLyrics,
                         onMenuClick = {
                             menuState.show {
                                 PlayerMenu(
@@ -325,15 +340,10 @@ fun Queue(
                         sleepTimerEnabled = sleepTimerEnabled,
                         sleepTimerTimeLeft = sleepTimerTimeLeft,
                         mediaMetadata = mediaMetadata,
+                        showPremiumLock = isPremium != true,
                         onExpandQueue = { state.expandSoft() },
-                        onSleepTimerClick = {
-                            if (sleepTimerEnabled) {
-                                playerConnection.service.sleepTimer.clear()
-                            } else {
-                                showSleepTimerDialog = true
-                            }
-                        },
-                        onShowLyrics = onShowLyrics
+                        onSleepTimerClick = requestSleepTimer,
+                        onShowLyrics = requestLyrics
                     )
                 }
 
@@ -344,15 +354,10 @@ fun Queue(
                         textBackgroundColor = TextBackgroundColor,
                         sleepTimerEnabled = sleepTimerEnabled,
                         sleepTimerTimeLeft = sleepTimerTimeLeft,
+                        showPremiumLock = isPremium != true,
                         onExpandQueue = { state.expandSoft() },
-                        onSleepTimerClick = {
-                            if (sleepTimerEnabled) {
-                                playerConnection.service.sleepTimer.clear()
-                            } else {
-                                showSleepTimerDialog = true
-                            }
-                        },
-                        onShowLyrics = onShowLyrics
+                        onSleepTimerClick = requestSleepTimer,
+                        onShowLyrics = requestLyrics
                     )
                 }
 
@@ -366,15 +371,10 @@ fun Queue(
                         sleepTimerEnabled = sleepTimerEnabled,
                         sleepTimerTimeLeft = sleepTimerTimeLeft,
                         mediaMetadata = mediaMetadata,
+                        showPremiumLock = isPremium != true,
                         onExpandQueue = { state.expandSoft() },
-                        onSleepTimerClick = {
-                            if (sleepTimerEnabled) {
-                                playerConnection.service.sleepTimer.clear()
-                            } else {
-                                showSleepTimerDialog = true
-                            }
-                        },
-                        onShowLyrics = onShowLyrics
+                        onSleepTimerClick = requestSleepTimer,
+                        onShowLyrics = requestLyrics
                     )
                 }
 
@@ -389,8 +389,9 @@ fun Queue(
                         showCodecOnPlayer = showCodecOnPlayer,
                         currentFormat = currentFormat,
                         textBackgroundColor = TextBackgroundColor,
+                        showPremiumLock = isPremium != true,
                         onExpandQueue = { state.expandSoft() },
-                        onShowLyrics = onShowLyrics,
+                        onShowLyrics = requestLyrics,
                         onDeviceClick = {
                             val intent = android.content.Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS)
                             intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -408,7 +409,8 @@ fun Queue(
                         showCodecOnPlayer = showCodecOnPlayer,
                         currentFormat = currentFormat,
                         textBackgroundColor = TextBackgroundColor,
-                        onShowLyrics = onShowLyrics,
+                        showPremiumLock = isPremium != true,
+                        onShowLyrics = requestLyrics,
                         onExpandQueue = { state.expandSoft() },
                     )
                 }

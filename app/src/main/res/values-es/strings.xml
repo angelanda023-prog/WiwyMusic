@@ -637,6 +637,9 @@
     <string name="update_notification_title">Actualización Disponible</string>
     <string name="update_notification_text">WiwyMusic %s esta ahora disponible</string>
     <string name="download">Descargar</string>
+    <string name="premium_feature_title">Función Premium</string>
+    <string name="premium_feature_message">%1$s requiere una cuenta Premium.</string>
+    <string name="premium_feature_confirm">Entendido</string>
     <string name="permissions_title">Permite a WiwyMusic a trabajar mejor</string>
     <string name="permissions_subtitle">Utilizamos un par de permisos para reproducir y administrar tu música de forma fiable. Puedes cambiar esto en los ajustes del sistema cuando quieras.</string>
     <string name="permission_storage_title">Acceso al almacenamiento</string>

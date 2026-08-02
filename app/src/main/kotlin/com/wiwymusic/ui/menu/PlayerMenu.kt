@@ -116,6 +116,8 @@ import com.wiwymusic.ui.component.ListDialog
 import com.wiwymusic.ui.component.MenuSurfaceSection
 import com.wiwymusic.ui.component.NewAction
 import com.wiwymusic.ui.component.NewActionGrid
+import com.wiwymusic.ui.component.PremiumFeatureDialog
+import com.wiwymusic.ui.component.PremiumLockBadge
 import com.wiwymusic.ui.component.TextFieldDialog
 import com.wiwymusic.utils.rememberPreference
 import kotlinx.coroutines.Dispatchers
@@ -269,6 +271,14 @@ fun ColumnScope.PlayerMenu(
     }
 
     var showEqualizerDialog by rememberSaveable { mutableStateOf(false) }
+    var premiumFeature by rememberSaveable { mutableStateOf<String?>(null) }
+    val equalizerLabel = stringResource(R.string.equalizer)
+    premiumFeature?.let { featureName ->
+        PremiumFeatureDialog(
+            featureName = featureName,
+            onDismiss = { premiumFeature = null },
+        )
+    }
     if (showEqualizerDialog) {
         EqualizerDialog(
             onDismiss = { showEqualizerDialog = false },
@@ -444,15 +454,28 @@ fun ColumnScope.PlayerMenu(
                     ),
                     NewAction(
                         icon = {
-                            Icon(
-                                painter = painterResource(R.drawable.equalizer),
-                                contentDescription = null,
-                                modifier = Modifier.size(28.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Box(modifier = Modifier.size(32.dp)) {
+                                Icon(
+                                    painter = painterResource(R.drawable.equalizer),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .size(28.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                if (isPremium != true) {
+                                    PremiumLockBadge(Modifier.align(Alignment.TopEnd))
+                                }
+                            }
                         },
                         text = stringResource(R.string.equalizer),
-                        onClick = { showEqualizerDialog = true }
+                        onClick = {
+                            if (isPremium == true) {
+                                showEqualizerDialog = true
+                            } else {
+                                premiumFeature = equalizerLabel
+                            }
+                        }
                     ),
                     NewAction(
                         icon = {

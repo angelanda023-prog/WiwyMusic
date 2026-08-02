@@ -80,6 +80,7 @@ import com.wiwymusic.ui.component.ActionPromptDialog
 import com.wiwymusic.ui.component.BottomSheetPageState
 import com.wiwymusic.ui.component.BottomSheetState
 import com.wiwymusic.ui.component.MenuState
+import com.wiwymusic.ui.component.PremiumLockBadge
 import com.wiwymusic.ui.component.bottomSheetDraggable
 import com.wiwymusic.ui.menu.PlayerMenu
 import com.wiwymusic.ui.utils.ShowMediaInfo
@@ -528,6 +529,7 @@ fun QueueCollapsedContentV2(
     sleepTimerTimeLeft: Long,
     repeatMode: Int,
     mediaMetadata: MediaMetadata?,
+    showPremiumLock: Boolean,
     onExpandQueue: () -> Unit,
     onSleepTimerClick: () -> Unit,
     onShowLyrics: () -> Unit,
@@ -667,6 +669,9 @@ fun QueueCollapsedContentV2(
                         )
                     }
                 }
+                if (showPremiumLock) {
+                    PremiumLockBadge(Modifier.align(Alignment.TopEnd))
+                }
             }
 
             // Lyrics button
@@ -684,6 +689,9 @@ fun QueueCollapsedContentV2(
                     modifier = Modifier.size(iconSize),
                     tint = textBackgroundColor
                 )
+                if (showPremiumLock) {
+                    PremiumLockBadge(Modifier.align(Alignment.TopEnd))
+                }
             }
 
             // Repeat mode button
@@ -759,6 +767,7 @@ fun QueueCollapsedContentV3(
     textBackgroundColor: Color,
     sleepTimerEnabled: Boolean,
     sleepTimerTimeLeft: Long,
+    showPremiumLock: Boolean,
     onExpandQueue: () -> Unit,
     onSleepTimerClick: () -> Unit,
     onShowLyrics: () -> Unit,
@@ -845,6 +854,9 @@ fun QueueCollapsedContentV3(
                         )
                     }
                 }
+                if (showPremiumLock) {
+                    PremiumLockBadge(Modifier.align(Alignment.TopEnd))
+                }
             }
 
             // Lyrics button
@@ -871,6 +883,9 @@ fun QueueCollapsedContentV3(
                         style = MaterialTheme.typography.labelMedium,
                         maxLines = 1
                     )
+                }
+                if (showPremiumLock) {
+                    PremiumLockBadge(Modifier.align(Alignment.TopEnd))
                 }
             }
 
@@ -903,6 +918,7 @@ fun QueueCollapsedContentV1(
     textBackgroundColor: Color,
     sleepTimerEnabled: Boolean,
     sleepTimerTimeLeft: Long,
+    showPremiumLock: Boolean,
     onExpandQueue: () -> Unit,
     onSleepTimerClick: () -> Unit,
     onShowLyrics: () -> Unit,
@@ -1004,6 +1020,10 @@ fun QueueCollapsedContentV1(
                             )
                         }
                     }
+                    if (showPremiumLock) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        PremiumLockBadge()
+                    }
                 }
             }
 
@@ -1032,6 +1052,10 @@ fun QueueCollapsedContentV1(
                         textAlign = TextAlign.Center,
                         modifier = Modifier.basicMarquee()
                     )
+                    if (showPremiumLock) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        PremiumLockBadge()
+                    }
                 }
             }
         }
@@ -1051,6 +1075,7 @@ fun QueueCollapsedContentV4(
     sleepTimerEnabled: Boolean,
     sleepTimerTimeLeft: Long,
     mediaMetadata: MediaMetadata?,
+    showPremiumLock: Boolean,
     onExpandQueue: () -> Unit,
     onSleepTimerClick: () -> Unit,
     onShowLyrics: () -> Unit,
@@ -1157,6 +1182,9 @@ fun QueueCollapsedContentV4(
                         )
                     }
                 }
+                if (showPremiumLock) {
+                    PremiumLockBadge(Modifier.align(Alignment.TopEnd))
+                }
             }
 
             Spacer(modifier = Modifier.width(10.dp))
@@ -1190,6 +1218,9 @@ fun QueueCollapsedContentV4(
                         maxLines = 1
                     )
                 }
+                if (showPremiumLock) {
+                    PremiumLockBadge(Modifier.align(Alignment.TopEnd))
+                }
             }
         }
     }
@@ -1200,6 +1231,7 @@ fun QueueCollapsedContentV7(
     showCodecOnPlayer: Boolean,
     currentFormat: FormatEntity?,
     textBackgroundColor: Color,
+    showPremiumLock: Boolean,
     onExpandQueue: () -> Unit,
     onShowLyrics: () -> Unit,
     onDeviceClick: () -> Unit,
@@ -1275,6 +1307,9 @@ fun QueueCollapsedContentV7(
                             modifier = Modifier.size(iconSize),
                             tint = textBackgroundColor
                         )
+                        if (showPremiumLock) {
+                            PremiumLockBadge(Modifier.align(Alignment.TopEnd))
+                        }
                     }
                 }
             }

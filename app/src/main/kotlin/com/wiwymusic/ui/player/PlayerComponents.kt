@@ -65,6 +65,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,6 +83,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.buildAnnotatedString
@@ -125,10 +127,13 @@ import com.wiwymusic.ui.component.ResizableIconButton
 import com.wiwymusic.ui.menu.PlayerMenu
 import com.wiwymusic.ui.theme.PlayerBackgroundColorUtils
 import com.wiwymusic.ui.component.PlayerSliderColors
+import com.wiwymusic.ui.component.PremiumFeatureDialog
+import com.wiwymusic.ui.component.PremiumLockBadge
 import com.wiwymusic.ui.component.V8DeviceSelector
 import com.wiwymusic.ui.utils.ShowMediaInfo
 import com.wiwymusic.ui.utils.highRes
 import com.wiwymusic.utils.makeTimeString
+import com.wiwymusic.utils.UserPrefs
 import com.skydoves.cloudy.cloudy
 import timber.log.Timber
 
@@ -262,13 +267,21 @@ fun PlayerTopActions(
 ) {
     val database = LocalDatabase.current
     val downloadUtil = LocalDownloadUtil.current
+    val isPremium by UserPrefs.isPremium.collectAsState()
+    var premiumFeature by rememberSaveable { mutableStateOf<String?>(null) }
+    premiumFeature?.let { featureName ->
+        PremiumFeatureDialog(
+            featureName = featureName,
+            onDismiss = { premiumFeature = null },
+        )
+    }
     val download by downloadUtil.getDownload(mediaMetadata.id).collectAsState(initial = null)
     val downloadIconRes = when (download?.state) {
         Download.STATE_COMPLETED -> R.drawable.offline
         Download.STATE_QUEUED, Download.STATE_DOWNLOADING -> R.drawable.downloading
         else -> R.drawable.download
     }
-    val onDownloadClick = {
+    val performDownloadClick = {
         when (download?.state) {
             Download.STATE_COMPLETED,
             Download.STATE_QUEUED,
@@ -297,6 +310,14 @@ fun PlayerTopActions(
                     )
                 }
             }
+        }
+    }
+    val downloadLabel = stringResource(R.string.download)
+    val onDownloadClick = {
+        if (isPremium == true) {
+            performDownloadClick()
+        } else {
+            premiumFeature = downloadLabel
         }
     }
 
@@ -331,6 +352,9 @@ fun PlayerTopActions(
                             .align(Alignment.Center)
                             .size(24.dp)
                     )
+                    if (isPremium != true) {
+                        PremiumLockBadge(Modifier.align(Alignment.TopEnd))
+                    }
                 }
 
                 Box(
@@ -376,6 +400,9 @@ fun PlayerTopActions(
                         tint = textBackgroundColor.copy(alpha = 0.7f),
                         modifier = Modifier.size(20.dp)
                     )
+                    if (isPremium != true) {
+                        PremiumLockBadge(Modifier.align(Alignment.TopEnd))
+                    }
                 }
                 Box(
                     modifier = Modifier
@@ -419,6 +446,9 @@ fun PlayerTopActions(
                             tint = textBackgroundColor,
                             modifier = Modifier.size(22.dp)
                         )
+                        if (isPremium != true) {
+                            PremiumLockBadge(Modifier.align(Alignment.TopEnd))
+                        }
                     }
                 }
 
@@ -502,6 +532,9 @@ fun PlayerTopActions(
                             .align(Alignment.Center)
                             .size(24.dp),
                 )
+                if (isPremium != true) {
+                    PremiumLockBadge(Modifier.align(Alignment.TopEnd))
+                }
             }
 
             Spacer(modifier = Modifier.size(12.dp))
@@ -562,6 +595,9 @@ fun PlayerTopActions(
                             tint = textBackgroundColor,
                             modifier = Modifier.size(20.dp)
                         )
+                        if (isPremium != true) {
+                            PremiumLockBadge(Modifier.align(Alignment.TopEnd))
+                        }
                     }
                 }
 
@@ -669,6 +705,9 @@ fun PlayerTopActions(
                         tint = textBackgroundColor.copy(alpha = 0.7f),
                         modifier = Modifier.size(22.dp),
                     )
+                    if (isPremium != true) {
+                        PremiumLockBadge(Modifier.align(Alignment.TopEnd))
+                    }
                 }
 
                 Box(
@@ -741,6 +780,9 @@ fun PlayerTopActions(
                         tint = textBackgroundColor.copy(alpha = 0.7f),
                         modifier = Modifier.size(22.dp),
                     )
+                    if (isPremium != true) {
+                        PremiumLockBadge(Modifier.align(Alignment.TopEnd))
+                    }
                 }
 
                 // Menú
@@ -3397,6 +3439,7 @@ fun QueueCollapsedContentV8(
     showCodecOnPlayer: Boolean,
     currentFormat: FormatEntity?,
     textBackgroundColor: Color,
+    showPremiumLock: Boolean,
     onShowLyrics: () -> Unit,
     onExpandQueue: () -> Unit,
 ) {
@@ -3421,6 +3464,9 @@ fun QueueCollapsedContentV8(
                     tint = textBackgroundColor.copy(alpha = 0.7f),
                     modifier = Modifier.size(20.dp)
                 )
+                if (showPremiumLock) {
+                    PremiumLockBadge(Modifier.align(Alignment.TopEnd))
+                }
             }
         }
 

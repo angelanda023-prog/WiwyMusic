@@ -738,6 +738,9 @@ WiwyMusic will only extract your token, and everything else is stored locally.</
     <string name="update_notification_title">Update Available</string>
     <string name="update_notification_text">WiwyMusic %s is now available</string>
     <string name="download">Download</string>
+    <string name="premium_feature_title">Premium feature</string>
+    <string name="premium_feature_message">%1$s requires a Premium account.</string>
+    <string name="premium_feature_confirm">Got it</string>
 
     <string name="permissions_title">Allow WiwyMusic to work best</string>
     <string name="permissions_subtitle">We use a few permissions to play and manage your music reliably. You can change these anytime in system settings.</string>
