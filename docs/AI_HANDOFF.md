@@ -18,6 +18,8 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Admin OTA metadata commit: `4557de7` (`chore: publish OTA metadata for v1.1.3`).
 - Admin OTA documentation commit: `95c712c` (`docs: record v1.1.3 OTA artifact`, local;
   the admin repository has no Git remote configured).
+- Admin panel UI commit: `ae42e23` (`feat(admin): improve premium management`, local;
+  the admin repository has no Git remote configured).
 - Production APK is `v1.1.3`, `versionCode` 50, distributed through Cloudflare R2.
 
 ## Local playback fix — published in v1.1.3
@@ -401,6 +403,19 @@ Preserve these four choices and Wi-Fi control:
 - Alta: up to 320 kbps.
 - Automática: recommended, adapts to network.
 - Additional switch: `Máxima calidad solo con Wi‑Fi`.
+
+## Admin Premium controls — deployed 2026-08-02
+
+- `GrantPremiumForm.tsx` presents `Otorgar Premium` and `Convertir a Gratis` in the same
+  two-column action row. Both retain their existing Server Actions and shared pending state.
+- The codes table now displays every account that redeemed a code, including reusable codes,
+  with email and redemption date. Older one-use codes fall back to `redeemed_by` and
+  `redeemed_at` when no history row exists.
+- `listRedeemCodes()` combines `redeem_codes`, `redeem_code_redemptions`, and Supabase Auth
+  users; no database migration was required.
+- Validation passed with targeted ESLint, `tsc --noEmit`, Next.js production build, and the
+  OpenNext Cloudflare build. Deployed Worker version:
+  `90481757-9a06-46d3-8692-8cd9b9b5c22d`.
 
 ## Admin live presence (deployed in v1.0.38)
 
