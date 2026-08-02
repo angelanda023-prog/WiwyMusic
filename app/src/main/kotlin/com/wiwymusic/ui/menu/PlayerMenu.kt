@@ -85,17 +85,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.net.toUri
 import android.widget.Toast
 import androidx.media3.common.PlaybackParameters
-import androidx.media3.exoplayer.offline.Download
-import androidx.media3.exoplayer.offline.DownloadRequest
-import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.wiwymusic.innertube.YouTube
 import com.wiwymusic.LocalDatabase
-import com.wiwymusic.LocalDownloadUtil
 import com.wiwymusic.LocalPlayerConnection
 import com.wiwymusic.R
 import com.wiwymusic.constants.ArtistSeparatorsKey
@@ -116,7 +111,6 @@ import com.wiwymusic.models.MediaMetadata
 import com.wiwymusic.playback.EqProfile
 import com.wiwymusic.playback.EqProfilesPayload
 import com.wiwymusic.playback.EqualizerJson
-import com.wiwymusic.playback.ExoDownloadService
 import com.wiwymusic.ui.component.BottomSheetState
 import com.wiwymusic.ui.component.ListDialog
 import com.wiwymusic.ui.component.MenuSurfaceSection
@@ -153,9 +147,6 @@ fun ColumnScope.PlayerMenu(
     val librarySong by database.song(mediaMetadata.id).collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
 
-    val downloadUtil = LocalDownloadUtil.current
-    val download by downloadUtil.getDownload(mediaMetadata.id)
-        .collectAsState(initial = null)
     val isPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
 
     val artists =
@@ -569,59 +560,11 @@ fun ColumnScope.PlayerMenu(
             item { Spacer(modifier = Modifier.height(12.dp)) }
         }
 
-        // ── Descarga ─────────────────────────────────────────────────────────
-        item {
-            MenuSurfaceSection(modifier = Modifier.padding(vertical = 6.dp)) {
-                when (download?.state) {
-                    Download.STATE_COMPLETED -> {
-                        ListItem(
-                            headlineContent = {
-                                Text(text = stringResource(R.string.remove_download), color = MaterialTheme.colorScheme.error)
-                            },
-                            leadingContent = {
-                                Icon(painter = painterResource(R.drawable.offline), contentDescription = null, tint = MaterialTheme.colorScheme.error)
-                            },
-                            modifier = Modifier.clickable {
-                                DownloadService.sendRemoveDownload(context, ExoDownloadService::class.java, mediaMetadata.id, false)
-                            },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        )
-                    }
-                    Download.STATE_QUEUED, Download.STATE_DOWNLOADING -> {
-                        ListItem(
-                            headlineContent = { Text(text = stringResource(R.string.downloading)) },
-                            leadingContent = { CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp) },
-                            modifier = Modifier.clickable {
-                                DownloadService.sendRemoveDownload(context, ExoDownloadService::class.java, mediaMetadata.id, false)
-                            },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        )
-                    }
-                    else -> {
-                        if (isPremium == true) {
-                            ListItem(
-                                headlineContent = { Text(text = stringResource(R.string.action_download)) },
-                                leadingContent = {
-                                    Icon(painter = painterResource(R.drawable.download), contentDescription = null)
-                                },
-                                modifier = Modifier.clickable {
-                                    if (!downloadUtil.canDownload()) return@clickable
-                                    database.transaction { insert(mediaMetadata) }
-                                    val downloadRequest = DownloadRequest
-                                        .Builder(mediaMetadata.id, mediaMetadata.id.toUri())
-                                        .setCustomCacheKey(mediaMetadata.id)
-                                        .setData(mediaMetadata.title.toByteArray())
-                                        .build()
-                                    DownloadService.sendAddDownload(context, ExoDownloadService::class.java, downloadRequest, false)
-                                },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                            )
-                        }
-                    }
-                }
-
-                if (externalDownloaderEnabled && isPremium == true) {
-                    HorizontalDivider(modifier = Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.outlineVariant)
+        // El control de descarga nativo vive en la barra superior del reproductor.
+        // Aquí solo se conserva la integración externa cuando está configurada.
+        if (externalDownloaderEnabled && isPremium == true) {
+            item {
+                MenuSurfaceSection(modifier = Modifier.padding(vertical = 6.dp)) {
                     ListItem(
                         headlineContent = { Text(text = stringResource(R.string.open_with_downloader)) },
                         leadingContent = { Icon(painter = painterResource(R.drawable.download), contentDescription = null) },
