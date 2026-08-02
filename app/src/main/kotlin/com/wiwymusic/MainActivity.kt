@@ -874,6 +874,10 @@ class MainActivity : ComponentActivity() {
                     LaunchedEffect(bottomNavigationScrollEvents) {
                         bottomNavigationScrollEvents.collectLatest { shouldHide ->
                             bottomNavigationHiddenByScroll = shouldHide
+                            if (shouldHide) {
+                                delay(1_000L)
+                                bottomNavigationHiddenByScroll = false
+                            }
                         }
                     }
 
