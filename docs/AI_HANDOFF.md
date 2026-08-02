@@ -10,14 +10,36 @@ build, deployment, migration, or release. Do not create competing project-memory
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
-- Current Android release source commit: `63b851b` (`build: bump version to 1.1.2`).
+- Current Android release source commit: `20e3f05` (`build: bump version to 1.1.3`).
 - Full-player download shortcut commit: `8756ad9` (`feat(player): add download shortcut`).
 - Premium session fix commit: `7385e6b` (`fix: persist premium plan across sessions`).
 - Previous hardening commit: `654626c` (`security: hide OTA repository details`).
 - Admin repository: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`.
-- Admin OTA metadata commit: `9f52d1a` (`chore: publish OTA metadata for v1.1.2`).
-- Admin OTA documentation commit: `bbe9327` (`docs: record v1.1.2 OTA artifact`).
-- Production APK is `v1.1.2`, `versionCode` 49, distributed through Cloudflare R2.
+- Admin OTA metadata commit: `4557de7` (`chore: publish OTA metadata for v1.1.3`).
+- Admin OTA documentation commit: `95c712c` (`docs: record v1.1.3 OTA artifact`, local;
+  the admin repository has no Git remote configured).
+- Production APK is `v1.1.3`, `versionCode` 50, distributed through Cloudflare R2.
+
+## Local playback fix — published in v1.1.3
+
+- On 2026-08-02 the user reported `UnexpectedLoaderException`, source error code `2000`, for
+  some Library tracks and explicitly authorized the required protected change in
+  `playback/MusicService.kt` after receiving the file, reason, risk, and alternative.
+- `createDataSourceFactory()` now bypasses YouTube resolution for both `content://` and
+  `file://` sources. This prevents on-device URIs from being interpreted as YouTube IDs.
+- `createMediaSourceFactory()` keeps the existing MP4/WebM extractors for online playback and
+  uses Media3's full default extractor set for local files, adding MP3, FLAC, OGG, WAV, and
+  other supported containers.
+- The native Download start/cancel/remove action was removed from `ui/menu/PlayerMenu.kt`
+  because it duplicates the full-player shortcut. The optional external-downloader action is
+  preserved when configured.
+- Validation passed: `git diff --check`, `:app:compileUniversalDebugKotlin`, and
+  `:app:testUniversalDebugUnitTest`.
+- Published version is `1.1.3`, `versionCode` 50. Signed R8 build, unit tests, signature,
+  version, private-string scan, R2 object, and public endpoint verification passed. Production
+  SHA-256 is `e127c343c4298e1aae4459611fdb102fd608451a67a996be815fd457f1dfc279`.
+- Rollback tag `snapshot-before-local-playback-fix-v1.1.2` points to `ed90c01` and is pushed
+  to `origin`. Mini-player files remain untouched.
 
 ## Full-player download shortcut — published in v1.1.2
 
@@ -35,8 +57,8 @@ Prepared behavior:
   and V8 receive Download as an additional action between Favorite and More.
 - The shortcut reuses the existing Premium download rules and state: it starts a download,
   cancels a queued/in-progress download, and removes a completed offline download.
-- The Download action inside `PlayerMenu` remains available; sharing elsewhere in the app is
-  unchanged.
+- In published v1.1.2, the Download action inside `PlayerMenu` remained available; v1.1.3
+  removes that duplicate. Sharing elsewhere in the app is unchanged.
 - Published version is `1.1.2`, `versionCode` 49. Debug compilation, unit tests, signed R8
   build, signature verification, archived R2 verification, and public APK/metadata verification
   pass. Production SHA-256 is
@@ -192,10 +214,10 @@ admin panel.
 
 - Android app written in Kotlin and Jetpack Compose with Material Design 3.
 - Application ID: `com.wiwymusic`.
-- Production release: `v1.1.2` (R2 stable OTA).
-- `versionName`: `1.1.2`.
-- `versionCode`: `49`.
-- Production commit: `63b851b` (`build: bump version to 1.1.2`).
+- Production release: `v1.1.3` (R2 stable OTA).
+- `versionName`: `1.1.3`.
+- `versionCode`: `50`.
+- Production commit: `20e3f05` (`build: bump version to 1.1.3`).
 - Last GitHub bridge release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.42>
 - OTA asset name: `WiwyMusic.apk`.
 - Production APK SHA-256: `c3bb075b5e1a013932bf5bfa36c8e3777dcbbb01e30f66dc756db1369a08ad54`.
@@ -204,7 +226,7 @@ admin panel.
 
 The bridge release was published through both GitHub and R2. Clients upgrading from `v1.0.41`
 can discover `v1.0.42` through the old GitHub updater; after installation, the Cloudflare
-endpoint offers current stable `v1.1.2`.
+endpoint offers current stable `v1.1.3`.
 
 ## APK hardening and rollback baseline — published in v1.0.42
 
@@ -218,9 +240,9 @@ Rollback is fixed to the unchanged production release:
 - Versioned copies exist at `ota/archive/v1.0.42/WiwyMusic.apk`,
   `ota/archive/v1.0.43/WiwyMusic.apk`, `ota/archive/v1.0.44/WiwyMusic.apk`, and
   `ota/archive/v1.0.45/WiwyMusic.apk`, `ota/archive/v1.1.0/WiwyMusic.apk`,
-  `ota/archive/v1.1.1/WiwyMusic.apk`, and `ota/archive/v1.1.2/WiwyMusic.apk`; current
-  `v1.1.2` is served from `ota/WiwyMusic.apk`.
-- R2 metadata `ota/releases.json` points to `v1.1.2` with the generic improvements message.
+  `ota/archive/v1.1.1/WiwyMusic.apk`, `ota/archive/v1.1.2/WiwyMusic.apk`, and
+  `ota/archive/v1.1.3/WiwyMusic.apk`; current `v1.1.3` is served from `ota/WiwyMusic.apk`.
+- R2 metadata `ota/releases.json` points to `v1.1.3` with the generic improvements message.
 - Public repository-neutral endpoints:
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/releases`
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/download`
