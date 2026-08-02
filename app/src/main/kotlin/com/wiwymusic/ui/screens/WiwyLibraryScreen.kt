@@ -231,22 +231,25 @@ private fun ActionCard(
     locked: Boolean = false,
     onClick: () -> Unit,
 ) {
-    Row(
+    Box(
         modifier = modifier
             .height(56.dp)
             .clip(RoundedCornerShape(14.dp))
             .background(WiwyCard)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
     ) {
-        Icon(painterResource(icon), null, tint = WiwyOrange, modifier = Modifier.size(24.dp))
-        Spacer(Modifier.width(10.dp))
-        Text(label, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Row(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            Icon(painterResource(icon), null, tint = WiwyOrange, modifier = Modifier.size(24.dp))
+            Spacer(Modifier.width(10.dp))
+            Text(label, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
         if (locked) {
-            Spacer(Modifier.width(6.dp))
-            PremiumLockBadge()
+            PremiumLockBadge(Modifier.align(Alignment.TopEnd))
         }
     }
 }

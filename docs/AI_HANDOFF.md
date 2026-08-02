@@ -68,6 +68,14 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Rollback tag `snapshot-before-playlist-import-gate-v1.1.7` points to `c3e03b0` and is pushed
   to `origin`.
 
+### Lock-badge visibility follow-up — prepared locally, not published
+
+- The first v1.1.8 layout placed the lock after the long `Importar playlist` label, where it
+  could be clipped on narrow cards. `ActionCard` now overlays `PremiumLockBadge` at the card's
+  top-end corner, matching the visible badge placement used by Lyrics and Download.
+- Premium behavior and navigation are unchanged. Only `WiwyLibraryScreen.kt` is modified; no
+  protected player or mini-player file is touched.
+
 ## Premium player controls — published in v1.1.6
 
 - On 2026-08-02 the user explicitly authorized a UI-only Premium gate in the protected
