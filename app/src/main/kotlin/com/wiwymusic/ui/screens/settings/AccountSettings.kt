@@ -27,8 +27,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -96,6 +99,7 @@ import coil3.compose.AsyncImage
 import kotlinx.coroutines.launch
 import com.wiwymusic.App.Companion.forgetAccount
 import com.wiwymusic.BuildConfig
+import com.wiwymusic.LocalPlayerAwareWindowInsets
 import com.wiwymusic.R
 import com.wiwymusic.constants.AccountChannelHandleKey
 import com.wiwymusic.constants.AccountEmailKey
@@ -169,7 +173,11 @@ fun AccountSettings(
 
     Column(
         modifier = Modifier
+            .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
+            .windowInsetsPadding(
+                LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom),
+            )
             .verticalScroll(rememberScrollState())
     ) {
         WiwySettingsPageHeader(

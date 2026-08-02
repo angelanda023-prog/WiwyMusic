@@ -17,6 +17,9 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
@@ -121,7 +124,13 @@ private fun NavGraphBuilder.settingsPage(
             fadeOut(tween(200)) + slideOutHorizontally(tween(300)) { it }
         },
     ) { backStackEntry ->
-        content(backStackEntry)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .imePadding(),
+        ) {
+            content(backStackEntry)
+        }
     }
 }
 

@@ -26,6 +26,22 @@ build, deployment, migration, or release. Do not create competing project-memory
   the admin repository has no Git remote configured).
 - Production APK is `v1.1.6`, `versionCode` 53, distributed through Cloudflare R2.
 
+## Settings keyboard-aware scrolling — prepared locally, not published
+
+- Every destination registered through `settingsPage` now receives a full-screen
+  `imePadding()` container. When Android keyboard opens, available page height shrinks instead
+  of allowing keyboard to cover focused controls.
+- `AccountSettings` now explicitly fills available screen height while retaining its existing
+  vertical scroll. It also consumes the existing player-aware bottom inset, letting user scroll
+  Redeem code and Logout above an active mini-player without modifying that player.
+- Existing screen-specific `verticalScroll`, `LazyColumn`, and other scrolling containers remain
+  unchanged; common wrapper does not add conflicting nested scrolling.
+- Modified files: `ui/screens/NavigationBuilder.kt` and
+  `ui/screens/settings/AccountSettings.kt`. Mini-player, player, playback, navigation
+  transitions, account logic, and code-redemption logic remain unchanged.
+- Validation passed: `git diff --check`, `:app:compileUniversalDebugKotlin`, and
+  `:app:testUniversalDebugUnitTest`. No OTA has been published for this prepared change.
+
 ## Premium player controls — published in v1.1.6
 
 - On 2026-08-02 the user explicitly authorized a UI-only Premium gate in the protected
