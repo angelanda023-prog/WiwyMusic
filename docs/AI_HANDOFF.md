@@ -47,6 +47,21 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Rollback tag `snapshot-before-settings-insets-v1.1.6` points to `6fd5765` and is pushed to
   `origin`.
 
+## Playlist import Premium entry — prepared locally, not published
+
+- The `Importar playlist` action in `WiwyLibraryScreen` is now the single Premium gate for the
+  backup/import destination. Free accounts see the same small lock badge used by other Premium
+  controls; tapping it opens the shared `PremiumFeatureDialog` without navigating.
+- Premium accounts continue directly to `settings/backup_restore`.
+- `BackupAndRestore` now has one unified full layout. The former Free-only layout and its
+  individual Premium cards/locks were removed, so authenticated Premium users do not see
+  redundant locks after entering.
+- Modified files: `ui/screens/WiwyLibraryScreen.kt` and
+  `ui/screens/settings/BackupAndRestore.kt`. No mini-player, full-player, playback, account,
+  import, backup, cloud-sync, YouTube Music, or Spotify operation was changed.
+- Validation passed: `git diff --check`, `:app:compileUniversalDebugKotlin`, and
+  `:app:testUniversalDebugUnitTest`. No OTA has been published for this prepared change.
+
 ## Premium player controls — published in v1.1.6
 
 - On 2026-08-02 the user explicitly authorized a UI-only Premium gate in the protected

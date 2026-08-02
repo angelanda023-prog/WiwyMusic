@@ -55,6 +55,9 @@ import com.wiwymusic.constants.PlaylistSortType
 import com.wiwymusic.db.entities.Playlist
 import com.wiwymusic.ui.component.CreatePlaylistDialog
 import com.wiwymusic.ui.component.PlaylistThumbnail
+import com.wiwymusic.ui.component.PremiumFeatureDialog
+import com.wiwymusic.ui.component.PremiumLockBadge
+import com.wiwymusic.utils.UserPrefs
 
 private val WiwyOrange = Color(0xFFF5791F)
 private val WiwyBg = Color(0xFF0A0A0C)
@@ -70,12 +73,20 @@ fun WiwyLibraryScreen(navController: NavController) {
     val playlists by remember { database.playlists(PlaylistSortType.CREATE_DATE, true) }.collectAsState(initial = emptyList())
     val recentEvents by remember { database.events() }.collectAsState(initial = emptyList())
     val downloads by downloadUtil.downloads.collectAsState()
+    val isPremium by UserPrefs.isPremium.collectAsState()
     val downloadedCount = downloads.values.count { it.state == Download.STATE_COMPLETED }
     val recentCount = recentEvents.map { it.song.song.id }.distinct().size
 
     var showCreate by remember { mutableStateOf(false) }
+    var showImportPremiumDialog by remember { mutableStateOf(false) }
     if (showCreate) {
         CreatePlaylistDialog(onDismiss = { showCreate = false })
+    }
+    if (showImportPremiumDialog) {
+        PremiumFeatureDialog(
+            featureName = "Importar playlist",
+            onDismiss = { showImportPremiumDialog = false },
+        )
     }
 
     val insets = LocalPlayerAwareWindowInsets.current.asPaddingValues()
@@ -116,8 +127,17 @@ fun WiwyLibraryScreen(navController: NavController) {
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         ActionCard(R.drawable.add, "Nueva playlist", Modifier.weight(1f)) { showCreate = true }
-                        ActionCard(R.drawable.download, "Importar playlist", Modifier.weight(1f)) {
-                            navController.navigate("settings/backup_restore")
+                        ActionCard(
+                            icon = R.drawable.download,
+                            label = "Importar playlist",
+                            modifier = Modifier.weight(1f),
+                            locked = isPremium != true,
+                        ) {
+                            if (isPremium == true) {
+                                navController.navigate("settings/backup_restore")
+                            } else {
+                                showImportPremiumDialog = true
+                            }
                         }
                     }
                 }
@@ -204,7 +224,13 @@ private fun SectionTitle(text: String) {
 }
 
 @Composable
-private fun ActionCard(icon: Int, label: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+private fun ActionCard(
+    icon: Int,
+    label: String,
+    modifier: Modifier = Modifier,
+    locked: Boolean = false,
+    onClick: () -> Unit,
+) {
     Row(
         modifier = modifier
             .height(56.dp)
@@ -218,6 +244,10 @@ private fun ActionCard(icon: Int, label: String, modifier: Modifier = Modifier, 
         Icon(painterResource(icon), null, tint = WiwyOrange, modifier = Modifier.size(24.dp))
         Spacer(Modifier.width(10.dp))
         Text(label, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        if (locked) {
+            Spacer(Modifier.width(6.dp))
+            PremiumLockBadge()
+        }
     }
 }
 
