@@ -10,17 +10,19 @@ build, deployment, migration, or release. Do not create competing project-memory
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
-- Current Android release source commit: `20e3f05` (`build: bump version to 1.1.3`).
+- Current Android release source commit: `59d6e60` (`build: bump version to 1.1.4`).
 - Full-player download shortcut commit: `8756ad9` (`feat(player): add download shortcut`).
 - Premium session fix commit: `7385e6b` (`fix: persist premium plan across sessions`).
 - Previous hardening commit: `654626c` (`security: hide OTA repository details`).
 - Admin repository: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`.
-- Admin OTA metadata commit: `4557de7` (`chore: publish OTA metadata for v1.1.3`).
-- Admin OTA documentation commit: `95c712c` (`docs: record v1.1.3 OTA artifact`, local;
+- Admin OTA metadata commit: `53e8d42` (`chore: publish OTA metadata for v1.1.4`).
+- Admin OTA documentation commit: `b46e068` (`docs: record v1.1.4 OTA artifact`, local;
   the admin repository has no Git remote configured).
+- Admin OTA archive-routing commit: `9d3d466` (`fix(ota): serve published archive`, local;
+  deployed Worker version `91b47c42-f0fa-4479-ad9f-814402d554bf`).
 - Admin panel UI commit: `ae42e23` (`feat(admin): improve premium management`, local;
   the admin repository has no Git remote configured).
-- Production APK is `v1.1.3`, `versionCode` 50, distributed through Cloudflare R2.
+- Production APK is `v1.1.4`, `versionCode` 51, distributed through Cloudflare R2.
 
 ## Local playback fix — published in v1.1.3
 
@@ -173,6 +175,22 @@ Current behavior:
 - Debug compilation, unit tests, signed R8 build, signature verification, and remote SHA-256
   verification passed.
 
+### One-second idle restore — published in v1.1.4
+
+- After a downward scroll hides the bottom toolbar, every new downward event restarts a
+  one-second timer. The toolbar becomes visible when the page remains stationary for one full
+  second.
+- Upward scrolling, reaching a scroll boundary, changing routes, and pages without scrollable
+  content continue to restore the toolbar immediately.
+- The change is limited to the bottom-navigation event collector in `MainActivity.kt`.
+  Mini-player layout, anchors, controls, playback, and protected files remain unchanged.
+- Published version is `1.1.4`, `versionCode` 51. Signed R8 build, unit tests, signature,
+  version, private-string scan, immutable R2 archive, and public endpoint verification passed.
+  Production SHA-256 is
+  `f581b7f79bc7e2438ac350f48600485d70a1d585d3ea6fe875c5a30d69b50281`.
+- Rollback tag `snapshot-before-bottom-nav-idle-v1.1.3` points to `1963c08` and is pushed to
+  `origin`. Mini-player and protected player files remain unchanged.
+
 ## Artist onboarding performance — published in v1.0.42
 
 File: `app/src/main/kotlin/com/wiwymusic/ui/screens/auth/WiwyOnboardingScreen.kt`.
@@ -216,19 +234,19 @@ admin panel.
 
 - Android app written in Kotlin and Jetpack Compose with Material Design 3.
 - Application ID: `com.wiwymusic`.
-- Production release: `v1.1.3` (R2 stable OTA).
-- `versionName`: `1.1.3`.
-- `versionCode`: `50`.
-- Production commit: `20e3f05` (`build: bump version to 1.1.3`).
+- Production release: `v1.1.4` (R2 stable OTA).
+- `versionName`: `1.1.4`.
+- `versionCode`: `51`.
+- Production commit: `59d6e60` (`build: bump version to 1.1.4`).
 - Last GitHub bridge release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.42>
 - OTA asset name: `WiwyMusic.apk`.
-- Production APK SHA-256: `c3bb075b5e1a013932bf5bfa36c8e3777dcbbb01e30f66dc756db1369a08ad54`.
-- Previous production baseline: `v1.1.1`, commit `1e51a21`, SHA-256
-  `1689097628e97c0a1702862c375a59435c83714e3b1a057a479c45da785ed41b`.
+- Production APK SHA-256: `f581b7f79bc7e2438ac350f48600485d70a1d585d3ea6fe875c5a30d69b50281`.
+- Previous production baseline: `v1.1.3`, commit `20e3f05`, SHA-256
+  `e127c343c4298e1aae4459611fdb102fd608451a67a996be815fd457f1dfc279`.
 
 The bridge release was published through both GitHub and R2. Clients upgrading from `v1.0.41`
 can discover `v1.0.42` through the old GitHub updater; after installation, the Cloudflare
-endpoint offers current stable `v1.1.3`.
+endpoint offers current stable `v1.1.4`.
 
 ## APK hardening and rollback baseline — published in v1.0.42
 
@@ -242,9 +260,10 @@ Rollback is fixed to the unchanged production release:
 - Versioned copies exist at `ota/archive/v1.0.42/WiwyMusic.apk`,
   `ota/archive/v1.0.43/WiwyMusic.apk`, `ota/archive/v1.0.44/WiwyMusic.apk`, and
   `ota/archive/v1.0.45/WiwyMusic.apk`, `ota/archive/v1.1.0/WiwyMusic.apk`,
-  `ota/archive/v1.1.1/WiwyMusic.apk`, `ota/archive/v1.1.2/WiwyMusic.apk`, and
-  `ota/archive/v1.1.3/WiwyMusic.apk`; current `v1.1.3` is served from `ota/WiwyMusic.apk`.
-- R2 metadata `ota/releases.json` points to `v1.1.3` with the generic improvements message.
+  `ota/archive/v1.1.1/WiwyMusic.apk`, `ota/archive/v1.1.2/WiwyMusic.apk`,
+  `ota/archive/v1.1.3/WiwyMusic.apk`, and `ota/archive/v1.1.4/WiwyMusic.apk`; current
+  `v1.1.4` is served from its immutable archive through `/api/ota/download`.
+- R2 metadata `ota/releases.json` points to `v1.1.4` with the generic improvements message.
 - Public repository-neutral endpoints:
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/releases`
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/download`
@@ -523,10 +542,16 @@ After the bridge is installed, stable clients use Cloudflare only. For every lat
 2. Compile, test, inspect the diff, and confirm protected files are unchanged.
 3. Commit and push source, then build the signed universal release with R8.
 4. Verify package version, signature, SHA-256, and absence of private repository strings.
-5. Archive the APK under `ota/archive/v<version>/WiwyMusic.apk`.
-6. Upload and remotely verify `ota/WiwyMusic.apk`.
-7. Only after APK verification, update and upload `ota/releases.json` with generic text.
-8. Verify both public OTA endpoints. GitHub is not needed for later in-app OTAs.
+5. Upload the APK under `ota/archive/v<version>/WiwyMusic.apk` and remotely verify its hash.
+6. Only after archive verification, update and upload `ota/releases.json` with generic text.
+7. Verify both public OTA endpoints and confirm the downloaded APK hash. GitHub is not needed
+   for later in-app OTAs.
+
+The OTA Worker validates the published `tag_name` and serves
+`ota/archive/<tag_name>/WiwyMusic.apk`. The legacy `ota/WiwyMusic.apk` object is only a fallback;
+do not rely on replacing it during normal publication. This immutable-archive routing was
+deployed after R2 repeatedly reported a successful overwrite while direct downloads still
+returned the previous stable object.
 
 The Android client checks on each transition to foreground, deduplicates startup checks within
 10 seconds, repeats every 180 minutes while foregrounded, and retains the six-hour background
