@@ -1,6 +1,6 @@
 # WiwyMusic — project context and durable AI handoff
 
-Last updated: 2026-08-01 (America/Mexico_City)
+Last updated: 2026-08-02 (America/Mexico_City)
 
 This is the single source of truth for any editor, IDE assistant, or AI working on WiwyMusic.
 Read it completely before inspecting or changing code. Update it after every meaningful change,
@@ -17,6 +17,29 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Admin OTA metadata commit: `ce40349` (`chore: publish OTA metadata for v1.1.1`).
 - Admin OTA documentation commit: `c91b6a1` (`docs: record v1.1.1 OTA artifact`).
 - Production APK is `v1.1.1`, `versionCode` 48, distributed through Cloudflare R2.
+
+## Full-player download shortcut — prepared, not published
+
+Explicit authorization and rollback:
+
+- On 2026-08-02 the user explicitly authorized changing the full-player action after receiving
+  the protected-file warning, then selected the safe alternative: add Download and hide Share.
+- Rollback tag `snapshot-before-player-download-button-v1.1.1` points to commit `6dee848` and is
+  pushed to `origin`.
+
+Prepared behavior:
+
+- `PlayerTopActions` in `ui/player/PlayerComponents.kt` no longer renders the Share shortcut.
+- The same position renders a native Download action in player styles V1 through V6. Styles V7
+  and V8 receive Download as an additional action between Favorite and More.
+- The shortcut reuses the existing Premium download rules and state: it starts a download,
+  cancels a queued/in-progress download, and removes a completed offline download.
+- The Download action inside `PlayerMenu` remains available; sharing elsewhere in the app is
+  unchanged.
+- Debug compilation and unit tests pass. No OTA has been built or published for this prepared
+  change.
+- Mini-player files, `Player.kt`, playback service, queue, playback behavior, dimensions,
+  animations, and full-player connection were not changed.
 
 ## Premium/Free plan label and Account layout — published in v1.1.1
 

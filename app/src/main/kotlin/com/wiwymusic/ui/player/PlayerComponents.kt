@@ -10,7 +10,6 @@ package com.wiwymusic.ui.player
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
@@ -92,14 +91,20 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.common.Player.STATE_ENDED
+import androidx.media3.exoplayer.offline.Download
+import androidx.media3.exoplayer.offline.DownloadRequest
+import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
 import me.saket.squiggles.SquigglySlider
+import com.wiwymusic.LocalDatabase
+import com.wiwymusic.LocalDownloadUtil
 import com.wiwymusic.R
 import com.wiwymusic.canvas.models.CanvasArtwork
 import com.wiwymusic.constants.PlayerBackgroundStyle
@@ -110,6 +115,7 @@ import com.wiwymusic.db.entities.FormatEntity
 import com.wiwymusic.extensions.togglePlayPause
 import com.wiwymusic.extensions.toggleRepeatMode
 import com.wiwymusic.models.MediaMetadata
+import com.wiwymusic.playback.ExoDownloadService
 import com.wiwymusic.playback.PlayerConnection
 import com.wiwymusic.ui.component.BottomSheetPageState
 import com.wiwymusic.ui.component.BottomSheetState
@@ -254,9 +260,49 @@ fun PlayerTopActions(
     context: Context,
     currentSongLiked: Boolean
 ) {
+    val database = LocalDatabase.current
+    val downloadUtil = LocalDownloadUtil.current
+    val download by downloadUtil.getDownload(mediaMetadata.id).collectAsState(initial = null)
+    val downloadIconRes = when (download?.state) {
+        Download.STATE_COMPLETED -> R.drawable.offline
+        Download.STATE_QUEUED, Download.STATE_DOWNLOADING -> R.drawable.downloading
+        else -> R.drawable.download
+    }
+    val onDownloadClick = {
+        when (download?.state) {
+            Download.STATE_COMPLETED,
+            Download.STATE_QUEUED,
+            Download.STATE_DOWNLOADING -> {
+                DownloadService.sendRemoveDownload(
+                    context,
+                    ExoDownloadService::class.java,
+                    mediaMetadata.id,
+                    false,
+                )
+            }
+
+            else -> {
+                if (downloadUtil.canDownload()) {
+                    database.transaction { insert(mediaMetadata) }
+                    val request = DownloadRequest
+                        .Builder(mediaMetadata.id, mediaMetadata.id.toUri())
+                        .setCustomCacheKey(mediaMetadata.id)
+                        .setData(mediaMetadata.title.toByteArray())
+                        .build()
+                    DownloadService.sendAddDownload(
+                        context,
+                        ExoDownloadService::class.java,
+                        request,
+                        false,
+                    )
+                }
+            }
+        }
+    }
+
     when (playerDesignStyle) {
         PlayerDesignStyle.V2 -> {
-            val shareShape = RoundedCornerShape(
+            val downloadShape = RoundedCornerShape(
                 topStart = 50.dp, bottomStart = 50.dp,
                 topEnd = 10.dp, bottomEnd = 10.dp
             )
@@ -273,24 +319,14 @@ fun PlayerTopActions(
                 Box(
                     modifier = Modifier
                         .size(42.dp)
-                        .clip(shareShape)
+                        .clip(downloadShape)
                         .background(textButtonColor)
-                        .clickable {
-                            val intent = Intent().apply {
-                                action = Intent.ACTION_SEND
-                                type = "text/plain"
-                                putExtra(
-                                    Intent.EXTRA_TEXT,
-                                    "https://music.youtube.com/watch?v=${mediaMetadata.id}"
-                                )
-                            }
-                            context.startActivity(Intent.createChooser(intent, null))
-                        }
+                        .clickable(onClick = onDownloadClick)
                 ) {
-                    Image(
-                        painter = painterResource(R.drawable.share),
+                    Icon(
+                        painter = painterResource(downloadIconRes),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(iconButtonColor),
+                        tint = iconButtonColor,
                         modifier = Modifier
                             .align(Alignment.Center)
                             .size(24.dp)
@@ -331,21 +367,11 @@ fun PlayerTopActions(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .clickable {
-                            val intent = Intent().apply {
-                                action = Intent.ACTION_SEND
-                                type = "text/plain"
-                                putExtra(
-                                    Intent.EXTRA_TEXT,
-                                    "https://music.youtube.com/watch?v=${mediaMetadata.id}"
-                                )
-                            }
-                            context.startActivity(Intent.createChooser(intent, null))
-                        },
+                        .clickable(onClick = onDownloadClick),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.share),
+                        painter = painterResource(downloadIconRes),
                         contentDescription = null,
                         tint = textBackgroundColor.copy(alpha = 0.7f),
                         modifier = Modifier.size(20.dp)
@@ -379,17 +405,7 @@ fun PlayerTopActions(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(
-                    onClick = {
-                        val intent = Intent().apply {
-                            action = Intent.ACTION_SEND
-                            type = "text/plain"
-                            putExtra(
-                                Intent.EXTRA_TEXT,
-                                "https://music.youtube.com/watch?v=${mediaMetadata.id}"
-                            )
-                        }
-                        context.startActivity(Intent.createChooser(intent, null))
-                    },
+                    onClick = onDownloadClick,
                     shape = RoundedCornerShape(14.dp),
                     color = textBackgroundColor.copy(alpha = 0.12f),
                     modifier = Modifier
@@ -398,7 +414,7 @@ fun PlayerTopActions(
                 ) {
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                         Icon(
-                            painter = painterResource(R.drawable.share),
+                            painter = painterResource(downloadIconRes),
                             contentDescription = null,
                             tint = textBackgroundColor,
                             modifier = Modifier.size(22.dp)
@@ -475,21 +491,10 @@ fun PlayerTopActions(
                         .size(40.dp)
                         .clip(RoundedCornerShape(24.dp))
                         .background(textButtonColor)
-                        .clickable {
-                            val intent =
-                                Intent().apply {
-                                    action = Intent.ACTION_SEND
-                                    type = "text/plain"
-                                    putExtra(
-                                        Intent.EXTRA_TEXT,
-                                        "https://music.youtube.com/watch?v=${mediaMetadata.id}"
-                                    )
-                                }
-                            context.startActivity(Intent.createChooser(intent, null))
-                        },
+                        .clickable(onClick = onDownloadClick),
             ) {
                 Image(
-                    painter = painterResource(R.drawable.share),
+                    painter = painterResource(downloadIconRes),
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(iconButtonColor),
                     modifier =
@@ -540,17 +545,7 @@ fun PlayerTopActions(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(
-                    onClick = {
-                        val intent = Intent().apply {
-                            action = Intent.ACTION_SEND
-                            type = "text/plain"
-                            putExtra(
-                                Intent.EXTRA_TEXT,
-                                "https://music.youtube.com/watch?v=${mediaMetadata.id}"
-                            )
-                        }
-                        context.startActivity(Intent.createChooser(intent, null))
-                    },
+                    onClick = onDownloadClick,
                     shape = RoundedCornerShape(
                         topStart = 50.dp, bottomStart = 50.dp,
                         topEnd = 6.dp, bottomEnd = 6.dp
@@ -562,7 +557,7 @@ fun PlayerTopActions(
                 ) {
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                         Icon(
-                            painter = painterResource(R.drawable.share),
+                            painter = painterResource(downloadIconRes),
                             contentDescription = null,
                             tint = textBackgroundColor,
                             modifier = Modifier.size(20.dp)
@@ -665,6 +660,21 @@ fun PlayerTopActions(
                     modifier = Modifier
                         .size(42.dp)
                         .clip(CircleShape)
+                        .clickable(onClick = onDownloadClick),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(downloadIconRes),
+                        contentDescription = null,
+                        tint = textBackgroundColor.copy(alpha = 0.7f),
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(CircleShape)
                         .clickable {
                             menuState.show {
                                 PlayerMenu(
@@ -715,6 +725,21 @@ fun PlayerTopActions(
                         contentDescription = null,
                         tint = textBackgroundColor.copy(alpha = if (currentSongLiked) 1f else 0.7f),
                         modifier = Modifier.size(22.dp)
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .clickable(onClick = onDownloadClick),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(downloadIconRes),
+                        contentDescription = null,
+                        tint = textBackgroundColor.copy(alpha = 0.7f),
+                        modifier = Modifier.size(22.dp),
                     )
                 }
 
