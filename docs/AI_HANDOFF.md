@@ -27,6 +27,8 @@ build, deployment, migration, or release. Do not create competing project-memory
   deployed Worker version `91b47c42-f0fa-4479-ad9f-814402d554bf`).
 - Admin panel UI commit: `ae42e23` (`feat(admin): improve premium management`, local;
   the admin repository has no Git remote configured).
+- Admin APK download button commit: `1520542` (`feat(admin): add APK download button`, local;
+  deployed Worker version `94a2fda9-9271-4721-b364-a4075b5c50fb`).
 - Production APK is `v1.1.9`, `versionCode` 56, distributed through Cloudflare R2.
 
 ## Settings keyboard-aware scrolling — published in v1.1.7
@@ -559,6 +561,24 @@ Preserve these four choices and Wi-Fi control:
 - Validation passed with targeted ESLint, `tsc --noEmit`, Next.js production build, and the
   OpenNext Cloudflare build. Deployed Worker version:
   `90481757-9a06-46d3-8692-8cd9b9b5c22d`.
+
+## Admin APK download button — deployed 2026-08-02
+
+- The persistent admin sidebar now includes a `Descargar APK` button beneath its navigation.
+  It is available from Dashboard, Usuarios, and Códigos.
+- The button is a standard download link to `/api/ota/download`, so it always serves the stable
+  immutable APK selected by `ota/releases.json`; it does not duplicate or expose the R2 object.
+- Modified file: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin/src/app/dashboard/layout.tsx`.
+- Validation passed: targeted ESLint, `tsc --noEmit`, Next.js production build, and OpenNext
+  Cloudflare build. Existing Durable Object and deprecated middleware warnings remain unchanged.
+- Admin commit: `1520542` (`feat(admin): add APK download button`). Rollback tag
+  `snapshot-before-admin-apk-download-20260802` points to `c47f6b8`.
+- Deployed at <https://wiwymusic-admin.angelanda023.workers.dev> as Worker version
+  `94a2fda9-9271-4721-b364-a4075b5c50fb`.
+- Production verification passed: `/api/ota/releases` still reports `v1.1.9`; the download
+  responds as `application/vnd.android.package-archive` with filename `WiwyMusic.apk`, and its
+  SHA-256 remains `bd77d6cd0de3f9085dec257aa78342ca52428c6549a0ad90fda3a414034ede22`.
+- No Android, OTA metadata, R2 object, mini-player, player, or playback file was modified.
 
 ## Admin live presence (deployed in v1.0.38)
 
