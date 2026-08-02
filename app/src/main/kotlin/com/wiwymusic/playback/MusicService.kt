@@ -69,6 +69,8 @@ import androidx.media3.exoplayer.audio.DefaultAudioSink
 import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
+import androidx.media3.extractor.DefaultExtractorsFactory
+import androidx.media3.extractor.Extractor
 import androidx.media3.extractor.ExtractorsFactory
 import androidx.media3.extractor.mkv.MatroskaExtractor
 import androidx.media3.extractor.mp4.FragmentedMp4Extractor
@@ -4300,6 +4302,12 @@ class MusicService :
 
     private fun createDataSourceFactory(): DataSource.Factory {
         return ResolvingDataSource.Factory(createCacheDataSource()) { dataSpec ->
+            // Las pistas del dispositivo ya contienen su URI real. Resolverlas como si
+            // fueran IDs de YouTube provoca UnexpectedLoaderException (code 2000).
+            if (dataSpec.uri.scheme == "content" || dataSpec.uri.scheme == "file") {
+                return@Factory dataSpec
+            }
+
             val mediaId = dataSpec.key ?: error("No media id")
 
             val requiredCachedLength =
@@ -4595,8 +4603,21 @@ class MusicService :
     private fun createMediaSourceFactory() =
         DefaultMediaSourceFactory(
             createDataSourceFactory(),
-            ExtractorsFactory {
-                arrayOf(Mp4Extractor(), FragmentedMp4Extractor(), MatroskaExtractor())
+            object : ExtractorsFactory {
+                private val defaultExtractorsFactory = DefaultExtractorsFactory()
+
+                override fun createExtractors(): Array<Extractor> =
+                    arrayOf(Mp4Extractor(), FragmentedMp4Extractor(), MatroskaExtractor())
+
+                override fun createExtractors(
+                    uri: android.net.Uri,
+                    responseHeaders: MutableMap<String, MutableList<String>>,
+                ): Array<Extractor> =
+                    if (uri.scheme == "content" || uri.scheme == "file") {
+                        defaultExtractorsFactory.createExtractors(uri, responseHeaders)
+                    } else {
+                        createExtractors()
+                    }
             },
         )
 
