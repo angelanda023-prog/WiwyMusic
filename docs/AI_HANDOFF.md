@@ -51,6 +51,8 @@ build, deployment, migration, or release. Do not create competing project-memory
   release build, signature, private-string scan, immutable R2 archive, public metadata, and
   public download verification passed. Production SHA-256 is
   `821e1ed514b70ee9a2c61a170c91710ee39b800ec3a3df88081ad06d14af8cb0`.
+- Rollback tag `snapshot-before-premium-controls-v1.1.5` points to `ff988f0` and is pushed to
+  `origin`.
 
 ## Local playback fix — published in v1.1.3
 
