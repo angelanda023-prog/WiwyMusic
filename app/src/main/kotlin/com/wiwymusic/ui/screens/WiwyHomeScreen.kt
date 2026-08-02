@@ -67,6 +67,7 @@ import com.wiwymusic.innertube.models.WatchEndpoint
 import com.wiwymusic.innertube.models.YTItem
 import com.wiwymusic.models.toMediaMetadata
 import com.wiwymusic.playback.queues.YouTubeQueue
+import com.wiwymusic.utils.SupabaseAuth
 import com.wiwymusic.utils.UserPrefs
 import com.wiwymusic.viewmodels.HomeViewModel
 import kotlinx.coroutines.Dispatchers
@@ -112,6 +113,8 @@ fun WiwyHomeScreen(
     val homePage by viewModel.homePage.collectAsState()
     val explorePage by viewModel.explorePage.collectAsState()
     val accountName by viewModel.accountName.collectAsState()
+    val supabaseSession by SupabaseAuth.session.collectAsState()
+    val onboardingCompleted by UserPrefs.onboarded.collectAsState()
 
     // Continuar escuchando: historial real de reproducción
     val database = LocalDatabase.current
@@ -123,18 +126,34 @@ fun WiwyHomeScreen(
 
     // Fase B: inicio personalizado según artistas preferidos (Supabase)
     var personalized by remember { mutableStateOf<List<Pair<String, List<SongItem>>>>(emptyList()) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(supabaseSession?.userId, onboardingCompleted) {
+        personalized = emptyList()
+        if (supabaseSession == null || onboardingCompleted != true) return@LaunchedEffect
+
         val artists = UserPrefs.getPreferredArtists().shuffled().take(4)
         if (artists.isEmpty()) return@LaunchedEffect
         val sections = withContext(Dispatchers.IO) {
             coroutineScope {
                 artists.map { a ->
                     async {
-                        val songs = YouTube.artist(a.id).getOrNull()
+                        val artistSongs = YouTube.artist(a.id).getOrNull()
                             ?.sections?.firstNotNullOfOrNull { sec ->
                                 sec.items.filterIsInstance<SongItem>().takeIf { it.isNotEmpty() }
                             }
                             ?.take(10).orEmpty()
+                        val songs = artistSongs.ifEmpty {
+                            YouTube.search(a.name, YouTube.SearchFilter.FILTER_SONG)
+                                .getOrNull()
+                                ?.items
+                                ?.filterIsInstance<SongItem>()
+                                ?.filter { song ->
+                                    song.artists.any { artist ->
+                                        artist.id == a.id || artist.name.equals(a.name, ignoreCase = true)
+                                    }
+                                }
+                                ?.take(10)
+                                .orEmpty()
+                        }
                         a.name to songs
                     }
                 }.awaitAll()

@@ -950,6 +950,36 @@ fun PlayerTimeLabel(
 }
 
 @Composable
+private fun PlayerButtonWavyProgress(
+    position: Long,
+    duration: Long,
+    isLoading: Boolean,
+    color: Color,
+    modifier: Modifier,
+) {
+    if (isLoading) {
+        CircularWavyProgressIndicator(
+            modifier = modifier,
+            color = color,
+            trackColor = color.copy(alpha = 0.18f),
+        )
+    } else {
+        CircularWavyProgressIndicator(
+            progress = {
+                if (duration > 0L && duration != C.TIME_UNSET) {
+                    (position.toFloat() / duration.toFloat()).coerceIn(0f, 1f)
+                } else {
+                    0f
+                }
+            },
+            modifier = modifier,
+            color = color,
+            trackColor = color.copy(alpha = 0.18f),
+        )
+    }
+}
+
+@Composable
 fun PlayerPlaybackControls(
     playerDesignStyle: PlayerDesignStyle,
     playbackState: Int,
@@ -963,6 +993,8 @@ fun PlayerPlaybackControls(
     textBackgroundColor: Color,
     icBackgroundColor: Color,
     playPauseRoundness: androidx.compose.ui.unit.Dp,
+    position: Long,
+    duration: Long,
     playerConnection: PlayerConnection,
     currentSongLiked: Boolean
 ) {
@@ -1051,12 +1083,14 @@ fun PlayerPlaybackControls(
                             .size(width = playButtonWidth, height = playButtonHeight)
                             .clip(RoundedCornerShape(32.dp))
                     ) {
-                        if (isLoading) {
-                            CircularWavyProgressIndicator(
-                                modifier = Modifier.size(42.dp),
-                                color = iconButtonColor,
-                            )
-                        } else {
+                        PlayerButtonWavyProgress(
+                            position = position,
+                            duration = duration,
+                            isLoading = isLoading,
+                            color = iconButtonColor,
+                            modifier = Modifier.size(56.dp),
+                        )
+                        if (!isLoading) {
                             Icon(
                                 painter = painterResource(
                                     when {
@@ -1211,12 +1245,14 @@ fun PlayerPlaybackControls(
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        if (isLoading) {
-                            CircularWavyProgressIndicator(
-                                modifier = Modifier.size(32.dp),
-                                color = icBackgroundColor,
-                            )
-                        } else {
+                        PlayerButtonWavyProgress(
+                            position = position,
+                            duration = duration,
+                            isLoading = isLoading,
+                            color = icBackgroundColor,
+                            modifier = Modifier.size(44.dp),
+                        )
+                        if (!isLoading) {
                             Icon(
                                 painter = painterResource(
                                     when {
@@ -1438,12 +1474,14 @@ fun PlayerPlaybackControls(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            if (isLoading) {
-                                CircularWavyProgressIndicator(
-                                    modifier = Modifier.size(40.dp),
-                                    color = icBackgroundColor,
-                                )
-                            } else {
+                            PlayerButtonWavyProgress(
+                                position = position,
+                                duration = duration,
+                                isLoading = isLoading,
+                                color = icBackgroundColor,
+                                modifier = Modifier.size(60.dp),
+                            )
+                            if (!isLoading) {
                                 Icon(
                                     painter = painterResource(
                                         when {
@@ -1639,14 +1677,16 @@ fun PlayerPlaybackControls(
                                 }
                             },
                 ) {
-                    if (isLoading) {
-                        CircularWavyProgressIndicator(
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .size(36.dp),
-                            color = iconButtonColor,
-                        )
-                    } else {
+                    PlayerButtonWavyProgress(
+                        position = position,
+                        duration = duration,
+                        isLoading = isLoading,
+                        color = iconButtonColor,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(50.dp),
+                    )
+                    if (!isLoading) {
                         Image(
                             painter =
                                 painterResource(
@@ -1825,12 +1865,14 @@ fun PlayerPlaybackControls(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (isLoading) {
-                                    CircularWavyProgressIndicator(
-                                        modifier = Modifier.size(40.dp),
-                                        color = iconButtonColor,
-                                    )
-                                } else {
+                                PlayerButtonWavyProgress(
+                                    position = position,
+                                    duration = duration,
+                                    isLoading = isLoading,
+                                    color = iconButtonColor,
+                                    modifier = Modifier.size(58.dp),
+                                )
+                                if (!isLoading) {
                                     Icon(
                                         painter = painterResource(
                                             when {
@@ -1999,12 +2041,14 @@ fun PlayerPlaybackControls(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (isLoading) {
-                            CircularWavyProgressIndicator(
-                                modifier = Modifier.size(44.dp),
-                                color = textBackgroundColor,
-                            )
-                        } else {
+                        PlayerButtonWavyProgress(
+                            position = position,
+                            duration = duration,
+                            isLoading = isLoading,
+                            color = textBackgroundColor,
+                            modifier = Modifier.size(64.dp),
+                        )
+                        if (!isLoading) {
                             Icon(
                                 painter = painterResource(
                                     when {
@@ -2095,12 +2139,14 @@ fun PlayerPlaybackControls(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (isLoading) {
-                            CircularWavyProgressIndicator(
-                                modifier = Modifier.size(36.dp),
-                                color = Color.Black,
-                            )
-                        } else {
+                        PlayerButtonWavyProgress(
+                            position = position,
+                            duration = duration,
+                            isLoading = isLoading,
+                            color = Color.Black,
+                            modifier = Modifier.size(52.dp),
+                        )
+                        if (!isLoading) {
                             Icon(
                                 painter = painterResource(
                                     when {
@@ -2297,6 +2343,8 @@ fun PlayerControlsContent(
         textBackgroundColor = textBackgroundColor,
         icBackgroundColor = icBackgroundColor,
         playPauseRoundness = playPauseRoundness,
+        position = sliderPosition ?: position,
+        duration = duration,
         playerConnection = playerConnection,
         currentSongLiked = currentSongLiked
     )
@@ -3172,6 +3220,8 @@ fun V8PlayerControlsContent(
             playbackState = playbackState,
             isPlaying = isPlaying,
             isLoading = isLoading,
+            position = sliderPosition ?: position,
+            duration = duration,
             repeatMode = repeatMode,
             canSkipPrevious = canSkipPrevious,
             canSkipNext = canSkipNext,
@@ -3249,6 +3299,8 @@ fun V8PlaybackControls(
     playbackState: Int,
     isPlaying: Boolean,
     isLoading: Boolean,
+    position: Long,
+    duration: Long,
     repeatMode: Int,
     canSkipPrevious: Boolean,
     canSkipNext: Boolean,
@@ -3296,12 +3348,14 @@ fun V8PlaybackControls(
             modifier = Modifier.size(72.dp)
         ) {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                if (isLoading) {
-                    CircularWavyProgressIndicator(
-                        modifier = Modifier.size(36.dp),
-                        color = textBackgroundColor,
-                    )
-                } else {
+                PlayerButtonWavyProgress(
+                    position = position,
+                    duration = duration,
+                    isLoading = isLoading,
+                    color = textBackgroundColor,
+                    modifier = Modifier.size(64.dp),
+                )
+                if (!isLoading) {
                     Icon(
                         painter = painterResource(
                             when {

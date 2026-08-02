@@ -191,6 +191,36 @@ Current behavior:
 - Rollback tag `snapshot-before-bottom-nav-idle-v1.1.3` points to `1963c08` and is pushed to
   `origin`. Mini-player and protected player files remain unchanged.
 
+## Account-isolated recommendations, player menu, and task-close playback — prepared, not published
+
+- `WiwyHomeScreen` keys its personalized artist request by the current Supabase user and
+  onboarding state. It clears the previous result immediately on logout/account change and
+  reloads after a new user finishes artist selection.
+- Personalized home sections query only `preferred_artists.source = onboarding`. Learned rows
+  from the old device-wide history flow no longer appear as selected preferences.
+- The automatic `learnFromHistory(database)` call at login was removed because the local event
+  database is shared by the installation and could copy one account's listening history into a
+  different account. Library and playback history records themselves are not deleted.
+- Artist pages remain the primary song source; an artist-filtered song search is used as a
+  fallback so a newly onboarded account receives music for its selected artists even when an
+  artist page has no song section.
+- In `PlayerMenu`, the quick action previously used for copying/sharing the track link now opens
+  the existing Equalizer dialog. The older Equalizer list row was removed to prevent duplication.
+- On 2026-08-02 the user explicitly authorized a visual-only change in
+  `ui/player/PlayerComponents.kt`: every full-player style (V2 through V8 and the default style)
+  now draws the same determinate `CircularWavyProgressIndicator` concept used around the mini
+  player artwork around its Play/Pause icon. The wave advances from the existing playback
+  `position/duration`; loading remains indeterminate. Click handling, play/pause/replay logic,
+  touch sizes, queue, service, and the mini-player files are unchanged.
+- On 2026-08-02 the user explicitly authorized changing protected
+  `playback/MusicService.kt`. `onTaskRemoved` now always saves the persistent queue, stops and
+  clears playback, removes the foreground notification, and stops the service when the app is
+  removed from Recents. Minimizing, changing apps, locking the screen, and normal background
+  playback do not call this path.
+- Mini-player UI files, dimensions, controls, animations, and full-player connection remain
+  unchanged. `compileUniversalDebugKotlin` and `testUniversalDebugUnitTest` pass. No OTA has
+  been built or published for this prepared change set.
+
 ## Artist onboarding performance — published in v1.0.42
 
 File: `app/src/main/kotlin/com/wiwymusic/ui/screens/auth/WiwyOnboardingScreen.kt`.

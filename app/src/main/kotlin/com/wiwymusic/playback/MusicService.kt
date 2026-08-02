@@ -127,7 +127,6 @@ import com.wiwymusic.constants.ShowLyricsKey
 import com.wiwymusic.constants.SkipSilenceKey
 import com.wiwymusic.constants.MaxSongCacheSizeKey
 import com.wiwymusic.constants.SmartTrimmerKey
-import com.wiwymusic.constants.StopMusicOnTaskClearKey
 import com.wiwymusic.constants.WakelockKey
 import com.wiwymusic.constants.YtmSyncKey
 import com.wiwymusic.db.MusicDatabase
@@ -5069,7 +5068,9 @@ class MusicService :
         try { DiscordPresenceManager.stop() } catch (_: Exception) {}
         lastPresenceToken = null
 
-        val stopMusicOnTaskClearEnabled = dataStore.get(StopMusicOnTaskClearKey, false)
+        // Quitar la tarea de Recientes representa un cierre explícito de la app.
+        // El servicio sigue activo al minimizar, cambiar de app o apagar la pantalla.
+        val stopMusicOnTaskClearEnabled = true
 
         try {
             val state = togetherSessionState.value

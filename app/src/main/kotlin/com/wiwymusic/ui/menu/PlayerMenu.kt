@@ -445,23 +445,14 @@ fun ColumnScope.PlayerMenu(
                     NewAction(
                         icon = {
                             Icon(
-                                painter = painterResource(R.drawable.link),
+                                painter = painterResource(R.drawable.equalizer),
                                 contentDescription = null,
                                 modifier = Modifier.size(28.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         },
-                        text = stringResource(R.string.copy_link),
-                        onClick = {
-                            val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                            val clip = android.content.ClipData.newPlainText(
-                                context.getString(R.string.copy_link),
-                                "https://music.youtube.com/watch?v=${mediaMetadata.id}",
-                            )
-                            clipboard.setPrimaryClip(clip)
-                            android.widget.Toast.makeText(context, R.string.link_copied, android.widget.Toast.LENGTH_SHORT).show()
-                            onDismiss()
-                        }
+                        text = stringResource(R.string.equalizer),
+                        onClick = { showEqualizerDialog = true }
                     ),
                     NewAction(
                         icon = {
@@ -592,7 +583,7 @@ fun ColumnScope.PlayerMenu(
             }
         }
 
-        // ── Detalles / Ecualizador / Tempo ───────────────────────────────────
+        // ── Detalles / Tempo ─────────────────────────────────────────────────
         item {
             MenuSurfaceSection(modifier = Modifier.padding(vertical = 6.dp)) {
                 Column {
@@ -607,15 +598,6 @@ fun ColumnScope.PlayerMenu(
                     )
 
                     if (isQueueTrigger != true) {
-                        HorizontalDivider(modifier = Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.outlineVariant)
-
-                        ListItem(
-                            headlineContent = { Text(text = stringResource(R.string.equalizer)) },
-                            leadingContent = { Icon(painter = painterResource(R.drawable.equalizer), contentDescription = null) },
-                            modifier = Modifier.clickable { showEqualizerDialog = true },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        )
-
                         HorizontalDivider(modifier = Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.outlineVariant)
 
                         ListItem(

@@ -1916,8 +1916,6 @@ class MainActivity : ComponentActivity() {
                             if (supaLoaded && session != null) {
                                 com.wiwymusic.utils.UserPrefs.restoreCachedPremium(session.userId)
                                 com.wiwymusic.utils.UserPrefs.refresh()
-                                // Fase C: aprender de lo que realmente escuchas y adaptar el inicio
-                                runCatching { com.wiwymusic.utils.UserPrefs.learnFromHistory(database) }
                                 // Plan Premium en tiempo real: se cancela solo al cambiar la key
                                 // (logout/cambio de cuenta) gracias a la concurrencia estructurada de LaunchedEffect.
                                 com.wiwymusic.utils.UserPrefs.startPremiumRealtimeSync(this, session.userId)

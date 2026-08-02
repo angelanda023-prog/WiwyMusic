@@ -170,7 +170,7 @@ object UserPrefs {
         val session = SupabaseAuth.session.value ?: return@withContext emptyList()
         runCatching {
             val conn = open(
-                "$BASE_URL/rest/v1/preferred_artists?select=artist_id,name,thumbnail_url&order=weight.desc,added_at.desc",
+                "$BASE_URL/rest/v1/preferred_artists?select=artist_id,name,thumbnail_url&source=eq.onboarding&order=weight.desc,added_at.desc",
                 "GET",
                 session,
             )
@@ -195,7 +195,7 @@ object UserPrefs {
     suspend fun completeOnboarding(artists: List<ArtistPick>): Result<Unit> = withContext(Dispatchers.IO) {
         val session = SupabaseAuth.session.value ?: return@withContext Result.failure(IllegalStateException("Sin sesión"))
         runCatching {
-            // 1) Guardar artistas preferidos (upsert)
+            // 1) Guardar los artistas elegidos como fuente explícita del onboarding.
             val rows = JSONArray()
             artists.forEach { a ->
                 rows.put(
