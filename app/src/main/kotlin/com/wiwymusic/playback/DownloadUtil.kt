@@ -65,6 +65,8 @@ internal fun resolvePlaybackAudioQuality(
         selectedQuality
     }
 
+internal fun canUseOfflineDownloads(isPremium: Boolean?): Boolean = isPremium == true
+
 @Singleton
 class DownloadUtil
 @Inject
@@ -116,7 +118,8 @@ constructor(
     val downloads = MutableStateFlow<Map<String, Download>>(emptyMap())
 
     /** Punto único de verdad: solo los usuarios Premium pueden descargar contenido offline. */
-    fun canDownload(): Boolean = com.wiwymusic.utils.UserPrefs.isPremium.value == true
+    fun canDownload(): Boolean =
+        canUseOfflineDownloads(com.wiwymusic.utils.UserPrefs.isPremium.value)
 
     private val dataSourceFactory =
         ResolvingDataSource.Factory(

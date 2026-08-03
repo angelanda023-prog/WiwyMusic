@@ -718,6 +718,27 @@ Preserve these four choices and Wi-Fi control:
 - Android three-tier source is ready, but its OTA deployment remains pending. R2 APK,
   mini-player, player, and playback files remain unchanged.
 
+## Spotify-style offline entitlement — published in v1.1.10
+
+- On 2026-08-03 the user explicitly authorized the required protected change in
+  `playback/MusicService.kt` after receiving the exact file, reason, playback risk, and
+  UI-only alternative.
+- Playback now selects its cache source for every new data source. Premium and Premium Plus use
+  the existing `downloadCache` with `playerCache`/network fallback. Free and unknown/loading
+  plans bypass `downloadCache` completely and use only normal streaming plus `playerCache`.
+- Expiration from Premium to Free does not remove downloaded files. Offline copies become
+  unavailable, while the same song can still stream normally with internet. Renewing Premium
+  makes the preserved downloads usable again on subsequent reads.
+- Existing download buttons remain protected by the same fail-closed entitlement helper. A
+  nullable plan cannot start downloads or consume offline files.
+- Modified files: `playback/MusicService.kt`, `playback/DownloadUtil.kt`, and
+  `playback/OfflineDownloadAccessTest.kt`. Mini-player UI, dimensions, controls, animations,
+  queue, and player connection remain unchanged.
+- Validation passed: `git diff --check`, `:app:compileUniversalDebugKotlin`, and
+  `:app:testUniversalDebugUnitTest`, including Premium, Free, and unknown-plan access tests.
+- Published version is `1.1.10`, `versionCode` 57. Rollback tag
+  `snapshot-before-offline-entitlement-v1.1.9` preserves the preceding source state.
+
 ## Admin live presence (deployed in v1.0.38)
 
 Android reports authenticated-user presence to the Supabase `app_presence` table through

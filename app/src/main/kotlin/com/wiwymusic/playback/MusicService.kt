@@ -4279,25 +4279,38 @@ class MusicService :
         }
     }
 
-    private fun createCacheDataSource(): CacheDataSource.Factory =
+    private fun createPlayerCacheDataSource(): CacheDataSource.Factory =
+        CacheDataSource
+            .Factory()
+            .setCache(playerCache)
+            .setUpstreamDataSourceFactory(
+                DefaultDataSource.Factory(
+                    this,
+                    OkHttpDataSource.Factory(
+                        mediaOkHttpClient,
+                    ),
+                ),
+            )
+            .setFlags(FLAG_IGNORE_CACHE_ON_ERROR)
+
+    private fun createPremiumCacheDataSource(): CacheDataSource.Factory =
         CacheDataSource
             .Factory()
             .setCache(downloadCache)
-            .setUpstreamDataSourceFactory(
-                CacheDataSource
-                    .Factory()
-                    .setCache(playerCache)
-                    .setUpstreamDataSourceFactory(
-                        DefaultDataSource.Factory(
-                            this,
-                            OkHttpDataSource.Factory(
-                                mediaOkHttpClient,
-                            ),
-                        ),
-                    )
-                    .setFlags(FLAG_IGNORE_CACHE_ON_ERROR)
-            ).setCacheWriteDataSinkFactory(null)
+            .setUpstreamDataSourceFactory(createPlayerCacheDataSource())
+            .setCacheWriteDataSinkFactory(null)
             .setFlags(FLAG_IGNORE_CACHE_ON_ERROR)
+
+    private fun createCacheDataSource(): DataSource.Factory =
+        DataSource.Factory {
+            if (canUseOfflineDownloads(com.wiwymusic.utils.UserPrefs.isPremium.value)) {
+                createPremiumCacheDataSource().createDataSource()
+            } else {
+                // Free mantiene los archivos, pero reproduce mediante streaming/playerCache.
+                // Al recuperar Premium, nuevas lecturas vuelven a usar downloadCache.
+                createPlayerCacheDataSource().createDataSource()
+            }
+        }
 
     private fun createDataSourceFactory(): DataSource.Factory {
         return ResolvingDataSource.Factory(createCacheDataSource()) { dataSpec ->
@@ -4334,7 +4347,8 @@ class MusicService :
             if (requiredCachedLength != null) {
                 // El contenido ya descargado (downloadCache) solo se sirve a usuarios Premium;
                 // el cache general de streaming (playerCache) sigue disponible para todos.
-                val isPremium = com.wiwymusic.utils.UserPrefs.isPremium.value == true
+                val isPremium =
+                    canUseOfflineDownloads(com.wiwymusic.utils.UserPrefs.isPremium.value)
                 val isFullyCached =
                     (isPremium && downloadCache.isCached(mediaId, dataSpec.position, requiredCachedLength)) ||
                             playerCache.isCached(mediaId, dataSpec.position, requiredCachedLength)
