@@ -728,4 +728,6 @@
     <string name="wm_recognize_soon">Función en desarrollo</string>
     <string name="wm_search_hint">Buscar canciones, artistas, álbumes…</string>
     <string name="contributors">Contribuidores</string>
+    <string name="playback_no_internet_title">Sin acceso a internet</string>
+    <string name="playback_no_internet_message">Conéctate a internet para seguir escuchando.</string>
 </resources>

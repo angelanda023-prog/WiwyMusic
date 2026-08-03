@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -62,6 +63,10 @@ fun PlaybackError(
     val copiedText = stringResource(R.string.copied)
     val openYouTubeMusicText = stringResource(R.string.open_youtube_music)
     val errorInfo = remember(error, mediaId) { error.toPlaybackErrorInfo(mediaId) }
+    if (errorInfo.kind == PlaybackErrorKind.NoInternet) {
+        NoInternetPlaybackNotice(retry = retry)
+        return
+    }
     val httpCode = errorInfo.httpCode
     val title =
         when (errorInfo.kind) {
@@ -225,6 +230,64 @@ fun PlaybackError(
                     Spacer(Modifier.width(8.dp))
                     Text(text = copyText)
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun NoInternetPlaybackNotice(retry: () -> Unit) {
+    Surface(
+        shape = MaterialTheme.shapes.extraLarge,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.96f),
+        tonalElevation = 6.dp,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp),
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.cloud_off),
+                        contentDescription = null,
+                        modifier = Modifier.padding(12.dp),
+                    )
+                }
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.playback_no_internet_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        text = stringResource(R.string.playback_no_internet_message),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            Button(
+                onClick = retry,
+                modifier = Modifier.fillMaxWidth(),
+                shapes = ButtonDefaults.shapes(),
+            ) {
+                Text(text = stringResource(R.string.retry))
             }
         }
     }

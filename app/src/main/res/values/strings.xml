@@ -868,4 +868,6 @@ WiwyMusic will only extract your token, and everything else is stored locally.</
     <string name="wm_recognize_desc">Identify the song playing around you</string>
     <string name="wm_recognize_soon">Coming soon</string>
     <string name="wm_search_hint">Search songs, artists, albums…</string>
+    <string name="playback_no_internet_title">No internet access</string>
+    <string name="playback_no_internet_message">Connect to the internet to keep listening.</string>
 </resources>

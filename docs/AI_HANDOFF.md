@@ -759,6 +759,11 @@ Preserve these four choices and Wi-Fi control:
   Mini-player UI, queue, controls, dimensions, animations, and player connection remain unchanged.
 - OTA remains v1.1.10 until this follow-up is compiled, verified, versioned, and explicitly
   published.
+- `ui/player/PlaybackError.kt` now renders `NoInternet` as a compact neutral Material card with
+  cloud-off icon, localized title/message, and one Retry button. It hides code 2000, nested
+  exception causes, Copy, and the red unknown-error treatment only for this known network state.
+  Other playback errors retain their existing diagnostics. English and Spanish resources were
+  added; playback behavior remains unchanged by this presentation-only follow-up.
 
 ## Admin live presence (deployed in v1.0.38)
 
