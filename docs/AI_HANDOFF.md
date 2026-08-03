@@ -44,7 +44,8 @@ build, deployment, migration, or release. Do not create competing project-memory
   production migration applied; deployed Worker version
   `722f55eb-0dd5-4742-9087-dfcfe11b236c`).
 - Admin suspended-subscription deletion commit: `8e12002`
-  (`feat(admin): delete suspended subscriptions`, local; deployment pending).
+  (`feat(admin): delete suspended subscriptions`, local; deployed as Worker version
+  `5e96d14c-3ff2-4a85-98a8-3b97a5c96754`).
 - Three-plan Android commit: `cdf177c` (`feat(account): show three plan tiers`, source pushed
   only after final documentation; OTA not published).
 - Production APK is `v1.1.10`, `versionCode` 57, distributed through Cloudflare R2.
@@ -746,7 +747,7 @@ Preserve these four choices and Wi-Fi control:
   `dd16ed1c907886157652d441bd56c51406194ca5f6abb5c23481a35122ad7e9d`.
 - Admin OTA metadata commit: `0590da0`. Android release source commit: `5d00398`.
 
-### Free airplane-mode cache follow-up — prepared, OTA pending
+### Free airplane-mode cache follow-up — included in v1.1.11
 
 - Device testing found that Free could still start previously heard/downloaded online songs in
   airplane mode when a complete copy also existed in `playerCache`. The v1.1.10 split correctly
@@ -759,15 +760,14 @@ Preserve these four choices and Wi-Fi control:
 - Modified protected file: `playback/MusicService.kt`, within the offline-entitlement scope
   explicitly authorized on 2026-08-03. Also modified `playback/DownloadUtil.kt` and its unit test.
   Mini-player UI, queue, controls, dimensions, animations, and player connection remain unchanged.
-- OTA remains v1.1.10 until this follow-up is compiled, verified, versioned, and explicitly
-  published.
+- Published in OTA v1.1.11 after signed release verification.
 - `ui/player/PlaybackError.kt` now renders `NoInternet` as a compact neutral Material card with
   cloud-off icon, localized title/message, and one Retry button. It hides code 2000, nested
   exception causes, Copy, and the red unknown-error treatment only for this known network state.
   Other playback errors retain their existing diagnostics. English and Spanish resources were
   added; playback behavior remains unchanged by this presentation-only follow-up.
 
-## Admin suspended-subscription deletion — prepared, deployment pending
+## Admin suspended-subscription deletion — deployed
 
 - `SubscriptionHistory` shows a red `Eliminar` action beside `Reactivar` only when the row is
   `suspended`. Browser confirmation clearly states that deletion is permanent.
