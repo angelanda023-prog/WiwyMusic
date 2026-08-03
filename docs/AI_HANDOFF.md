@@ -40,7 +40,8 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Premium auto-expiry migration commit: `f676260` (`fix(premium): expire elapsed plans`, local;
   superseded in production by the complete three-tier migration below).
 - Three-plan Admin/database commit: `108132f` (`feat(plans): add Premium Plus tier`, local;
-  production migration applied; Admin deployment pending).
+  production migration applied; deployed Worker version
+  `722f55eb-0dd5-4742-9087-dfcfe11b236c`).
 - Three-plan Android commit: `cdf177c` (`feat(account): show three plan tiers`, source pushed
   only after final documentation; OTA not published).
 - Production APK is `v1.1.9`, `versionCode` 56, distributed through Cloudflare R2.
@@ -710,10 +711,12 @@ Preserve these four choices and Wi-Fi control:
   pass returned `0`, meaning no timed subscription was already overdue. A service-role REST
   verification returned the new column successfully with 5 Premium, 1 Premium Plus, 0 Free,
   and 0 tier/access inconsistencies at verification time.
-- Admin and Android can now be deployed safely against the new schema. Admin Worker and Android
-  OTA deployment remain pending.
-- Production Admin Worker, Android OTA `v1.1.9`, R2 APK, mini-player, player, and playback files
-  remain unchanged.
+- Admin was deployed at <https://wiwymusic-admin.angelanda023.workers.dev> as Worker version
+  `722f55eb-0dd5-4742-9087-dfcfe11b236c`. Production root still redirects unauthenticated users
+  to login. OTA remains `v1.1.9`; its public APK SHA-256 remains
+  `bd77d6cd0de3f9085dec257aa78342ca52428c6549a0ad90fda3a414034ede22`.
+- Android three-tier source is ready, but its OTA deployment remains pending. R2 APK,
+  mini-player, player, and playback files remain unchanged.
 
 ## Admin live presence (deployed in v1.0.38)
 
