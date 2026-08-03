@@ -30,7 +30,8 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Admin APK download button commit: `1520542` (`feat(admin): add APK download button`, local;
   deployed Worker version `94a2fda9-9271-4721-b364-a4075b5c50fb`).
 - Admin mobile-native redesign commit: `e080db5` (`feat(admin): redesign mobile dashboard`,
-  local and not deployed; the admin repository has no Git remote configured).
+  local; deployed Worker version `f94348ef-c7df-42e0-a9bd-f3721d4a3618`; the admin repository
+  has no Git remote configured).
 - Production APK is `v1.1.9`, `versionCode` 56, distributed through Cloudflare R2.
 
 ## Settings keyboard-aware scrolling — published in v1.1.7
@@ -582,7 +583,7 @@ Preserve these four choices and Wi-Fi control:
   SHA-256 remains `bd77d6cd0de3f9085dec257aa78342ca52428c6549a0ad90fda3a414034ede22`.
 - No Android, OTA metadata, R2 object, mini-player, player, or playback file was modified.
 
-## Admin mobile-native redesign — prepared locally 2026-08-03, not deployed
+## Admin mobile-native redesign — deployed 2026-08-03
 
 - Admin commit: `e080db5` (`feat(admin): redesign mobile dashboard`). Rollback tag
   `snapshot-before-admin-native-redesign-20260803` points to deployed baseline `1520542`.
@@ -611,8 +612,12 @@ Preserve these four choices and Wi-Fi control:
 - Browser validation reached the protected login correctly; authenticated local pages could not be
   inspected without sharing production credentials or bypassing auth. No credential or auth bypass
   was used.
-- No deployment, Android source, OTA metadata, R2 object, mini-player, player, or playback file was
-  modified.
+- Deployed at <https://wiwymusic-admin.angelanda023.workers.dev> as Worker version
+  `f94348ef-c7df-42e0-a9bd-f3721d4a3618`.
+- Production verification passed: root redirects unauthenticated access to login, OTA metadata
+  remains `v1.1.9`, and `/api/ota/download` still returns `WiwyMusic.apk` with SHA-256
+  `bd77d6cd0de3f9085dec257aa78342ca52428c6549a0ad90fda3a414034ede22`.
+- No Android source, OTA metadata, R2 object, mini-player, player, or playback file was modified.
 
 ## Admin live presence (deployed in v1.0.38)
 
