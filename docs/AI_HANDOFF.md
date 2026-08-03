@@ -39,6 +39,10 @@ build, deployment, migration, or release. Do not create competing project-memory
   Git remote configured).
 - Premium auto-expiry migration commit: `f676260` (`fix(premium): expire elapsed plans`, local;
   migration prepared but not yet applied to production Supabase).
+- Three-plan Admin/database commit: `108132f` (`feat(plans): add Premium Plus tier`, local;
+  migration and Admin deployment pending).
+- Three-plan Android commit: `cdf177c` (`feat(account): show three plan tiers`, source pushed
+  only after final documentation; OTA not published).
 - Production APK is `v1.1.9`, `versionCode` 56, distributed through Cloudflare R2.
 
 ## Settings keyboard-aware scrolling — published in v1.1.7
@@ -675,28 +679,38 @@ Preserve these four choices and Wi-Fi control:
   `bd77d6cd0de3f9085dec257aa78342ca52428c6549a0ad90fda3a414034ede22`.
 - Android, OTA metadata, R2 APK, mini-player, player, and playback files remain unchanged.
 
-## Automatic Premium expiration — prepared 2026-08-03, pending production SQL
+## Free, Premium, and Premium Plus — prepared 2026-08-03, pending production SQL
 
-- Migration `supabase/migrations/0004_expire_premium_subscriptions.sql` adds the protected
-  database function `public.expire_premium_subscriptions()` and schedules it through `pg_cron`
-  every minute.
-- Each run changes elapsed active Premium subscriptions to `expired`. It then changes
-  `profiles.is_premium` to `false` only when the affected account has no other active timed or
-  lifetime Premium subscription. Profile changes flow through the existing Supabase Realtime
-  observer, so Android updates to Free without an APK change.
-- Installation executes the function once immediately, correcting subscriptions that already
-  expired before the schedule was created. Reapplying the migration keeps the same named cron
-  job instead of intentionally creating different jobs.
-- The function is not executable by `public`, `anon`, or `authenticated`; the database-owned
-  cron job invokes it. Exact expiration enforcement occurs within the one-minute schedule.
-- Admin commit: `f676260` (`fix(premium): expire elapsed plans`). Rollback tag
-  `snapshot-before-premium-auto-expiry-20260803` points to `837fee8`.
+- Final account model has three visible tiers: `Free`, timed `Premium`, and lifetime
+  `Premium Plus`. Premium and Premium Plus share the existing Premium feature gates;
+  Premium Plus differs only by lifetime duration and label.
+- `supabase/migrations/0005_three_subscription_tiers.sql` is the single production SQL to run.
+  It adds `profiles.subscription_tier` with allowed values `free`, `premium`, and
+  `premium_plus`; retains `profiles.is_premium` as the backward-compatible access flag; and
+  classifies existing profiles without removing current access.
+- A profile normalization trigger keeps older writers coherent. Timed grants and code redemptions
+  become Premium; lifetime Admin grants become Premium Plus; conversion to Free clears both
+  tier and access.
+- The migration also installs/replaces `public.expire_premium_subscriptions()`, schedules it every
+  minute through `pg_cron`, and runs it immediately. Elapsed timed subscriptions change to
+  `expired` and their profiles to Free only when no other valid timed or lifetime subscription
+  remains. Premium Plus rows use `expires_at = null` and never expire.
+- Admin Dashboard, user cards, filters, detail, history, and grant controls distinguish Premium
+  from Premium Plus. Admin commit: `108132f` (`feat(plans): add Premium Plus tier`).
+- Android caches and observes the explicit tier while preserving the existing `isPremium` flow
+  for all feature gates. Root Settings, shared settings headers, and Account display the three
+  labels. Older cached Premium profiles safely fall back to Premium. Android commit: `cdf177c`
+  (`feat(account): show three plan tiers`).
+- Validation passed: Admin targeted ESLint, `tsc --noEmit`, Next.js build, OpenNext Cloudflare
+  build, Android debug Kotlin compilation, and Android unit tests including new tier tests.
+- Rollback tag `snapshot-before-three-plans-20260803` exists independently in both Admin and
+  Android repositories. The earlier `0004` migration remains as historical precursor; `0005`
+  is complete and supersedes it for production installation.
 - Production Supabase is not changed yet because this workspace has service-role REST access but
-  no database SQL credential or linked Supabase CLI session. Apply the migration once in the
-  Supabase SQL Editor, then verify the named job and current expired-account cleanup before
-  marking this section deployed.
-- No Admin Worker deployment, Android source, OTA metadata, R2 APK, mini-player, player, or
-  playback file was modified.
+  no database SQL credential or linked Supabase CLI session. Run `0005` once in Supabase SQL
+  Editor before deploying Admin or publishing Android OTA.
+- Production Admin Worker, Android OTA `v1.1.9`, R2 APK, mini-player, player, and playback files
+  remain unchanged.
 
 ## Admin live presence (deployed in v1.0.38)
 
