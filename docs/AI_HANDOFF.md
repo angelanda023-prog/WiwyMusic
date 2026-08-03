@@ -34,8 +34,9 @@ build, deployment, migration, or release. Do not create competing project-memory
   has no Git remote configured).
 - Admin logo favicon final commit: `73bff42` (`fix(admin): preserve cached favicon path`, local;
   deployed Worker version `dea84bfd-acce-47d3-9268-de739b9f755c`).
-- Admin user search commit: `837fee8` (`feat(admin): add user search filters`, local and not
-  deployed; the admin repository has no Git remote configured).
+- Admin user search commit: `837fee8` (`feat(admin): add user search filters`, local;
+  deployed Worker version `fe7781f2-c0b0-444d-9e55-eff724ec5fea`; the admin repository has no
+  Git remote configured).
 - Production APK is `v1.1.9`, `versionCode` 56, distributed through Cloudflare R2.
 
 ## Settings keyboard-aware scrolling — published in v1.1.7
@@ -646,7 +647,7 @@ Preserve these four choices and Wi-Fi control:
 - OTA metadata remains `v1.1.9`. No Android source, OTA metadata, R2 APK, mini-player, player,
   or playback file was modified.
 
-## Admin user search and plan filters — prepared locally 2026-08-03, not deployed
+## Admin user search and plan filters — deployed 2026-08-03
 
 - Users page now filters instantly by name, email, Supabase user ID, redeemed Premium code,
   and current `Premium`/`Free` plan. Phone was intentionally excluded by user decision because
@@ -666,9 +667,11 @@ Preserve these four choices and Wi-Fi control:
   warnings remain unchanged.
 - Admin commit: `837fee8` (`feat(admin): add user search filters`). Rollback tag
   `snapshot-before-admin-user-search-20260803` points to `73bff42`.
-- No deployment occurred. Production Admin remains Worker version
-  `dea84bfd-acce-47d3-9268-de739b9f755c`. Android, OTA metadata, R2 APK, mini-player, player,
-  and playback files remain unchanged.
+- Deployed at <https://wiwymusic-admin.angelanda023.workers.dev> as Worker version
+  `fe7781f2-c0b0-444d-9e55-eff724ec5fea`. Production verification passed: unauthenticated root
+  still redirects to login, OTA remains `v1.1.9`, and public APK SHA-256 remains
+  `bd77d6cd0de3f9085dec257aa78342ca52428c6549a0ad90fda3a414034ede22`.
+- Android, OTA metadata, R2 APK, mini-player, player, and playback files remain unchanged.
 
 ## Admin live presence (deployed in v1.0.38)
 
