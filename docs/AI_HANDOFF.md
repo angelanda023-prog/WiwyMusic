@@ -32,6 +32,8 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Admin mobile-native redesign commit: `e080db5` (`feat(admin): redesign mobile dashboard`,
   local; deployed Worker version `f94348ef-c7df-42e0-a9bd-f3721d4a3618`; the admin repository
   has no Git remote configured).
+- Admin logo favicon final commit: `73bff42` (`fix(admin): preserve cached favicon path`, local;
+  deployed Worker version `dea84bfd-acce-47d3-9268-de739b9f755c`).
 - Production APK is `v1.1.9`, `versionCode` 56, distributed through Cloudflare R2.
 
 ## Settings keyboard-aware scrolling — published in v1.1.7
@@ -618,6 +620,29 @@ Preserve these four choices and Wi-Fi control:
   remains `v1.1.9`, and `/api/ota/download` still returns `WiwyMusic.apk` with SHA-256
   `bd77d6cd0de3f9085dec257aa78342ca52428c6549a0ad90fda3a414034ede22`.
 - No Android source, OTA metadata, R2 object, mini-player, player, or playback file was modified.
+
+## Admin logo favicon — deployed 2026-08-03
+
+- The old generic `src/app/favicon.ico` was removed. `src/app/apple-icon.png` is an exact
+  192×192 copy of the existing WiwyMusic `public/logo.png`; root metadata uses it for both
+  `rel="icon"` and `rel="apple-touch-icon"`.
+- `public/icon1.png` serves the same logo for older cached login HTML that still references the
+  intermediate numbered icon path. Both icon paths are excluded from the authentication
+  middleware so browsers can load them before login.
+- Logo, favicon, Apple icon, and cached-path fallback all share SHA-256
+  `597045aff8767130ce6b802bcd07ea4917a40cba7cfaee0cd10f8d89b4cdeffd`.
+- Admin commits: `efa2e72` (`feat(admin): use logo as favicon`), `2b76672`
+  (`fix(admin): avoid stale favicon cache`), `269b87a`
+  (`fix(admin): serve logo favicon reliably`), and final compatibility commit `73bff42`
+  (`fix(admin): preserve cached favicon path`). Rollback tag
+  `snapshot-before-admin-logo-favicon-20260803` points to `e080db5`.
+- Validation passed: `git diff --check`, ESLint, `tsc --noEmit`, Next.js production build,
+  local HTML metadata inspection, and exact downloaded-image hash comparison.
+- Deployed at <https://wiwymusic-admin.angelanda023.workers.dev> as Worker version
+  `dea84bfd-acce-47d3-9268-de739b9f755c`. Production HTML emits both icon relations to
+  `/apple-icon.png`; `/apple-icon.png` and legacy `/icon1.png` return the exact logo PNG.
+- OTA metadata remains `v1.1.9`. No Android source, OTA metadata, R2 APK, mini-player, player,
+  or playback file was modified.
 
 ## Admin live presence (deployed in v1.0.38)
 
