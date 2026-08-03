@@ -31,7 +31,8 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Admin APK download button commit: `1520542` (`feat(admin): add APK download button`, local;
   deployed Worker version `94a2fda9-9271-4721-b364-a4075b5c50fb`).
 - Admin duplicate APK menu cleanup commit: `f6e3b81`
-  (`fix(admin): remove duplicate APK menu link`, local; deployment pending).
+  (`fix(admin): remove duplicate APK menu link`, local; deployed Worker version
+  `d8b52018-8005-4780-ba44-b0f22733ec5d`).
 - Admin mobile-native redesign commit: `e080db5` (`feat(admin): redesign mobile dashboard`,
   local; deployed Worker version `f94348ef-c7df-42e0-a9bd-f3721d4a3618`; the admin repository
   has no Git remote configured).
@@ -622,7 +623,7 @@ Preserve these four choices and Wi-Fi control:
   SHA-256 remains `bd77d6cd0de3f9085dec257aa78342ca52428c6549a0ad90fda3a414034ede22`.
 - No Android, OTA metadata, R2 object, mini-player, player, or playback file was modified.
 
-### Duplicate menu entry cleanup — prepared, deployment pending
+### Duplicate menu entry cleanup — deployed
 
 - `Descargar APK` was removed from the shared desktop sidebar and mobile drawer because the
   same stable download action already exists in Admin Ajustes.
@@ -630,6 +631,9 @@ Preserve these four choices and Wi-Fi control:
 - Modified Admin file: `src/components/AdminShell.tsx`. Commit: `f6e3b81`.
 - Targeted ESLint, `tsc --noEmit`, and the Next.js production build passed. Existing local
   Durable Object and deprecated middleware warnings remain unchanged.
+- Deployed Worker version: `d8b52018-8005-4780-ba44-b0f22733ec5d`. Production verification
+  passed: root and Ajustes redirect unauthenticated access to login, OTA remains v1.1.12, and
+  the download endpoint returns HTTP 200 as an Android APK.
 - Android source, public OTA metadata, R2 archives, and the production APK were not changed.
 
 ## Admin mobile-native redesign — deployed 2026-08-03
