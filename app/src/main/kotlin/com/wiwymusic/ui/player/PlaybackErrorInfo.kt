@@ -41,8 +41,8 @@ internal fun PlaybackException.toPlaybackErrorInfo(currentMediaId: String? = nul
         when {
             invalidPlaybackLoginContextUrl != null -> PlaybackErrorKind.LoginRefreshRequired
             loginRecoveryUrl != null -> PlaybackErrorKind.ConfirmationRequired
-            errorCode == PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED -> PlaybackErrorKind.NoInternet
-            errorCode == PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT -> PlaybackErrorKind.Timeout
+            hasPlaybackErrorCode(PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED) -> PlaybackErrorKind.NoInternet
+            hasPlaybackErrorCode(PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT) -> PlaybackErrorKind.Timeout
             httpCode in setOf(403, 404, 410, 416) -> PlaybackErrorKind.NoStream
             errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED -> PlaybackErrorKind.MalformedStream
             errorCode in setOf(
@@ -59,6 +59,15 @@ internal fun PlaybackException.toPlaybackErrorInfo(currentMediaId: String? = nul
         httpCode = httpCode,
         loginRecoveryUrl = loginRecoveryUrl,
     )
+}
+
+private fun Throwable.hasPlaybackErrorCode(errorCode: Int): Boolean {
+    var throwable: Throwable? = this
+    while (throwable != null) {
+        if (throwable is PlaybackException && throwable.errorCode == errorCode) return true
+        throwable = throwable.cause
+    }
+    return false
 }
 
 internal fun PlaybackException.httpStatusCodeOrNull(): Int? {

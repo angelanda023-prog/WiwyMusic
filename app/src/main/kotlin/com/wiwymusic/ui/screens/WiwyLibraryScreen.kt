@@ -79,6 +79,7 @@ fun WiwyLibraryScreen(navController: NavController) {
 
     var showCreate by remember { mutableStateOf(false) }
     var showImportPremiumDialog by remember { mutableStateOf(false) }
+    var showDownloadsPremiumDialog by remember { mutableStateOf(false) }
     if (showCreate) {
         CreatePlaylistDialog(onDismiss = { showCreate = false })
     }
@@ -86,6 +87,12 @@ fun WiwyLibraryScreen(navController: NavController) {
         PremiumFeatureDialog(
             featureName = "Importar playlist",
             onDismiss = { showImportPremiumDialog = false },
+        )
+    }
+    if (showDownloadsPremiumDialog) {
+        PremiumFeatureDialog(
+            featureName = "Descargas",
+            onDismiss = { showDownloadsPremiumDialog = false },
         )
     }
 
@@ -185,8 +192,20 @@ fun WiwyLibraryScreen(navController: NavController) {
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        SmartCard(R.drawable.download, Color(0xFF5C8DF2), Color(0x335C8DF2), "Descargas", "$downloadedCount canciones", Modifier.weight(1f)) {
-                            navController.navigate("download_queue")
+                        SmartCard(
+                            icon = R.drawable.download,
+                            iconTint = Color(0xFF5C8DF2),
+                            iconBg = Color(0x335C8DF2),
+                            title = "Descargas",
+                            subtitle = "$downloadedCount canciones",
+                            modifier = Modifier.weight(1f),
+                            locked = isPremium != true,
+                        ) {
+                            if (isPremium == true) {
+                                navController.navigate("download_queue")
+                            } else {
+                                showDownloadsPremiumDialog = true
+                            }
                         }
                         SmartCard(R.drawable.fire, WiwyOrange, Color(0x33F5791F), "Más escuchadas", "Top 50", Modifier.weight(1f)) {
                             navController.navigate("top_playlist/50")
@@ -346,26 +365,41 @@ private fun PlaylistRow(playlist: Playlist, downloads: Map<String, Download>, on
 }
 
 @Composable
-private fun SmartCard(icon: Int, iconTint: Color, iconBg: Color, title: String, subtitle: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Column(
+private fun SmartCard(
+    icon: Int,
+    iconTint: Color,
+    iconBg: Color,
+    title: String,
+    subtitle: String,
+    modifier: Modifier = Modifier,
+    locked: Boolean = false,
+    onClick: () -> Unit,
+) {
+    Box(
         modifier = modifier
             .height(118.dp)
             .clip(RoundedCornerShape(16.dp))
             .border(1.dp, Color(0x1AFFFFFF), RoundedCornerShape(16.dp))
             .background(WiwyCard)
-            .clickable(onClick = onClick)
-            .padding(14.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
+            .clickable(onClick = onClick),
     ) {
-        Box(
-            modifier = Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(iconBg),
-            contentAlignment = Alignment.Center,
+        Column(
+            modifier = Modifier.fillMaxSize().padding(14.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            Icon(painterResource(icon), null, tint = iconTint, modifier = Modifier.size(22.dp))
+            Box(
+                modifier = Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(iconBg),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(painterResource(icon), null, tint = iconTint, modifier = Modifier.size(22.dp))
+            }
+            Column {
+                Text(title, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(subtitle, color = WiwyMuted, fontSize = 12.sp)
+            }
         }
-        Column {
-            Text(title, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            Text(subtitle, color = WiwyMuted, fontSize = 12.sp)
+        if (locked) {
+            PremiumLockBadge(Modifier.align(Alignment.TopEnd))
         }
     }
 }
