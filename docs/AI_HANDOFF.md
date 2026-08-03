@@ -38,9 +38,9 @@ build, deployment, migration, or release. Do not create competing project-memory
   deployed Worker version `fe7781f2-c0b0-444d-9e55-eff724ec5fea`; the admin repository has no
   Git remote configured).
 - Premium auto-expiry migration commit: `f676260` (`fix(premium): expire elapsed plans`, local;
-  migration prepared but not yet applied to production Supabase).
+  superseded in production by the complete three-tier migration below).
 - Three-plan Admin/database commit: `108132f` (`feat(plans): add Premium Plus tier`, local;
-  migration and Admin deployment pending).
+  production migration applied; Admin deployment pending).
 - Three-plan Android commit: `cdf177c` (`feat(account): show three plan tiers`, source pushed
   only after final documentation; OTA not published).
 - Production APK is `v1.1.9`, `versionCode` 56, distributed through Cloudflare R2.
@@ -679,7 +679,7 @@ Preserve these four choices and Wi-Fi control:
   `bd77d6cd0de3f9085dec257aa78342ca52428c6549a0ad90fda3a414034ede22`.
 - Android, OTA metadata, R2 APK, mini-player, player, and playback files remain unchanged.
 
-## Free, Premium, and Premium Plus — prepared 2026-08-03, pending production SQL
+## Free, Premium, and Premium Plus — production SQL applied 2026-08-03
 
 - Final account model has three visible tiers: `Free`, timed `Premium`, and lifetime
   `Premium Plus`. Premium and Premium Plus share the existing Premium feature gates;
@@ -706,9 +706,12 @@ Preserve these four choices and Wi-Fi control:
 - Rollback tag `snapshot-before-three-plans-20260803` exists independently in both Admin and
   Android repositories. The earlier `0004` migration remains as historical precursor; `0005`
   is complete and supersedes it for production installation.
-- Production Supabase is not changed yet because this workspace has service-role REST access but
-  no database SQL credential or linked Supabase CLI session. Run `0005` once in Supabase SQL
-  Editor before deploying Admin or publishing Android OTA.
+- Production migration `0005` was applied through Supabase SQL Editor. Its immediate expiration
+  pass returned `0`, meaning no timed subscription was already overdue. A service-role REST
+  verification returned the new column successfully with 5 Premium, 1 Premium Plus, 0 Free,
+  and 0 tier/access inconsistencies at verification time.
+- Admin and Android can now be deployed safely against the new schema. Admin Worker and Android
+  OTA deployment remain pending.
 - Production Admin Worker, Android OTA `v1.1.9`, R2 APK, mini-player, player, and playback files
   remain unchanged.
 
