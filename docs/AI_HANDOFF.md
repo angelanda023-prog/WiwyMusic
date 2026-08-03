@@ -34,6 +34,8 @@ build, deployment, migration, or release. Do not create competing project-memory
   has no Git remote configured).
 - Admin logo favicon final commit: `73bff42` (`fix(admin): preserve cached favicon path`, local;
   deployed Worker version `dea84bfd-acce-47d3-9268-de739b9f755c`).
+- Admin user search commit: `837fee8` (`feat(admin): add user search filters`, local and not
+  deployed; the admin repository has no Git remote configured).
 - Production APK is `v1.1.9`, `versionCode` 56, distributed through Cloudflare R2.
 
 ## Settings keyboard-aware scrolling — published in v1.1.7
@@ -643,6 +645,30 @@ Preserve these four choices and Wi-Fi control:
   `/apple-icon.png`; `/apple-icon.png` and legacy `/icon1.png` return the exact logo PNG.
 - OTA metadata remains `v1.1.9`. No Android source, OTA metadata, R2 APK, mini-player, player,
   or playback file was modified.
+
+## Admin user search and plan filters — prepared locally 2026-08-03, not deployed
+
+- Users page now filters instantly by name, email, Supabase user ID, redeemed Premium code,
+  and current `Premium`/`Free` plan. Phone was intentionally excluded by user decision because
+  it is not needed by the current account model.
+- Responsive filter chips provide `Todos`, `Free`, `Premium`, and `Vencidos`. `Vencidos` matches
+  the latest subscription when its status is `expired` or its expiration time has passed.
+- User cards prefer Auth metadata name and retain email below it; cards without a stored name
+  continue using email as the primary identity. Result count and a distinct empty-search state
+  update while typing.
+- `listUsersWithPlan()` joins `redeem_codes` and `redeem_code_redemptions`, including legacy
+  `redeemed_by`, to support code lookup without a database migration. Filtering remains local
+  over the existing Admin Auth fetch limit of 1,000 users.
+- Modified Admin files: `src/app/dashboard/users/page.tsx`, `src/components/UserTable.tsx`,
+  `src/components/AdminIcons.tsx`, and `src/lib/data.ts`.
+- Validation passed: `git diff --check`, targeted ESLint, `tsc --noEmit`, Next.js production
+  build, and OpenNext Cloudflare build. Existing Durable Object and deprecated middleware
+  warnings remain unchanged.
+- Admin commit: `837fee8` (`feat(admin): add user search filters`). Rollback tag
+  `snapshot-before-admin-user-search-20260803` points to `73bff42`.
+- No deployment occurred. Production Admin remains Worker version
+  `dea84bfd-acce-47d3-9268-de739b9f755c`. Android, OTA metadata, R2 APK, mini-player, player,
+  and playback files remain unchanged.
 
 ## Admin live presence (deployed in v1.0.38)
 
