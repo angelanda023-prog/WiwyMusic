@@ -37,6 +37,8 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Admin user search commit: `837fee8` (`feat(admin): add user search filters`, local;
   deployed Worker version `fe7781f2-c0b0-444d-9e55-eff724ec5fea`; the admin repository has no
   Git remote configured).
+- Premium auto-expiry migration commit: `f676260` (`fix(premium): expire elapsed plans`, local;
+  migration prepared but not yet applied to production Supabase).
 - Production APK is `v1.1.9`, `versionCode` 56, distributed through Cloudflare R2.
 
 ## Settings keyboard-aware scrolling — published in v1.1.7
@@ -672,6 +674,29 @@ Preserve these four choices and Wi-Fi control:
   still redirects to login, OTA remains `v1.1.9`, and public APK SHA-256 remains
   `bd77d6cd0de3f9085dec257aa78342ca52428c6549a0ad90fda3a414034ede22`.
 - Android, OTA metadata, R2 APK, mini-player, player, and playback files remain unchanged.
+
+## Automatic Premium expiration — prepared 2026-08-03, pending production SQL
+
+- Migration `supabase/migrations/0004_expire_premium_subscriptions.sql` adds the protected
+  database function `public.expire_premium_subscriptions()` and schedules it through `pg_cron`
+  every minute.
+- Each run changes elapsed active Premium subscriptions to `expired`. It then changes
+  `profiles.is_premium` to `false` only when the affected account has no other active timed or
+  lifetime Premium subscription. Profile changes flow through the existing Supabase Realtime
+  observer, so Android updates to Free without an APK change.
+- Installation executes the function once immediately, correcting subscriptions that already
+  expired before the schedule was created. Reapplying the migration keeps the same named cron
+  job instead of intentionally creating different jobs.
+- The function is not executable by `public`, `anon`, or `authenticated`; the database-owned
+  cron job invokes it. Exact expiration enforcement occurs within the one-minute schedule.
+- Admin commit: `f676260` (`fix(premium): expire elapsed plans`). Rollback tag
+  `snapshot-before-premium-auto-expiry-20260803` points to `837fee8`.
+- Production Supabase is not changed yet because this workspace has service-role REST access but
+  no database SQL credential or linked Supabase CLI session. Apply the migration once in the
+  Supabase SQL Editor, then verify the named job and current expired-account cleanup before
+  marking this section deployed.
+- No Admin Worker deployment, Android source, OTA metadata, R2 APK, mini-player, player, or
+  playback file was modified.
 
 ## Admin live presence (deployed in v1.0.38)
 
