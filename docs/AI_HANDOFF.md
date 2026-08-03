@@ -10,7 +10,7 @@ build, deployment, migration, or release. Do not create competing project-memory
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
-- Current Android release source commit: `db2cae7` (`build: bump version to 1.1.9`).
+- Current Android release source commit: `5d00398` (`fix(playback): gate offline downloads`).
 - Playlist import lock visibility commit: `d70de59` (`fix(library): show playlist import lock`).
 - Playlist import Premium gate commit: `1429cc5` (`feat(library): gate playlist import`).
 - Settings inset fix commit: `7c595d3` (`fix(settings): keep actions above overlays`).
@@ -20,7 +20,8 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Premium session fix commit: `7385e6b` (`fix: persist premium plan across sessions`).
 - Previous hardening commit: `654626c` (`security: hide OTA repository details`).
 - Admin repository: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`.
-- Admin OTA metadata commit: `027f1b1` (`chore: publish OTA metadata for v1.1.9`).
+- Admin OTA metadata commit: `0590da0` (`chore(ota): publish v1.1.10 metadata`, local;
+  the admin repository has no Git remote configured).
 - Admin OTA documentation commit: `c47f6b8` (`docs: record v1.1.9 OTA artifact`, local;
   the admin repository has no Git remote configured).
 - Admin OTA archive-routing commit: `9d3d466` (`fix(ota): serve published archive`, local;
@@ -44,7 +45,7 @@ build, deployment, migration, or release. Do not create competing project-memory
   `722f55eb-0dd5-4742-9087-dfcfe11b236c`).
 - Three-plan Android commit: `cdf177c` (`feat(account): show three plan tiers`, source pushed
   only after final documentation; OTA not published).
-- Production APK is `v1.1.9`, `versionCode` 56, distributed through Cloudflare R2.
+- Production APK is `v1.1.10`, `versionCode` 57, distributed through Cloudflare R2.
 
 ## Settings keyboard-aware scrolling — published in v1.1.7
 
@@ -371,19 +372,19 @@ admin panel.
 
 - Android app written in Kotlin and Jetpack Compose with Material Design 3.
 - Application ID: `com.wiwymusic`.
-- Production release: `v1.1.9` (R2 stable OTA).
-- `versionName`: `1.1.9`.
-- `versionCode`: `56`.
-- Production commit: `db2cae7` (`build: bump version to 1.1.9`).
+- Production release: `v1.1.10` (R2 stable OTA).
+- `versionName`: `1.1.10`.
+- `versionCode`: `57`.
+- Production commit: `5d00398` (`fix(playback): gate offline downloads`).
 - Last GitHub bridge release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.42>
 - OTA asset name: `WiwyMusic.apk`.
-- Production APK SHA-256: `bd77d6cd0de3f9085dec257aa78342ca52428c6549a0ad90fda3a414034ede22`.
-- Previous production baseline: `v1.1.8`, commit `159650f`, SHA-256
-  `036769d3b78b2c4426668faf6ab56d2c52b94b08acf8f1db00ab74ce22f5f769`.
+- Production APK SHA-256: `dd16ed1c907886157652d441bd56c51406194ca5f6abb5c23481a35122ad7e9d`.
+- Previous production baseline: `v1.1.9`, commit `db2cae7`, SHA-256
+  `bd77d6cd0de3f9085dec257aa78342ca52428c6549a0ad90fda3a414034ede22`.
 
 The bridge release was published through both GitHub and R2. Clients upgrading from `v1.0.41`
 can discover `v1.0.42` through the old GitHub updater; after installation, the Cloudflare
-endpoint offers current stable `v1.1.9`.
+endpoint offers current stable `v1.1.10`.
 
 ## APK hardening and rollback baseline — published in v1.0.42
 
@@ -401,10 +402,10 @@ Rollback is fixed to the unchanged production release:
   `ota/archive/v1.1.3/WiwyMusic.apk`, `ota/archive/v1.1.4/WiwyMusic.apk`,
   `ota/archive/v1.1.5/WiwyMusic.apk`, `ota/archive/v1.1.6/WiwyMusic.apk`,
   `ota/archive/v1.1.7/WiwyMusic.apk`, `ota/archive/v1.1.8/WiwyMusic.apk`, and
-  `ota/archive/v1.1.9/WiwyMusic.apk`; current `v1.1.9`
+  `ota/archive/v1.1.9/WiwyMusic.apk`, and `ota/archive/v1.1.10/WiwyMusic.apk`; current `v1.1.10`
   is served from its immutable archive
   through `/api/ota/download`.
-- R2 metadata `ota/releases.json` points to `v1.1.9` with the generic improvements message.
+- R2 metadata `ota/releases.json` points to `v1.1.10` with the generic improvements message.
 - Public repository-neutral endpoints:
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/releases`
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/download`
@@ -738,6 +739,10 @@ Preserve these four choices and Wi-Fi control:
   `:app:testUniversalDebugUnitTest`, including Premium, Free, and unknown-plan access tests.
 - Published version is `1.1.10`, `versionCode` 57. Rollback tag
   `snapshot-before-offline-entitlement-v1.1.9` preserves the preceding source state.
+- Signed R8 APK, v2 signature, package/version, private-string scan, immutable R2 archive,
+  public metadata, and public download verification passed. Production SHA-256 is
+  `dd16ed1c907886157652d441bd56c51406194ca5f6abb5c23481a35122ad7e9d`.
+- Admin OTA metadata commit: `0590da0`. Android release source commit: `5d00398`.
 
 ## Admin live presence (deployed in v1.0.38)
 
