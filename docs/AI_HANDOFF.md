@@ -43,6 +43,8 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Three-plan Admin/database commit: `108132f` (`feat(plans): add Premium Plus tier`, local;
   production migration applied; deployed Worker version
   `722f55eb-0dd5-4742-9087-dfcfe11b236c`).
+- Admin suspended-subscription deletion commit: `8e12002`
+  (`feat(admin): delete suspended subscriptions`, local; deployment pending).
 - Three-plan Android commit: `cdf177c` (`feat(account): show three plan tiers`, source pushed
   only after final documentation; OTA not published).
 - Production APK is `v1.1.10`, `versionCode` 57, distributed through Cloudflare R2.
@@ -764,6 +766,22 @@ Preserve these four choices and Wi-Fi control:
   exception causes, Copy, and the red unknown-error treatment only for this known network state.
   Other playback errors retain their existing diagnostics. English and Spanish resources were
   added; playback behavior remains unchanged by this presentation-only follow-up.
+
+## Admin suspended-subscription deletion — prepared, deployment pending
+
+- `SubscriptionHistory` shows a red `Eliminar` action beside `Reactivar` only when the row is
+  `suspended`. Browser confirmation clearly states that deletion is permanent.
+- New `deleteSuspendedSubscription` Server Action revalidates the Supabase session against
+  `ADMIN_EMAIL`, validates subscription/user IDs, reads the row, and refuses any status other
+  than `suspended`. The final delete repeats ID, owner, and status filters to close race windows.
+- Deletion removes only the selected suspended history row. It cannot delete active or expired
+  subscriptions and does not change the user's current profile tier.
+- Modified Admin files: `src/app/dashboard/actions.ts` and
+  `src/components/SubscriptionHistory.tsx`. Admin commit: `8e12002`
+  (`feat(admin): delete suspended subscriptions`).
+- Validation passed: `git diff --check`, targeted ESLint, `tsc --noEmit`, Next.js production
+  build, and OpenNext Cloudflare build. Existing local Durable Object and deprecated middleware
+  warnings remain unchanged. Production Worker has not been deployed yet.
 
 ## Admin live presence (deployed in v1.0.38)
 
