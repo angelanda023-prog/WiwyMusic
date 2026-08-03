@@ -744,6 +744,22 @@ Preserve these four choices and Wi-Fi control:
   `dd16ed1c907886157652d441bd56c51406194ca5f6abb5c23481a35122ad7e9d`.
 - Admin OTA metadata commit: `0590da0`. Android release source commit: `5d00398`.
 
+### Free airplane-mode cache follow-up — prepared, OTA pending
+
+- Device testing found that Free could still start previously heard/downloaded online songs in
+  airplane mode when a complete copy also existed in `playerCache`. The v1.1.10 split correctly
+  bypassed `downloadCache`, but intentionally retained normal streaming cache for all plans.
+- For remote music IDs, Free and unknown/loading plans now require an active network carrying
+  both Android `NET_CAPABILITY_INTERNET` and `NET_CAPABILITY_VALIDATED` before any cache source
+  opens. This prevents `playerCache` from becoming an offline bypass. Premium and Premium Plus
+  retain offline playback. Real local-device `content://` and `file://` tracks remain available
+  to every plan because they are user files, not WiwyMusic downloads.
+- Modified protected file: `playback/MusicService.kt`, within the offline-entitlement scope
+  explicitly authorized on 2026-08-03. Also modified `playback/DownloadUtil.kt` and its unit test.
+  Mini-player UI, queue, controls, dimensions, animations, and player connection remain unchanged.
+- OTA remains v1.1.10 until this follow-up is compiled, verified, versioned, and explicitly
+  published.
+
 ## Admin live presence (deployed in v1.0.38)
 
 Android reports authenticated-user presence to the Supabase `app_presence` table through

@@ -30,6 +30,7 @@ import android.media.audiofx.LoudnessEnhancer
 import android.media.MediaCodecList
 import android.media.audiofx.Virtualizer
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Binder
 import android.os.PowerManager
@@ -4320,6 +4321,21 @@ class MusicService :
                 return@Factory dataSpec
             }
 
+            val isPremium =
+                canUseOfflineDownloads(com.wiwymusic.utils.UserPrefs.isPremium.value)
+            val networkCapabilities =
+                connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+            val hasValidatedInternet =
+                networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
+                    networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+            if (!canPlayRemoteMusic(isPremium, hasValidatedInternet)) {
+                throw PlaybackException(
+                    getString(R.string.error_no_internet),
+                    null,
+                    PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
+                )
+            }
+
             val mediaId = dataSpec.key ?: error("No media id")
 
             val requiredCachedLength =
@@ -4347,8 +4363,6 @@ class MusicService :
             if (requiredCachedLength != null) {
                 // El contenido ya descargado (downloadCache) solo se sirve a usuarios Premium;
                 // el cache general de streaming (playerCache) sigue disponible para todos.
-                val isPremium =
-                    canUseOfflineDownloads(com.wiwymusic.utils.UserPrefs.isPremium.value)
                 val isFullyCached =
                     (isPremium && downloadCache.isCached(mediaId, dataSpec.position, requiredCachedLength)) ||
                             playerCache.isCached(mediaId, dataSpec.position, requiredCachedLength)

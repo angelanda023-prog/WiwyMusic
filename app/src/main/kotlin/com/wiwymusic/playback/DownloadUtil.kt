@@ -67,6 +67,11 @@ internal fun resolvePlaybackAudioQuality(
 
 internal fun canUseOfflineDownloads(isPremium: Boolean?): Boolean = isPremium == true
 
+internal fun canPlayRemoteMusic(
+    isPremium: Boolean?,
+    hasValidatedInternet: Boolean,
+): Boolean = canUseOfflineDownloads(isPremium) || hasValidatedInternet
+
 @Singleton
 class DownloadUtil
 @Inject
