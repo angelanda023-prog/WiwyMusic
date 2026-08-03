@@ -118,6 +118,7 @@ import com.wiwymusic.ui.component.InfoLabel
 import com.wiwymusic.ui.component.TextFieldDialog
 import com.wiwymusic.ui.screens.buildLoginRoute
 import com.wiwymusic.utils.Updater
+import com.wiwymusic.utils.SubscriptionTier
 import com.wiwymusic.utils.dataStore
 import com.wiwymusic.utils.rememberPreference
 import com.wiwymusic.viewmodels.HomeViewModel
@@ -157,6 +158,7 @@ fun AccountSettings(
     val supaEmail = supaSession?.email ?: ""
     val supaAvatar by com.wiwymusic.utils.UserPrefs.avatarUrl.collectAsState()
     val supaIsPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
+    val supaSubscriptionTier by com.wiwymusic.utils.UserPrefs.subscriptionTier.collectAsState()
 
     LaunchedEffect(supaSession?.userId, supaSession?.accessToken) {
         if (supaSession != null) {
@@ -196,6 +198,7 @@ fun AccountSettings(
                 accountEmail = supaEmail,
                 accountImageUrl = supaAvatar,
                 isPremium = supaIsPremium,
+                subscriptionTier = supaSubscriptionTier,
                 onAvatarClick = { if (supaLoggedIn) showAvatarPicker = true },
                 onAccountClick = {
                     if (!supaLoggedIn) {
@@ -266,6 +269,7 @@ private fun AccountCard(
     onAccountClick: () -> Unit,
     onAvatarClick: () -> Unit = {},
     isPremium: Boolean? = null,
+    subscriptionTier: SubscriptionTier? = null,
 ) {
     val cardColor by animateColorAsState(
         targetValue = if (isPremium == true) {
@@ -396,6 +400,8 @@ private fun AccountCard(
 
             if (isLoggedIn) {
                 val premium = isPremium == true
+                val resolvedTier = subscriptionTier
+                    ?: if (premium) SubscriptionTier.PREMIUM else SubscriptionTier.FREE
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -424,7 +430,7 @@ private fun AccountCard(
                         )
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = if (premium) "Premium" else "Free",
+                                text = resolvedTier.displayName,
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = if (premium) {
@@ -435,7 +441,9 @@ private fun AccountCard(
                             )
                             Text(
                                 text = stringResource(
-                                    if (premium) {
+                                    if (resolvedTier == SubscriptionTier.PREMIUM_PLUS) {
+                                        R.string.account_premium_plus_active_desc
+                                    } else if (premium) {
                                         R.string.account_premium_active_desc
                                     } else {
                                         R.string.account_plan_free_desc

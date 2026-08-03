@@ -35,12 +35,30 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.TimeUnit
 
+enum class SubscriptionTier(val wireValue: String, val displayName: String) {
+    FREE("free", "Free"),
+    PREMIUM("premium", "Premium"),
+    PREMIUM_PLUS("premium_plus", "Premium Plus");
+
+    val hasPremiumAccess: Boolean
+        get() = this != FREE
+
+    companion object {
+        fun fromWire(value: String?, isPremium: Boolean): SubscriptionTier = when {
+            !isPremium -> FREE
+            value == PREMIUM_PLUS.wireValue -> PREMIUM_PLUS
+            else -> PREMIUM
+        }
+    }
+}
+
 object UserPrefs {
 
     private const val BASE_URL = "https://yfthptxqqazqyngfjpvp.supabase.co"
     private const val ANON_KEY = "sb_publishable_Y7BpaQliciyuNM3gEJjinw_2v7Xh4Po"
     private val CachedPremiumUserIdKey = stringPreferencesKey("cached_premium_user_id")
     private val CachedPremiumStatusKey = booleanPreferencesKey("cached_premium_status")
+    private val CachedSubscriptionTierKey = stringPreferencesKey("cached_subscription_tier")
 
     data class ArtistPick(val id: String, val name: String, val thumbnailUrl: String?)
 
@@ -56,29 +74,47 @@ object UserPrefs {
     // y se mantiene actualizado en vivo vía startPremiumRealtimeSync().
     private val _isPremium = MutableStateFlow<Boolean?>(null)
     val isPremium: StateFlow<Boolean?> = _isPremium.asStateFlow()
+    private val _subscriptionTier = MutableStateFlow<SubscriptionTier?>(null)
+    val subscriptionTier: StateFlow<SubscriptionTier?> = _subscriptionTier.asStateFlow()
 
     fun reset() {
         _onboarded.value = null
         _avatarUrl.value = null
         _isPremium.value = null
+        _subscriptionTier.value = null
         stopPremiumRealtimeSync()
     }
 
     suspend fun restoreCachedPremium(userId: String) {
         val dataStore = App.instance.dataStore
         val cachedUserId = dataStore.getAsync(CachedPremiumUserIdKey)
-        _isPremium.value = if (cachedUserId == userId) {
-            dataStore.getAsync(CachedPremiumStatusKey)
+        if (cachedUserId == userId) {
+            val cachedPremium = dataStore.getAsync(CachedPremiumStatusKey)
+            _isPremium.value = cachedPremium
+            _subscriptionTier.value = cachedPremium?.let {
+                SubscriptionTier.fromWire(
+                    dataStore.getAsync(CachedSubscriptionTierKey),
+                    it,
+                )
+            }
         } else {
-            null
+            _isPremium.value = null
+            _subscriptionTier.value = null
         }
     }
 
-    private suspend fun updatePremium(userId: String, value: Boolean) {
-        _isPremium.value = value
+    private suspend fun updatePremium(
+        userId: String,
+        value: Boolean,
+        tierValue: String? = null,
+    ) {
+        val tier = SubscriptionTier.fromWire(tierValue, value)
+        _isPremium.value = tier.hasPremiumAccess
+        _subscriptionTier.value = tier
         App.instance.dataStore.edit { preferences ->
             preferences[CachedPremiumUserIdKey] = userId
-            preferences[CachedPremiumStatusKey] = value
+            preferences[CachedPremiumStatusKey] = tier.hasPremiumAccess
+            preferences[CachedSubscriptionTierKey] = tier.wireValue
         }
     }
 
@@ -99,7 +135,7 @@ object UserPrefs {
         }
         runCatching {
             val conn = open(
-                "$BASE_URL/rest/v1/profiles?select=onboarded,avatar_url,is_premium&id=eq.${session.userId}",
+                "$BASE_URL/rest/v1/profiles?select=onboarded,avatar_url,is_premium,subscription_tier&id=eq.${session.userId}",
                 "GET",
                 session,
             )
@@ -112,7 +148,11 @@ object UserPrefs {
                 val arr = JSONArray(text)
                 if (arr.length() > 0) {
                     val o = arr.getJSONObject(0)
-                    updatePremium(session.userId, o.optBoolean("is_premium", false))
+                    updatePremium(
+                        session.userId,
+                        o.optBoolean("is_premium", false),
+                        o.optString("subscription_tier").takeIf { it.isNotBlank() && it != "null" },
+                    )
                     _onboarded.value = o.optBoolean("onboarded", false)
                     _avatarUrl.value = o.optString("avatar_url").takeIf { it.isNotBlank() && it != "null" }
                 } else {
@@ -445,9 +485,18 @@ object UserPrefs {
                 ?: return
             for (i in 0 until changes.length()) {
                 val record = changes.optJSONObject(i)?.optJSONObject("record") ?: continue
-                if (record.has("is_premium")) {
+                if (record.has("is_premium") || record.has("subscription_tier")) {
                     val userId = SupabaseAuth.session.value?.userId ?: continue
-                    updatePremium(userId, record.optBoolean("is_premium", false))
+                    updatePremium(
+                        userId,
+                        if (record.has("is_premium")) {
+                            record.optBoolean("is_premium", false)
+                        } else {
+                            _isPremium.value == true
+                        },
+                        record.optString("subscription_tier")
+                            .takeIf { it.isNotBlank() && it != "null" },
+                    )
                 }
             }
         }

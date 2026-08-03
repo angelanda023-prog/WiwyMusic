@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wiwymusic.BuildConfig
 import com.wiwymusic.R
+import com.wiwymusic.utils.SubscriptionTier
 import com.wiwymusic.utils.UserPrefs
 
 val WiwySettingsOrange = Color(0xFFF5791F)
@@ -53,6 +54,9 @@ fun WiwySettingsPageHeader(
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     val isPremium by UserPrefs.isPremium.collectAsState()
+    val subscriptionTier by UserPrefs.subscriptionTier.collectAsState()
+    val planLabel = subscriptionTier?.displayName
+        ?: if (isPremium == true) SubscriptionTier.PREMIUM.displayName else SubscriptionTier.FREE.displayName
 
     Column(
         modifier = modifier
@@ -112,7 +116,7 @@ fun WiwySettingsPageHeader(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
-                            text = if (isPremium == true) "Premium" else "Free",
+                            text = planLabel,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Medium,
                             color = if (isPremium == true) {

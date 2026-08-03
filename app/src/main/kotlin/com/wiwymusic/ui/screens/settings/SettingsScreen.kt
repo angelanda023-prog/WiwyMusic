@@ -66,6 +66,7 @@ import com.wiwymusic.ui.component.IconButton
 import com.wiwymusic.ui.component.TopSearch
 import com.wiwymusic.ui.utils.backToMain
 import com.wiwymusic.utils.Updater
+import com.wiwymusic.utils.SubscriptionTier
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -126,6 +127,7 @@ fun SettingsScreen(
     val shouldShowPermissionHint = !isStorageGranted || !isNotificationGranted
     val hasUpdate = Updater.isNewerVersion(latestVersionName, BuildConfig.VERSION_NAME)
     val isPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
+    val subscriptionTier by com.wiwymusic.utils.UserPrefs.subscriptionTier.collectAsState()
     val supaSession by com.wiwymusic.utils.SupabaseAuth.session.collectAsState()
 
     LaunchedEffect(supaSession?.userId, supaSession?.accessToken) {
@@ -244,7 +246,12 @@ fun SettingsScreen(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                     Text(
-                                        if (isPremium == true) "Premium" else "Free",
+                                        subscriptionTier?.displayName
+                                            ?: if (isPremium == true) {
+                                                SubscriptionTier.PREMIUM.displayName
+                                            } else {
+                                                SubscriptionTier.FREE.displayName
+                                            },
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Medium,
                                         color = if (isPremium == true) {
