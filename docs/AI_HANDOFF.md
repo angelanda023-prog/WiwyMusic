@@ -10,7 +10,7 @@ build, deployment, migration, or release. Do not create competing project-memory
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
-- Current Android release source commit: `0bd7b63` (`build: bump version to 1.1.11`).
+- Current Android source commit: `4230b4c` (`fix(player): gate downloads and offline notice`).
 - Playlist import lock visibility commit: `d70de59` (`fix(library): show playlist import lock`).
 - Playlist import Premium gate commit: `1429cc5` (`feat(library): gate playlist import`).
 - Settings inset fix commit: `7c595d3` (`fix(settings): keep actions above overlays`).
@@ -49,6 +49,21 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Three-plan Android commit: `cdf177c` (`feat(account): show three plan tiers`, source pushed
   only after final documentation; OTA not published).
 - Production APK is `v1.1.11`, `versionCode` 58, distributed through Cloudflare R2.
+
+## Downloads lock and wrapped offline notice — prepared, OTA pending
+
+- The `Descargas` smart card on the Playlist/Library page now displays `PremiumLockBadge` for
+  Free or unknown/loading plans. Tapping it opens `PremiumFeatureDialog`; Premium and Premium
+  Plus show no lock and retain direct navigation to the download queue.
+- Media3 may wrap the app's network `PlaybackException` inside an outer source error code 2000.
+  `PlaybackErrorInfo` now inspects nested playback error codes, so wrapped network failures use
+  the existing compact `Sin acceso a internet` notice instead of the red diagnostic card.
+- Added unit coverage for wrapped network and timeout exceptions. All 37 universal debug unit
+  tests and Kotlin debug compilation pass.
+- Modified files: `ui/screens/WiwyLibraryScreen.kt`, `ui/player/PlaybackErrorInfo.kt`, and
+  `ui/player/PlaybackErrorInfoTest.kt`. Commit: `4230b4c`.
+- No mini-player, playback service, queue, player connection, or playback behavior changed.
+  Production OTA remains v1.1.11 until a later release is explicitly authorized.
 
 ## Settings keyboard-aware scrolling — published in v1.1.7
 
