@@ -1,6 +1,6 @@
 # WiwyMusic — project context and durable AI handoff
 
-Last updated: 2026-08-02 (America/Mexico_City)
+Last updated: 2026-08-03 (America/Mexico_City)
 
 This is the single source of truth for any editor, IDE assistant, or AI working on WiwyMusic.
 Read it completely before inspecting or changing code. Update it after every meaningful change,
@@ -29,6 +29,8 @@ build, deployment, migration, or release. Do not create competing project-memory
   the admin repository has no Git remote configured).
 - Admin APK download button commit: `1520542` (`feat(admin): add APK download button`, local;
   deployed Worker version `94a2fda9-9271-4721-b364-a4075b5c50fb`).
+- Admin mobile-native redesign commit: `e080db5` (`feat(admin): redesign mobile dashboard`,
+  local and not deployed; the admin repository has no Git remote configured).
 - Production APK is `v1.1.9`, `versionCode` 56, distributed through Cloudflare R2.
 
 ## Settings keyboard-aware scrolling — published in v1.1.7
@@ -579,6 +581,38 @@ Preserve these four choices and Wi-Fi control:
   responds as `application/vnd.android.package-archive` with filename `WiwyMusic.apk`, and its
   SHA-256 remains `bd77d6cd0de3f9085dec257aa78342ca52428c6549a0ad90fda3a414034ede22`.
 - No Android, OTA metadata, R2 object, mini-player, player, or playback file was modified.
+
+## Admin mobile-native redesign — prepared locally 2026-08-03, not deployed
+
+- Admin commit: `e080db5` (`feat(admin): redesign mobile dashboard`). Rollback tag
+  `snapshot-before-admin-native-redesign-20260803` points to deployed baseline `1520542`.
+- Persistent desktop sidebar and a 200 ms slide-in mobile drawer provide Dashboard, Usuarios,
+  Códigos, Descargar APK, Ajustes, and Cerrar sesión. Mobile header contains the menu button,
+  WiwyMusic Admin title, and a small notifications popover.
+- Dashboard now greets the administrator and shows four large live cards: Usuarios, Premium,
+  Reproduciendo, and Códigos. Existing Supabase aggregations and ten-second realtime refresh
+  remain unchanged.
+- Users table was replaced by touch-friendly responsive cards showing plan status, APK presence,
+  Premium time remaining, current playback when available, and a full-width detail action.
+- User detail is one column: identity, activity, plan controls, subscription history, and account
+  information. Premium duration uses the existing allowed day options; actions still call the
+  existing grant/convert Server Actions.
+- Codes table was replaced by responsive cards. A floating `Crear código` button expands the
+  creation form. `Editar` updates duration/unlimited status for future canjes. `Eliminar` performs
+  the existing safe soft-deactivation, preserving redemption history; no destructive row deletion
+  was added.
+- New `/dashboard/settings` route provides administrator identity and stable APK download access.
+  Shared custom outline SVG icons avoid a new dependency. `dashboard/loading.tsx` adds responsive
+  skeleton cards. Global panel surface is `#F5F7FB` with white 20 px cards, soft shadows,
+  blue-violet gradients, 200 ms transitions, accessible touch targets, and reduced-motion support.
+- Validation passed: `git diff --check`, targeted ESLint, `tsc --noEmit`, Next.js production build,
+  and OpenNext Cloudflare build. Existing local Durable Object and deprecated middleware warnings
+  remain unchanged.
+- Browser validation reached the protected login correctly; authenticated local pages could not be
+  inspected without sharing production credentials or bypassing auth. No credential or auth bypass
+  was used.
+- No deployment, Android source, OTA metadata, R2 object, mini-player, player, or playback file was
+  modified.
 
 ## Admin live presence (deployed in v1.0.38)
 
