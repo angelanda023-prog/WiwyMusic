@@ -86,6 +86,11 @@ object UserPrefs {
     }
 
     suspend fun restoreCachedPremium(userId: String) {
+        if (!ApkUpdateVerifier.isOfficialInstalledApp(App.instance)) {
+            _isPremium.value = false
+            _subscriptionTier.value = SubscriptionTier.FREE
+            return
+        }
         val dataStore = App.instance.dataStore
         val cachedUserId = dataStore.getAsync(CachedPremiumUserIdKey)
         if (cachedUserId == userId) {
@@ -108,7 +113,8 @@ object UserPrefs {
         value: Boolean,
         tierValue: String? = null,
     ) {
-        val tier = SubscriptionTier.fromWire(tierValue, value)
+        val trustedPremium = value && ApkUpdateVerifier.isOfficialInstalledApp(App.instance)
+        val tier = SubscriptionTier.fromWire(tierValue, trustedPremium)
         _isPremium.value = tier.hasPremiumAccess
         _subscriptionTier.value = tier
         App.instance.dataStore.edit { preferences ->

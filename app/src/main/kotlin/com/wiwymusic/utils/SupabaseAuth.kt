@@ -268,6 +268,7 @@ object SupabaseAuth {
                             "already_redeemed" -> "Ya canjeaste este código"
                             "lifetime_premium" -> "Tu cuenta ya tiene Premium de por vida"
                             "not_authenticated" -> "Inicia sesión para canjear un código"
+                            "rate_limited" -> "Demasiados intentos. Espera unos minutos e inténtalo de nuevo"
                             else -> "Código inválido, usado o revocado"
                         }
                         throw IllegalArgumentException(message)

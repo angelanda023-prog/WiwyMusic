@@ -53,6 +53,40 @@ build, deployment, migration, or release. Do not create competing project-memory
   only after final documentation; OTA not published).
 - Production APK is `v1.1.12`, `versionCode` 59, distributed through Cloudflare R2.
 
+## APK identity and Premium server hardening — prepared, not published
+
+- The security review from `ESTADO_SEGURIDAD_APPS.md` was adapted to WiwyMusic without adding
+  Firebase, Play Integrity enforcement, a playback proxy, or any dependency that could reject
+  legitimate sideloaded OTA installations.
+- New `utils/ApkUpdateVerifier.kt` verifies every downloaded OTA before Android's installer is
+  opened. The candidate must keep package `com.wiwymusic`, match the signing certificate of the
+  installed app, and, in release builds, match the fixed production SHA-256 certificate digest.
+  Redirects are followed manually and every OTA hop must remain HTTPS. Invalid downloads are
+  deleted from the private update cache.
+- The same release-certificate check is applied centrally when restoring or accepting the server
+  Premium tier. An APK re-signed with another certificate is treated as Free, so Download,
+  Lyrics, Sleep timer, and Equalizer remain locked through their existing shared entitlement
+  state. Debug builds intentionally bypass the production-certificate check.
+- `DebugActivity` is no longer exported. The internal crash handler still opens it explicitly in
+  its separate process.
+- Admin migration `supabase/migrations/0006_security_hardening.sql` was applied to production
+  Supabase on 2026-08-04. It removes direct authenticated writes to plan/subscription/code
+  data, keeps only `profiles.onboarded` and `profiles.avatar_url` client-writable, makes the
+  redemption RPC use an empty search path, serializes concurrent attempts, limits rejected
+  attempts to 10 per 10 minutes, and records private audit events without storing entered codes.
+- Post-application verification passed: service-role REST can read the new `security_events`
+  table (HTTP 200), while anonymous REST access to `redeem_codes` and anonymous execution of
+  `redeem_premium_code` are both rejected (HTTP 401). No production user data was printed or
+  modified during verification.
+- Android recognizes the new `rate_limited` response with a friendly retry message. Normal valid
+  redemption responses and the existing Premium celebration payload remain unchanged.
+- Validation passed: `git diff --check`, all universal debug unit tests, debug Kotlin compilation,
+  and signed R8 universal release assembly. The test release remains source version `1.1.12`
+  (`versionCode` 59), uses APK Signature Scheme v2, and has production certificate SHA-256
+  `54165311e546cc7772dc48f059848b5aa5256250b8f6485fcc5b2abae0e8cb70`.
+- No OTA was published. No mini-player, full-player, playback service, queue, player connection,
+  download implementation, lyrics implementation, timer, equalizer, or audio behavior changed.
+
 ## Downloads lock and wrapped offline notice — published in v1.1.12
 
 - The `Descargas` smart card on the Playlist/Library page now displays `PremiumLockBadge` for

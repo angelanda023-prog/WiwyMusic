@@ -59,6 +59,12 @@ object AppUpdateInstaller {
         job = scope.launch {
             try {
                 val apk = downloadApk(appContext, url)
+                try {
+                    ApkUpdateVerifier.verify(appContext, apk)
+                } catch (error: Exception) {
+                    apk.delete()
+                    throw error
+                }
                 _state.value = State.Installing
                 launchInstaller(appContext, apk)
                 delay(1200)
@@ -81,8 +87,12 @@ object AppUpdateInstaller {
         var connection: HttpURLConnection
         var redirects = 0
         while (true) {
-            connection = (URL(current).openConnection() as HttpURLConnection).apply {
-                instanceFollowRedirects = true
+            val currentUrl = URL(current)
+            if (currentUrl.protocol != "https") {
+                throw IllegalStateException("La actualización no usa una conexión segura")
+            }
+            connection = (currentUrl.openConnection() as HttpURLConnection).apply {
+                instanceFollowRedirects = false
                 connectTimeout = 30_000
                 readTimeout = 30_000
                 setRequestProperty("User-Agent", "WiwyMusic")
@@ -93,7 +103,7 @@ object AppUpdateInstaller {
                 val loc = connection.getHeaderField("Location")
                 connection.disconnect()
                 if (loc.isNullOrBlank()) throw IllegalStateException("Redirección inválida")
-                current = loc
+                current = URL(currentUrl, loc).toString()
                 redirects++
                 continue
             }
