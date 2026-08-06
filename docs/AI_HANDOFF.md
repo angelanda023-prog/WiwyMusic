@@ -55,7 +55,8 @@ build, deployment, migration, or release. Do not create competing project-memory
   deployed Worker version `dcb17767-7bf9-4044-baad-e3fd47b1a158`; the admin repository has no
   Git remote configured).
 - Admin Downloader code commit: `c2e86f8` (`feat(admin): show Downloader code`, local;
-  validated but not deployed; the admin repository has no Git remote configured).
+  deployed Worker version `db7b1723-e6fd-4a87-95d3-3800450320ba`; the admin repository has no
+  Git remote configured).
 - Three-plan Android commit: `cdf177c` (`feat(account): show three plan tiers`, included in
   later published OTAs).
 - Production APK is `v1.1.13`, `versionCode` 60, distributed through Cloudflare R2.
@@ -97,7 +98,7 @@ build, deployment, migration, or release. Do not create competing project-memory
 - No mini-player, full-player, playback service, queue, player connection,
   download implementation, lyrics implementation, timer, equalizer, or audio behavior changed.
 
-## Admin Downloader code — implemented, not deployed
+## Admin Downloader code — deployed 2026-08-06
 
 - Admin Ajustes displays Downloader code `2517976` directly below the stable `Descargar APK`
   action inside the existing Android distribution card.
@@ -105,7 +106,11 @@ build, deployment, migration, or release. Do not create competing project-memory
   endpoint, OTA metadata, R2 files, authentication, or Android application.
 - Modified Admin file: `src/app/dashboard/settings/page.tsx`. Admin commit: `c2e86f8`.
 - ESLint, `tsc --noEmit`, and the Next.js production build pass. Existing Durable Object and
-  deprecated middleware warnings remain unchanged. The Admin Worker has not been deployed yet.
+  deprecated middleware warnings remain unchanged.
+- Deployed at <https://wiwymusic-admin.angelanda023.workers.dev> as Worker version
+  `db7b1723-e6fd-4a87-95d3-3800450320ba`. Production verification passed: `/login` returns
+  HTTP 200, unauthenticated Ajustes redirects to login, OTA metadata remains `v1.1.13`, and the
+  public APK endpoint still serves `WiwyMusic.apk` as `application/vnd.android.package-archive`.
 
 ## Admin user deletion — deployed 2026-08-06
 
