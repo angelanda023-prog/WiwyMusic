@@ -54,6 +54,8 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Admin user deletion commit: `ea0ac5c` (`feat(admin): delete user accounts`, local;
   deployed Worker version `dcb17767-7bf9-4044-baad-e3fd47b1a158`; the admin repository has no
   Git remote configured).
+- Admin Downloader code commit: `c2e86f8` (`feat(admin): show Downloader code`, local;
+  validated but not deployed; the admin repository has no Git remote configured).
 - Three-plan Android commit: `cdf177c` (`feat(account): show three plan tiers`, included in
   later published OTAs).
 - Production APK is `v1.1.13`, `versionCode` 60, distributed through Cloudflare R2.
@@ -94,6 +96,16 @@ build, deployment, migration, or release. Do not create competing project-memory
   `snapshot-before-security-hardening-v1.1.12` points to `cf3b60d` and is pushed to GitHub.
 - No mini-player, full-player, playback service, queue, player connection,
   download implementation, lyrics implementation, timer, equalizer, or audio behavior changed.
+
+## Admin Downloader code — implemented, not deployed
+
+- Admin Ajustes displays Downloader code `2517976` directly below the stable `Descargar APK`
+  action inside the existing Android distribution card.
+- The code is presented as a prominent, centered monospace value and does not change the APK
+  endpoint, OTA metadata, R2 files, authentication, or Android application.
+- Modified Admin file: `src/app/dashboard/settings/page.tsx`. Admin commit: `c2e86f8`.
+- ESLint, `tsc --noEmit`, and the Next.js production build pass. Existing Durable Object and
+  deprecated middleware warnings remain unchanged. The Admin Worker has not been deployed yet.
 
 ## Admin user deletion — deployed 2026-08-06
 
