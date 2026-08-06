@@ -92,6 +92,24 @@ build, deployment, migration, or release. Do not create competing project-memory
 - No mini-player, full-player, playback service, queue, player connection,
   download implementation, lyrics implementation, timer, equalizer, or audio behavior changed.
 
+## Admin user deletion — implemented, not deployed
+
+- User detail pages now include a red `Eliminar usuario` danger card for every normal account.
+  The administrator account never renders this control and is rejected again by the Server
+  Action using both its authenticated user ID and configured admin email.
+- The client requires an explicit irreversible-action confirmation and shows a pending state.
+- `deleteUserAccount` validates the untrusted user ID, re-reads the target through Supabase Auth
+  Admin, removes the known avatar object, clears the legacy `redeem_codes.redeemed_by` foreign-key
+  reference, permanently deletes the Auth user, invalidates Dashboard/User caches, and redirects
+  to the users list. Existing cascade rules remove that user's profile, subscriptions, presence,
+  and redemption rows; other users and code availability are not changed.
+- Modified Admin files: `src/app/dashboard/actions.ts`,
+  `src/app/dashboard/users/[id]/page.tsx`, and new
+  `src/components/DeleteUserButton.tsx`.
+- Targeted ESLint, `tsc --noEmit`, and Next.js production build pass. Existing local Durable
+  Object and deprecated middleware warnings remain unchanged. No user was deleted during tests.
+- The Admin Worker has not been deployed yet.
+
 ## Downloads lock and wrapped offline notice — published in v1.1.12
 
 - The `Descargas` smart card on the Playlist/Library page now displays `PremiumLockBadge` for
