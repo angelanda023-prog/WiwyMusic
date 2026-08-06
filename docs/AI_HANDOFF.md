@@ -1,6 +1,6 @@
 # WiwyMusic — project context and durable AI handoff
 
-Last updated: 2026-08-04 (America/Mexico_City)
+Last updated: 2026-08-06 (America/Mexico_City)
 
 This is the single source of truth for any editor, IDE assistant, or AI working on WiwyMusic.
 Read it completely before inspecting or changing code. Update it after every meaningful change,
@@ -51,6 +51,9 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Admin suspended-subscription deletion commit: `8e12002`
   (`feat(admin): delete suspended subscriptions`, local; deployed as Worker version
   `5e96d14c-3ff2-4a85-98a8-3b97a5c96754`).
+- Admin user deletion commit: `ea0ac5c` (`feat(admin): delete user accounts`, local;
+  deployed Worker version `dcb17767-7bf9-4044-baad-e3fd47b1a158`; the admin repository has no
+  Git remote configured).
 - Three-plan Android commit: `cdf177c` (`feat(account): show three plan tiers`, included in
   later published OTAs).
 - Production APK is `v1.1.13`, `versionCode` 60, distributed through Cloudflare R2.
@@ -92,7 +95,7 @@ build, deployment, migration, or release. Do not create competing project-memory
 - No mini-player, full-player, playback service, queue, player connection,
   download implementation, lyrics implementation, timer, equalizer, or audio behavior changed.
 
-## Admin user deletion — implemented, not deployed
+## Admin user deletion — deployed 2026-08-06
 
 - User detail pages now include a red `Eliminar usuario` danger card for every normal account.
   The administrator account never renders this control and is rejected again by the Server
@@ -108,7 +111,13 @@ build, deployment, migration, or release. Do not create competing project-memory
   `src/components/DeleteUserButton.tsx`.
 - Targeted ESLint, `tsc --noEmit`, and Next.js production build pass. Existing local Durable
   Object and deprecated middleware warnings remain unchanged. No user was deleted during tests.
-- The Admin Worker has not been deployed yet.
+- Deployed at <https://wiwymusic-admin.angelanda023.workers.dev> as Worker version
+  `dcb17767-7bf9-4044-baad-e3fd47b1a158`.
+- Production verification passed: `/login` returns HTTP 200, unauthenticated `/dashboard` and
+  `/dashboard/users` redirect to login, OTA metadata remains `v1.1.13`, and the APK download
+  still returns `WiwyMusic.apk` as `application/vnd.android.package-archive`.
+- No user was deleted during deployment or verification. Android source, OTA metadata, R2 APK,
+  mini-player, player, and playback files were not modified.
 
 ## Downloads lock and wrapped offline notice — published in v1.1.12
 
