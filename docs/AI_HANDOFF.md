@@ -23,7 +23,9 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Admin repository: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`.
 - Admin OTA metadata commit: pending local commit for `v1.1.14` (the admin repository has no
   Git remote configured).
-  the admin repository has no Git remote configured).
+- Admin Windows download commit: `3c18510` (`feat(admin): add Windows app download`, local;
+  deployed Worker version `47dd057a-f636-4710-af74-ff5d5d15b362`; the admin repository has no
+  Git remote configured).
 - Admin security migration commit: `b1ddf8c` (`security(db): restrict premium mutations`, local;
   production migration applied).
 - Admin OTA documentation commit: `c47f6b8` (`docs: record v1.1.9 OTA artifact`, local;
@@ -90,6 +92,40 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Public endpoints report `v1.0.4` and serve the verified universal DMG:
   `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/macos/releases` and
   `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/macos/download`.
+
+## Independent Windows application — published in v1.0.0
+
+- Windows source lives at `/Users/wiwyzho/Documents/Web/WiwyMusic-Windows`. It is a separate
+  Kotlin/JVM and Compose Desktop project; it does not modify or depend on Android or macOS source.
+- The fixed 390 × 844 window mirrors the phone-style WiwyMusic hierarchy: authentication,
+  artist onboarding, branded Home, carousel and personalized sections, Search, Library,
+  Settings pages, mini-player, and full player.
+- It uses the same Supabase project and public client key as Android/macOS for authenticated
+  profile tier, onboarding, preferred artists, Favorites, Premium code redemption, and Admin
+  presence. Session/local content is stored under `%APPDATA%\\WiwyMusic` and is isolated by user.
+- Account tiers are Free, Premium, and Premium Plus. Download, downloaded-file playback, Lyrics,
+  sleep timer, and 10-band JavaFX equalizer use the same fail-closed Premium presentation.
+- Playback supports YouTube Music resolution through the bundled Windows `yt-dlp.exe`, preview
+  sources, downloaded audio, and imported MP3/M4A/AAC/WAV/FLAC/OGG files. Mini-player provides
+  previous, next, and play/pause; full player includes queue, seek, shuffle, repeat, favorites,
+  download, lyrics, and timer.
+- The Windows project also includes a Music Together WebSocket client, playlists, per-account
+  history/download catalogs, a PowerShell build script, and a Windows GitHub Actions workflow.
+- Native MSI/EXE packaging runs on Windows by design. GitHub Actions run `31645649058` built and
+  validated the first x64 MSI and EXE from source commit `c713ed6`; the Windows source is stored
+  in the private `angelanda023-prog/WiwyMusic-Windows` repository.
+- Current stable Windows version is `v1.0.0`, published through its independent Cloudflare R2
+  channel on 2026-08-12. The immutable archive and public download are valid PE32+ x86-64
+  executables and match SHA-256
+  `dc32e011408a88114e7c96bf15fb958bc1d69e1121c868ee3adb3e628b5b1bb4`.
+- Public endpoints are
+  `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/windows/releases` and
+  `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/windows/download`.
+- Admin Settings now presents separate Mac and Windows download buttons. This deployment did not
+  modify Android or macOS source, playback, OTA files, or their published versions.
+- For later Windows releases, use `scripts/build-windows.ps1` or the Windows GitHub Actions
+  workflow, verify the EXE digest, upload the immutable archive first, and publish
+  `ota/windows/releases.json` last.
 
 ## APK identity and Premium server hardening — published in v1.1.13
 
