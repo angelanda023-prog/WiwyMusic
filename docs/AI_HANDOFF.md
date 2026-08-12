@@ -1,6 +1,6 @@
 # WiwyMusic — project context and durable AI handoff
 
-Last updated: 2026-08-09 (America/Mexico_City)
+Last updated: 2026-08-12 (America/Mexico_City)
 
 This is the single source of truth for any editor, IDE assistant, or AI working on WiwyMusic.
 Read it completely before inspecting or changing code. Update it after every meaningful change,
@@ -62,6 +62,34 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Three-plan Android commit: `cdf177c` (`feat(account): show three plan tiers`, included in
   later published OTAs).
 - Production APK is `v1.1.14`, `versionCode` 61, distributed through Cloudflare R2.
+
+## macOS automatic OTA installer — published in v1.0.4
+
+- macOS source lives independently at `/Users/wiwyzho/Documents/Web/WiwyMusic-macOS`; this
+  change does not modify the Android project, APK, playback service, or Android mini-player.
+- Current stable macOS version is `1.0.4` (`CFBundleVersion` 5), published through the independent
+  Cloudflare R2 macOS OTA channel on 2026-08-12.
+- `MacUpdater` still downloads only through HTTPS and verifies the complete DMG against the
+  SHA-256 published in the Cloudflare manifest before installation begins.
+- After verification it mounts the DMG read-only, requires `WiwyMusic.app`, validates bundle ID
+  `com.wiwymusic.macos`, requires the expected release version, and runs strict deep code-signature
+  verification. It copies the candidate to a staging directory before detaching the DMG.
+- Installation replaces the running copy in `/Applications` using a temporary backup. If moving
+  or validating the new application fails, the previous application is restored. After success,
+  WiwyMusic removes the downloaded DMG, closes, and relaunches the newly installed copy.
+- If macOS permissions prevent automatic replacement, WiwyMusic preserves and opens the verified
+  DMG for manual installation instead of leaving the application unusable.
+- The update alert and Settings action now say `Actualizar`, and explain that the application will
+  install and restart automatically.
+- Existing public `1.0.3` clients contain the older download-only updater. Therefore `1.0.4` must
+  be installed manually once; automatic replacement applies to releases after `1.0.4` is installed.
+- Validation passed: `plutil`, all 10 Swift tests, universal release build for arm64 and x86_64,
+  DMG checksum verification, embedded version/build/bundle inspection, and strict code-signature
+  verification. The immutable R2 archive and public download both match SHA-256
+  `05ad448d3565a781cc5c34ec40511fddaae83fb30c3274073cb1022e5d9558a1`.
+- Public endpoints report `v1.0.4` and serve the verified universal DMG:
+  `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/macos/releases` and
+  `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/macos/download`.
 
 ## APK identity and Premium server hardening — published in v1.1.13
 
