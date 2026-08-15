@@ -11,7 +11,7 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Cross-platform download update on 2026-08-13: the Download action in the full player now shows
   an animated in-progress state on Android, macOS, and Windows. The user explicitly scoped this
   change to the full player and confirmed it does not apply to the mini-player. macOS `v1.0.6`,
-  Windows `v1.0.2`, and Android `v1.1.17` are published.
+  Windows `v1.0.2`, and Android `v1.1.18` are published.
 - Android modifies only the protected `ui/player/PlayerComponents.kt`, with explicit user
   authorization in this conversation. Every player style rotates the existing downloading glyph
   only while Media3 reports queued/downloading. Existing tap behavior still cancels queued/active
@@ -44,20 +44,19 @@ build, deployment, migration, or release. Do not create competing project-memory
   artwork as a dismissible launch dialog on every application foreground. Its pictured
   `ACTÍVALO HOY` area opens the same prefilled `$40 MXN al mes` WhatsApp request. Premium and
   unknown/loading plans do not see it. This behavior is published in OTA `v1.1.17`.
-- Post-`v1.1.17` Android source prepares a six-hour launch-promotion cooldown for confirmed Free
+- Android `v1.1.18` adds a six-hour launch-promotion cooldown for confirmed Free
   accounts. The display timestamp is persisted when the dialog opens; elapsed time alone never
   interrupts an active session, and the next eligible application foreground shows it. The dialog
   backdrop is pure black and its close control is a larger orange 58 dp button. Account Settings
   adds `Adquirir código Premium`, opening the corrected Mexican WhatsApp contact with a code-specific
   `$40 MXN al mes` message. The Home carousel now falls back from personal quick picks to playback
   history and then real YouTube Home songs, fixing its absence on new or sparse installations.
-  This follow-up is source-only until a later explicitly authorized OTA; production remains
-  `v1.1.17`.
+  This follow-up is published in OTA `v1.1.18`.
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
-- Current Android production source commit: `ae7e3b8` (`build: prepare Android v1.1.17`),
-  following launch-dialog commits `4f1f448` and `86f8de1`.
+- Current Android production source commit: `0e43e42` (`build: prepare Android v1.1.18`),
+  following promotion/carousel commit `198f3dd`.
 - Registration password visibility is published in OTA `v1.1.14`.
 - Playlist import lock visibility commit: `d70de59` (`fix(library): show playlist import lock`).
 - Playlist import Premium gate commit: `1429cc5` (`feat(library): gate playlist import`).
@@ -68,7 +67,7 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Premium session fix commit: `7385e6b` (`fix: persist premium plan across sessions`).
 - Previous hardening commit: `654626c` (`security: hide OTA repository details`).
 - Admin repository: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`.
-- Admin OTA metadata commit: `89bac90` (`chore(ota): publish Android v1.1.17`, local; the admin
+- Admin OTA metadata commit: `cd74db0` (`chore(ota): publish Android v1.1.18`, local; the admin
   repository has no Git remote configured).
 - Admin Windows download commit: `3c18510` (`feat(admin): add Windows app download`, local;
   deployed Worker version `47dd057a-f636-4710-af74-ff5d5d15b362`; the admin repository has no
@@ -110,7 +109,7 @@ build, deployment, migration, or release. Do not create competing project-memory
   Git remote configured).
 - Three-plan Android commit: `cdf177c` (`feat(account): show three plan tiers`, included in
   later published OTAs).
-- Production APK is `v1.1.17`, `versionCode` 64, distributed through Cloudflare R2.
+- Production APK is `v1.1.18`, `versionCode` 65, distributed through Cloudflare R2.
 
 ## Public product website — published 2026-08-15
 
@@ -128,7 +127,7 @@ build, deployment, migration, or release. Do not create competing project-memory
   `website/assets/wiwymusic-icon.png` and used for the browser favicon, Apple touch icon, navbar,
   and footer brand.
 - Primary Android actions point to the stable Cloudflare endpoint `/api/ota/download`. Runtime
-  release text reads `/api/ota/releases` with `v1.1.17` as a resilient fallback. Separate macOS
+  release text reads `/api/ota/releases` with `v1.1.18` as a resilient fallback. Separate macOS
   DMG and Windows EXE actions use their existing independent endpoints.
 - Sections: cinematic hero, four-step experience timeline, Free/Premium plans,
   final Android/macOS/Windows download call-to-action, and footer. Premium activation wording
@@ -146,8 +145,10 @@ build, deployment, migration, or release. Do not create competing project-memory
   confirms HTTP 200, loaded icon and video, correct Free/Premium plans and `$40 MXN / mes` price,
   WhatsApp/APK links, no Premium Plus text, no horizontal overflow, and no console errors. The
   WhatsApp now redirects with the corrected international phone value `528136890880`; the old
-  `528136899880` value is absent. The immutable deployment URL is
-  <https://29d47b48.wiwymusic.pages.dev>.
+  `528136899880` value is absent. The `v1.1.18` website update changes the request message to
+  explicitly acquire a Premium code and is published at immutable deployment
+  <https://2b5c5f83.wiwymusic.pages.dev>; production matches it at
+  <https://wiwymusic.pages.dev>.
 
 ## Android Free-to-Premium promotion — published in v1.1.17
 
@@ -182,7 +183,7 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Rollback tag `snapshot-before-premium-launch-dialog-v1.1.16` points to the preceding production
   source commit `297c8c8` and is pushed to `origin`.
 
-### Six-hour pacing, Account CTA, and carousel fallback — prepared after v1.1.17
+### Six-hour pacing, Account CTA, and carousel fallback — published in v1.1.18
 
 - Confirmed Free accounts show the launch artwork at most once per six hours. The last display time
   is stored in DataStore when the dialog actually opens. Foreground entries before the deadline are
@@ -202,8 +203,15 @@ build, deployment, migration, or release. Do not create competing project-memory
   carousel only when `quickPicks` was non-empty, which hid it for new or sparse local histories.
 - Modified files are limited to Home, Account Settings, promotion/contact utilities, a DataStore
   preference key, localized strings, tests, and this handoff. No mini-player, protected player,
-  playback, queue, service, or player-connection file is changed. This work is not yet published;
-  live Android OTA remains `v1.1.17` (`versionCode` 64).
+  playback, queue, service, or player-connection file is changed.
+- Validation passed: all 45 universal debug unit tests, signed R8 release build, package/version
+  inspection, APK Signature Scheme v2 with the existing production certificate, one signer,
+  private-string scan, and exact source/packaged image pixel comparison. Release is `v1.1.18`,
+  `versionCode` 65, source commit `0e43e42`. The local APK, immutable R2 archive, and public
+  download match SHA-256
+  `6278c2298ed3ccc77dfe6a2de1e77c64e9c4ffa36a64680fc7adb7e386b68de4`.
+- Rollback tag `snapshot-before-premium-pacing-v1.1.17` points to feature source commit `198f3dd`
+  and is pushed to `origin`.
 
 ## macOS automatic OTA installer — current stable v1.0.6
 
@@ -705,19 +713,19 @@ admin panel.
 
 - Android app written in Kotlin and Jetpack Compose with Material Design 3.
 - Application ID: `com.wiwymusic`.
-- Production release: `v1.1.17` (R2 stable OTA).
-- `versionName`: `1.1.17`.
-- `versionCode`: `64`.
-- Production commit: `ae7e3b8` (`build: prepare Android v1.1.17`).
+- Production release: `v1.1.18` (R2 stable OTA).
+- `versionName`: `1.1.18`.
+- `versionCode`: `65`.
+- Production commit: `0e43e42` (`build: prepare Android v1.1.18`).
 - Last GitHub bridge release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.42>
 - OTA asset name: `WiwyMusic.apk`.
-- Production APK SHA-256: `28607371b774c2ee204548403f76650dab0bf7478a3c1742f4b7937fa7254005`.
-- Previous production baseline: `v1.1.16`, commit `297c8c8`, SHA-256
-  `157880846933cc52c04de5f86c57f5a9bbd8fd8aba8f12235ba0d79e2ba18c7d`.
+- Production APK SHA-256: `6278c2298ed3ccc77dfe6a2de1e77c64e9c4ffa36a64680fc7adb7e386b68de4`.
+- Previous production baseline: `v1.1.17`, commit `ae7e3b8`, SHA-256
+  `28607371b774c2ee204548403f76650dab0bf7478a3c1742f4b7937fa7254005`.
 
 The bridge release was published through both GitHub and R2. Clients upgrading from `v1.0.41`
 can discover `v1.0.42` through the old GitHub updater; after installation, the Cloudflare
-endpoint offers current stable `v1.1.17`.
+endpoint offers current stable `v1.1.18`.
 
 ## APK hardening and rollback baseline — published in v1.0.42
 
@@ -739,10 +747,11 @@ Rollback is fixed to the unchanged production release:
   `ota/archive/v1.1.11/WiwyMusic.apk`, `ota/archive/v1.1.12/WiwyMusic.apk`,
   `ota/archive/v1.1.13/WiwyMusic.apk`, `ota/archive/v1.1.14/WiwyMusic.apk`,
   `ota/archive/v1.1.15/WiwyMusic.apk`, `ota/archive/v1.1.16/WiwyMusic.apk`, and
-  `ota/archive/v1.1.17/WiwyMusic.apk`; current `v1.1.17`
+  `ota/archive/v1.1.17/WiwyMusic.apk`, and `ota/archive/v1.1.18/WiwyMusic.apk`;
+  current `v1.1.18`
   is served from its immutable archive
   through `/api/ota/download`.
-- R2 metadata `ota/releases.json` points to `v1.1.17` with the generic improvements message.
+- R2 metadata `ota/releases.json` points to `v1.1.18` with the generic improvements message.
 - Public repository-neutral endpoints:
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/releases`
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/download`
