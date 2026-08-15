@@ -39,15 +39,18 @@ build, deployment, migration, or release. Do not create competing project-memory
 - New public landing source lives in `website/`. It presents WiwyMusic, Free/Premium,
   Android installation, and independent macOS/Windows downloads. It is published as the isolated
   Cloudflare Pages project `wiwymusic` at <https://wiwymusic.pages.dev>.
-- Android Free accounts now receive a restrained Premium promotion: a dismissible Home card
-  appears at most once per local calendar day, and existing Premium-feature dialogs offer an
-  `Obtener Premium` action. Both open the same prefilled WhatsApp request for `$40 MXN al mes`.
-  Premium and unknown/loading plans never show the Home promotion. This change is published in
-  Android OTA `v1.1.16`.
+- Android source after `v1.1.16` removes the in-feed Premium card so the original Home carousel
+  again follows the greeting directly. Free accounts instead receive the supplied square Premium
+  artwork as a dismissible launch dialog on every application foreground. Its pictured
+  `ACTÍVALO HOY` area opens the same prefilled `$40 MXN al mes` WhatsApp request. Premium and
+  unknown/loading plans do not see it. This follow-up is tested and committed but not yet
+  published as an OTA.
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
-- Current Android release source commit: `297c8c8` (`fix: correct Premium price`).
+- Current Android prepared source commit: `4f1f448` (`feat: replace Premium card with launch
+  dialog`, not yet published as OTA).
+- Current Android production source commit: `297c8c8` (`fix: correct Premium price`).
 - Registration password visibility is published in OTA `v1.1.14`.
 - Playlist import lock visibility commit: `d70de59` (`fix(library): show playlist import lock`).
 - Playlist import Premium gate commit: `1429cc5` (`feat(library): gate playlist import`).
@@ -123,7 +126,7 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Sections: cinematic hero, four-step experience timeline, Free/Premium plans,
   final Android/macOS/Windows download call-to-action, and footer. Premium activation wording
   accurately requires a valid code and shows the user-supplied price of `$40 MXN / mes`; the
-  Premium card opens WhatsApp at Mexican number `+52 81 3689 9880` with a prefilled request
+  Premium card opens WhatsApp at Mexican number `+52 81 3689 0880` with a prefilled request
   message through a CTA labeled `Obtener`. The page does not claim that payment processing is
   implemented.
 - Site uses plain HTML, CSS, and JavaScript with no package dependency. It includes accessible
@@ -135,27 +138,38 @@ build, deployment, migration, or release. Do not create competing project-memory
   and public download-link checks pass. Production validation at <https://wiwymusic.pages.dev>
   confirms HTTP 200, loaded icon and video, correct Free/Premium plans and `$40 MXN / mes` price,
   WhatsApp/APK links, no Premium Plus text, no horizontal overflow, and no console errors. The
-  immutable deployment URL is <https://73a2c33b.wiwymusic.pages.dev>.
+  WhatsApp now redirects with the corrected international phone value `528136890880`; the old
+  `528136899880` value is absent. The immutable deployment URL is
+  <https://b65643dd.wiwymusic.pages.dev>.
 
-## Android Free-to-Premium promotion — published in v1.1.16
+## Android Free-to-Premium promotion — launch-dialog follow-up prepared 2026-08-15
 
-- `WiwyHomeScreen` shows a quiet orange-accented Premium card only after the account is confirmed
-  Free. It advertises offline downloads, synchronized lyrics, and the user-supplied `$40 MXN al
-  mes` price. It has an accessible close action and no modal, countdown, autoplay, or playback
-  interruption.
-- `PremiumPromoLastShownEpochDayKey` records the local calendar day as soon as the Home card is
-  shown. The card therefore appears at most once per device per day, including after navigation or
-  app restart. Premium and unknown/loading states fail closed and do not render it.
+- The in-feed Home card published in `v1.1.16` is removed from current source. `FeaturedCarousel`
+  again renders directly after the greeting and its data, playback action, pager, and indicators
+  are unchanged.
+- `WiwyHomeScreen` now presents the exact user-supplied 1254 × 1254 PNG in a dimmed launch dialog
+  whenever the application enters the foreground and the authenticated account is confirmed Free.
+  Premium, unknown/loading, and logged-out states fail closed. One foreground generation can claim
+  the dialog only once, preventing navigation or recomposition from duplicating it.
+- The artwork is stored as `drawable-nodpi/wiwymusic_premium_launch.png`; its SHA-256 exactly
+  matches the supplied file:
+  `52eda4f21b9e549f989d2f20f355b1098346c4073d5a2d34d500a682080423c2`.
+  A transparent accessible action overlays the pictured `ACTÍVALO HOY` button, and a visible close
+  action plus Android Back can dismiss the dialog.
 - Existing `PremiumFeatureDialog` callers now show `Obtener Premium` and `Ahora no`. The obtain
-  action opens `https://wa.me/528136899880` with the prefilled request for the `$40 MXN al mes`
+  action opens `https://wa.me/528136890880` with the prefilled request for the `$40 MXN al mes`
   plan, then closes the dialog.
-- Shared contact constants and intent handling live in `utils/PremiumContact.kt`; the daily
-  eligibility rule lives in `utils/PremiumPromoPolicy.kt` and has unit coverage for Free,
-  Premium, unknown, same-day, next-day, phone number, and message behavior.
-- Validation passed: `:app:compileUniversalDebugKotlin`, all universal debug unit tests, and
-  `git diff --check`. No mini-player, player, playback, queue, service, dimensions, animations,
-  or player-connection file was modified for the promotion. The signed OTA is `v1.1.16`,
-  `versionCode` 63, from source commit `297c8c8`.
+- The corrected Mexican number is `+52 81 3689 0880`, encoded for `wa.me` as `528136890880`
+  without spaces, punctuation, or `+`. The URL returns the expected WhatsApp redirect with that
+  exact phone value and the WhatsApp landing page exposes `Chat on WhatsApp`.
+- Shared contact constants and intent handling remain in `utils/PremiumContact.kt`; foreground
+  eligibility/claim state lives in `utils/PremiumLaunchPromo.kt`. Unit coverage verifies Free,
+  Premium, unknown, logged-out, repeated-generation, phone-number, and decoded-message behavior.
+- Validation passed: all 43 universal debug unit tests, debug Kotlin compilation, exact source/
+  packaged-image digest comparison, `git diff --check`, and production website/WhatsApp redirect
+  checks. No mini-player, protected player, playback, queue, service, dimensions, animations, or
+  player-connection file was modified. Android commit `4f1f448` is prepared locally; production
+  OTA remains signed `v1.1.16`, `versionCode` 63, source commit `297c8c8`.
 
 ## macOS automatic OTA installer — current stable v1.0.6
 
