@@ -2,6 +2,8 @@
 
 Landing estática para presentar el servicio y descargar las aplicaciones oficiales.
 
+Publicada en Cloudflare Pages: <https://wiwymusic.pages.dev>.
+
 ## Vista local
 
 ```bash

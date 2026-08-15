@@ -745,7 +745,7 @@ WiwyMusic will only extract your token, and everything else is stored locally.</
     <string name="premium_feature_later">Not now</string>
     <string name="premium_promo_title">Listen more with Premium</string>
     <string name="premium_promo_message">Download music, listen offline, and enjoy synchronized lyrics.</string>
-    <string name="premium_promo_price">MX$30 per month</string>
+    <string name="premium_promo_price">MX$40 per month</string>
     <string name="premium_promo_obtain">Get it</string>
     <string name="premium_promo_dismiss">Hide promotion</string>
 
