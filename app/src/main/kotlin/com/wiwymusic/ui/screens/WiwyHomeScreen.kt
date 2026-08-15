@@ -153,22 +153,22 @@ private fun PremiumPromoDialog(
                             role = Role.Button
                         },
                 )
-                IconButton(
-                    onClick = onDismiss,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
-                        .size(42.dp)
-                        .clip(CircleShape)
-                        .background(Color.Black.copy(alpha = 0.72f)),
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.close),
-                        contentDescription = stringResource(R.string.premium_promo_dismiss),
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
+            }
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 24.dp, end = 16.dp)
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.72f)),
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.close),
+                    contentDescription = stringResource(R.string.premium_promo_dismiss),
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp),
+                )
             }
         }
     }
