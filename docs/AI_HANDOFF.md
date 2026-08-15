@@ -44,6 +44,15 @@ build, deployment, migration, or release. Do not create competing project-memory
   artwork as a dismissible launch dialog on every application foreground. Its pictured
   `ACTÍVALO HOY` area opens the same prefilled `$40 MXN al mes` WhatsApp request. Premium and
   unknown/loading plans do not see it. This behavior is published in OTA `v1.1.17`.
+- Post-`v1.1.17` Android source prepares a six-hour launch-promotion cooldown for confirmed Free
+  accounts. The display timestamp is persisted when the dialog opens; elapsed time alone never
+  interrupts an active session, and the next eligible application foreground shows it. The dialog
+  backdrop is pure black and its close control is a larger orange 58 dp button. Account Settings
+  adds `Adquirir código Premium`, opening the corrected Mexican WhatsApp contact with a code-specific
+  `$40 MXN al mes` message. The Home carousel now falls back from personal quick picks to playback
+  history and then real YouTube Home songs, fixing its absence on new or sparse installations.
+  This follow-up is source-only until a later explicitly authorized OTA; production remains
+  `v1.1.17`.
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
@@ -172,6 +181,29 @@ build, deployment, migration, or release. Do not create competing project-memory
   `28607371b774c2ee204548403f76650dab0bf7478a3c1742f4b7937fa7254005`.
 - Rollback tag `snapshot-before-premium-launch-dialog-v1.1.16` points to the preceding production
   source commit `297c8c8` and is pushed to `origin`.
+
+### Six-hour pacing, Account CTA, and carousel fallback — prepared after v1.1.17
+
+- Confirmed Free accounts show the launch artwork at most once per six hours. The last display time
+  is stored in DataStore when the dialog actually opens. Foreground entries before the deadline are
+  claimed without showing, so crossing six hours while the app remains open does not interrupt the
+  user; the following foreground entry rechecks and displays it.
+- Premium, unknown/loading, and logged-out accounts remain excluded. A backward device-clock change
+  cannot bypass the cooldown. Unit tests cover the initial display, same-generation deduplication,
+  the exact six-hour boundary, plan/session exclusions, and clock rollback.
+- The full-screen dialog uses a pure black background. Its close action is 58 dp, orange, and uses a
+  28 dp black glyph. The supplied square artwork and transparent `ACTÍVALO HOY` WhatsApp action are
+  otherwise unchanged.
+- Account Settings places an orange full-width `Adquirir código Premium` button immediately below
+  code redemption. It opens `wa.me/528136890880` with a prefilled request to acquire a Premium code
+  for `$40 MXN al mes`.
+- The featured Home carousel keeps personal `quickPicks` as its first source, uses local playback
+  history second, and real song items from YouTube Home third. Previously the UI rendered the
+  carousel only when `quickPicks` was non-empty, which hid it for new or sparse local histories.
+- Modified files are limited to Home, Account Settings, promotion/contact utilities, a DataStore
+  preference key, localized strings, tests, and this handoff. No mini-player, protected player,
+  playback, queue, service, or player-connection file is changed. This work is not yet published;
+  live Android OTA remains `v1.1.17` (`versionCode` 64).
 
 ## macOS automatic OTA installer — current stable v1.0.6
 

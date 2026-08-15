@@ -119,6 +119,7 @@ import com.wiwymusic.ui.component.TextFieldDialog
 import com.wiwymusic.ui.screens.buildLoginRoute
 import com.wiwymusic.utils.Updater
 import com.wiwymusic.utils.SubscriptionTier
+import com.wiwymusic.utils.PremiumContact
 import com.wiwymusic.utils.dataStore
 import com.wiwymusic.utils.rememberPreference
 import com.wiwymusic.viewmodels.HomeViewModel
@@ -213,6 +214,28 @@ fun AccountSettings(
                     navController.navigate("auth")
                 },
             )
+            FilledTonalButton(
+                onClick = { PremiumContact.open(context) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = androidx.compose.material3.ButtonDefaults.filledTonalButtonColors(
+                    containerColor = WiwyAccountOrange,
+                    contentColor = Color.Black,
+                ),
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.star),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.account_acquire_premium_code),
+                    fontWeight = FontWeight.Bold,
+                )
+            }
             if (supaLoggedIn) {
                 AccountLogoutButton(
                     onLogout = {

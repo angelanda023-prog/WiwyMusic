@@ -746,6 +746,7 @@ WiwyMusic will only extract your token, and everything else is stored locally.</
     <string name="premium_promo_image_description">WiwyMusic Premium promotion: 30 days, no ads, better audio quality, downloads, and offline listening.</string>
     <string name="premium_promo_obtain">Activate it today</string>
     <string name="premium_promo_dismiss">Close promotion</string>
+    <string name="account_acquire_premium_code">Get Premium code</string>
 
     <string name="permissions_title">Allow WiwyMusic to work best</string>
     <string name="permissions_subtitle">We use a few permissions to play and manage your music reliably. You can change these anytime in system settings.</string>

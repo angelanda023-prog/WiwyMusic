@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.datastore.preferences.core.edit
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
@@ -68,6 +69,7 @@ import com.wiwymusic.LocalDatabase
 import com.wiwymusic.LocalPlayerAwareWindowInsets
 import com.wiwymusic.LocalPlayerConnection
 import com.wiwymusic.R
+import com.wiwymusic.constants.PremiumPromoLastShownAtKey
 import com.wiwymusic.db.entities.Song
 import com.wiwymusic.innertube.YouTube
 import com.wiwymusic.innertube.models.AlbumItem
@@ -77,11 +79,14 @@ import com.wiwymusic.innertube.models.SongItem
 import com.wiwymusic.innertube.models.WatchEndpoint
 import com.wiwymusic.innertube.models.YTItem
 import com.wiwymusic.models.toMediaMetadata
+import com.wiwymusic.models.MediaMetadata
 import com.wiwymusic.playback.queues.YouTubeQueue
 import com.wiwymusic.utils.SupabaseAuth
 import com.wiwymusic.utils.UserPrefs
 import com.wiwymusic.utils.PremiumContact
 import com.wiwymusic.utils.PremiumLaunchPromo
+import com.wiwymusic.utils.dataStore
+import com.wiwymusic.utils.getAsync
 import com.wiwymusic.viewmodels.HomeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -115,6 +120,10 @@ private fun greeting(): String = when (Calendar.getInstance().get(Calendar.HOUR_
     else -> "¡Buenas noches"
 }
 
+private data class FeaturedSong(
+    val metadata: MediaMetadata,
+)
+
 @Composable
 private fun PremiumPromoDialog(
     onDismiss: () -> Unit,
@@ -129,7 +138,7 @@ private fun PremiumPromoDialog(
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.78f)),
+                .background(Color.Black),
             contentAlignment = Alignment.Center,
         ) {
             val adSize = minOf(maxWidth * 0.94f, maxHeight * 0.82f)
@@ -159,15 +168,15 @@ private fun PremiumPromoDialog(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(top = 24.dp, end = 16.dp)
-                    .size(42.dp)
+                    .size(58.dp)
                     .clip(CircleShape)
-                    .background(Color.Black.copy(alpha = 0.72f)),
+                    .background(WiwyOrange),
             ) {
                 Icon(
                     painter = painterResource(R.drawable.close),
                     contentDescription = stringResource(R.string.premium_promo_dismiss),
-                    tint = Color.White,
-                    modifier = Modifier.size(18.dp),
+                    tint = Color.Black,
+                    modifier = Modifier.size(28.dp),
                 )
             }
         }
@@ -195,6 +204,24 @@ fun WiwyHomeScreen(
     val recentEventsFlow = remember { database.events() }
     val recentEvents by recentEventsFlow.collectAsState(initial = emptyList())
     val continueSongs = recentEvents.map { it.song }.distinctBy { it.song.id }.take(12)
+    val featuredSongs = remember(quickPicks, continueSongs, homePage) {
+        quickPicks.orEmpty()
+            .take(5)
+            .map { FeaturedSong(it.toMediaMetadata()) }
+            .ifEmpty {
+                continueSongs
+                    .take(5)
+                    .map { FeaturedSong(it.toMediaMetadata()) }
+                    .ifEmpty {
+                        homePage?.sections.orEmpty()
+                            .flatMap { it.items }
+                            .filterIsInstance<SongItem>()
+                            .distinctBy { it.id }
+                            .take(5)
+                            .map { FeaturedSong(it.toMediaMetadata()) }
+                    }
+            }
+    }
 
     val insets = LocalPlayerAwareWindowInsets.current.asPaddingValues()
     val premiumPromoGeneration by PremiumLaunchPromo.foregroundGeneration.collectAsState()
@@ -203,7 +230,19 @@ fun WiwyHomeScreen(
         PremiumLaunchPromo.initialize()
     }
     LaunchedEffect(premiumPromoGeneration, supabaseSession?.userId, isPremium) {
-        if (PremiumLaunchPromo.claimIfFree(supabaseSession != null, isPremium)) {
+        val nowMillis = System.currentTimeMillis()
+        val lastShownAtMillis = context.dataStore.getAsync(PremiumPromoLastShownAtKey, 0L)
+        if (PremiumLaunchPromo.claimIfEligible(
+                foregroundGeneration = premiumPromoGeneration,
+                hasSession = supabaseSession != null,
+                isPremium = isPremium,
+                lastShownAtMillis = lastShownAtMillis,
+                nowMillis = nowMillis,
+            )
+        ) {
+            context.dataStore.edit { preferences ->
+                preferences[PremiumPromoLastShownAtKey] = nowMillis
+            }
             showPremiumPromo = true
         }
     }
@@ -278,8 +317,8 @@ fun WiwyHomeScreen(
         }
 
         // Carrusel destacado
-        quickPicks?.takeIf { it.isNotEmpty() }?.let { songs ->
-            item { FeaturedCarousel(songs.take(5), playerConnection) }
+        featuredSongs.takeIf { it.isNotEmpty() }?.let { songs ->
+            item { FeaturedCarousel(songs, playerConnection) }
         }
 
         // Fase B: "Porque te gusta X" según artistas preferidos
@@ -391,7 +430,7 @@ fun WiwyHomeScreen(
 
 @Composable
 private fun FeaturedCarousel(
-    songs: List<Song>,
+    songs: List<FeaturedSong>,
     playerConnection: com.wiwymusic.playback.PlayerConnection?,
 ) {
     val pagerState = rememberPagerState { songs.size }
@@ -401,7 +440,7 @@ private fun FeaturedCarousel(
             contentPadding = PaddingValues(horizontal = 20.dp),
             pageSpacing = 12.dp,
         ) { page ->
-            val song = songs[page]
+            val song = songs[page].metadata
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -446,7 +485,7 @@ private fun FeaturedCarousel(
                             .width(168.dp)
                             .clip(CircleShape)
                             .background(Color.White)
-                            .clickable { playerConnection?.playQueue(YouTubeQueue.radio(song.toMediaMetadata())) }
+                            .clickable { playerConnection?.playQueue(YouTubeQueue.radio(song)) }
                             .padding(vertical = 11.dp),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,

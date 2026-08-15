@@ -7,15 +7,22 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
+internal const val PREMIUM_PROMO_COOLDOWN_MILLIS = 6L * 60L * 60L * 1000L
+
 internal fun shouldShowPremiumLaunchPromo(
     hasSession: Boolean,
     isPremium: Boolean?,
     foregroundGeneration: Long,
     claimedGeneration: Long,
+    lastShownAtMillis: Long,
+    nowMillis: Long,
 ): Boolean = hasSession &&
     isPremium == false &&
     foregroundGeneration > 0 &&
-    foregroundGeneration != claimedGeneration
+    foregroundGeneration != claimedGeneration &&
+    (lastShownAtMillis <= 0L ||
+        (nowMillis >= lastShownAtMillis &&
+            nowMillis - lastShownAtMillis >= PREMIUM_PROMO_COOLDOWN_MILLIS))
 
 object PremiumLaunchPromo : DefaultLifecycleObserver {
     private val _foregroundGeneration = MutableStateFlow(0L)
@@ -36,19 +43,29 @@ object PremiumLaunchPromo : DefaultLifecycleObserver {
         _foregroundGeneration.update { it + 1 }
     }
 
-    fun claimIfFree(hasSession: Boolean, isPremium: Boolean?): Boolean {
-        val currentGeneration = _foregroundGeneration.value
-        if (!hasSession || isPremium == null || currentGeneration <= 0 || currentGeneration == claimedGeneration) {
+    fun claimIfEligible(
+        foregroundGeneration: Long,
+        hasSession: Boolean,
+        isPremium: Boolean?,
+        lastShownAtMillis: Long,
+        nowMillis: Long,
+    ): Boolean {
+        if (!hasSession || isPremium == null || foregroundGeneration <= 0 ||
+            foregroundGeneration != _foregroundGeneration.value ||
+            foregroundGeneration == claimedGeneration
+        ) {
             return false
         }
 
         val shouldShow = shouldShowPremiumLaunchPromo(
             hasSession = hasSession,
             isPremium = isPremium,
-            foregroundGeneration = currentGeneration,
+            foregroundGeneration = foregroundGeneration,
             claimedGeneration = claimedGeneration,
+            lastShownAtMillis = lastShownAtMillis,
+            nowMillis = nowMillis,
         )
-        claimedGeneration = currentGeneration
+        claimedGeneration = foregroundGeneration
         return shouldShow
     }
 }

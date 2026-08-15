@@ -596,6 +596,7 @@ val EnableUpdateNotificationKey = booleanPreferencesKey("enableUpdateNotificatio
 val UpdateChannelKey = stringPreferencesKey("updateChannel")
 val LastUpdateCheckKey = longPreferencesKey("lastUpdateCheck")
 val LastNotifiedVersionKey = stringPreferencesKey("lastNotifiedVersion")
+val PremiumPromoLastShownAtKey = longPreferencesKey("premium_promo_last_shown_at")
 
 val GitHubContributorsEtagKey = stringPreferencesKey("github_contributors_etag")
 val GitHubContributorsJsonKey = stringPreferencesKey("github_contributors_json")

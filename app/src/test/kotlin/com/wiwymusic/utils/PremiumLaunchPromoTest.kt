@@ -9,16 +9,29 @@ import org.junit.Test
 
 class PremiumLaunchPromoTest {
     @Test
-    fun freeAccountSeesPromoOncePerForegroundGeneration() {
-        assertTrue(shouldShowPremiumLaunchPromo(true, false, foregroundGeneration = 2, claimedGeneration = 1))
-        assertFalse(shouldShowPremiumLaunchPromo(true, false, foregroundGeneration = 2, claimedGeneration = 2))
+    fun freeAccountSeesPromoOnFirstEligibleForeground() {
+        assertTrue(shouldShowPremiumLaunchPromo(true, false, 2, 1, 0, 1_000))
+        assertFalse(shouldShowPremiumLaunchPromo(true, false, 2, 2, 0, 1_000))
+    }
+
+    @Test
+    fun promoWaitsSixHoursAndRequiresANewForeground() {
+        val shownAt = 1_000L
+        assertFalse(shouldShowPremiumLaunchPromo(true, false, 3, 2, shownAt, shownAt + PREMIUM_PROMO_COOLDOWN_MILLIS - 1))
+        assertTrue(shouldShowPremiumLaunchPromo(true, false, 3, 2, shownAt, shownAt + PREMIUM_PROMO_COOLDOWN_MILLIS))
+        assertFalse(shouldShowPremiumLaunchPromo(true, false, 2, 2, shownAt, shownAt + PREMIUM_PROMO_COOLDOWN_MILLIS))
+    }
+
+    @Test
+    fun clockRollbackDoesNotBypassCooldown() {
+        assertFalse(shouldShowPremiumLaunchPromo(true, false, 3, 2, 10_000, 9_000))
     }
 
     @Test
     fun premiumUnknownAndLoggedOutAccountsDoNotSeePromo() {
-        assertFalse(shouldShowPremiumLaunchPromo(true, true, foregroundGeneration = 2, claimedGeneration = 1))
-        assertFalse(shouldShowPremiumLaunchPromo(true, null, foregroundGeneration = 2, claimedGeneration = 1))
-        assertFalse(shouldShowPremiumLaunchPromo(false, false, foregroundGeneration = 2, claimedGeneration = 1))
+        assertFalse(shouldShowPremiumLaunchPromo(true, true, 2, 1, 0, 1_000))
+        assertFalse(shouldShowPremiumLaunchPromo(true, null, 2, 1, 0, 1_000))
+        assertFalse(shouldShowPremiumLaunchPromo(false, false, 2, 1, 0, 1_000))
     }
 
     @Test
