@@ -642,11 +642,9 @@
     <string name="premium_feature_message">%1$s requiere una cuenta Premium.</string>
     <string name="premium_feature_obtain">Obtener Premium</string>
     <string name="premium_feature_later">Ahora no</string>
-    <string name="premium_promo_title">Escucha más con Premium</string>
-    <string name="premium_promo_message">Descarga música, escucha sin internet y disfruta letras sincronizadas.</string>
-    <string name="premium_promo_price">$40 MXN al mes</string>
-    <string name="premium_promo_obtain">Obtener</string>
-    <string name="premium_promo_dismiss">Ocultar promoción</string>
+    <string name="premium_promo_image_description">Promoción WiwyMusic Premium: 30 días, sin anuncios, mejor calidad de audio, descargas y escucha sin conexión.</string>
+    <string name="premium_promo_obtain">Actívalo hoy</string>
+    <string name="premium_promo_dismiss">Cerrar promoción</string>
     <string name="permissions_title">Permite a WiwyMusic a trabajar mejor</string>
     <string name="permissions_subtitle">Utilizamos un par de permisos para reproducir y administrar tu música de forma fiable. Puedes cambiar esto en los ajustes del sistema cuando quieras.</string>
     <string name="permission_storage_title">Acceso al almacenamiento</string>

@@ -7,8 +7,10 @@ package com.wiwymusic.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -30,12 +32,9 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -45,6 +44,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -56,15 +59,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.datastore.preferences.core.edit
 import coil3.compose.AsyncImage
 import com.wiwymusic.LocalDatabase
 import com.wiwymusic.LocalPlayerAwareWindowInsets
 import com.wiwymusic.LocalPlayerConnection
 import com.wiwymusic.R
-import com.wiwymusic.constants.PremiumPromoLastShownEpochDayKey
 import com.wiwymusic.db.entities.Song
 import com.wiwymusic.innertube.YouTube
 import com.wiwymusic.innertube.models.AlbumItem
@@ -78,9 +81,7 @@ import com.wiwymusic.playback.queues.YouTubeQueue
 import com.wiwymusic.utils.SupabaseAuth
 import com.wiwymusic.utils.UserPrefs
 import com.wiwymusic.utils.PremiumContact
-import com.wiwymusic.utils.dataStore
-import com.wiwymusic.utils.getAsync
-import com.wiwymusic.utils.shouldShowPremiumPromo
+import com.wiwymusic.utils.PremiumLaunchPromo
 import com.wiwymusic.viewmodels.HomeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -88,7 +89,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import java.util.Calendar
-import java.time.LocalDate
 
 private val WiwyOrange = Color(0xFFF5791F)
 private val WiwyBg = Color(0xFF0A0A0C)
@@ -116,73 +116,58 @@ private fun greeting(): String = when (Calendar.getInstance().get(Calendar.HOUR_
 }
 
 @Composable
-private fun PremiumPromoCard(
+private fun PremiumPromoDialog(
     onDismiss: () -> Unit,
     onObtain: () -> Unit,
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 10.dp),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = WiwyCard),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    val imageDescription = stringResource(R.string.premium_promo_image_description)
+    val obtainDescription = stringResource(R.string.premium_promo_obtain)
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
-        Box(
+        BoxWithConstraints(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.horizontalGradient(
-                        listOf(WiwyOrange.copy(alpha = 0.18f), Color.Transparent),
-                    ),
-                ),
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.78f)),
+            contentAlignment = Alignment.Center,
         ) {
-            IconButton(
-                onClick = onDismiss,
-                modifier = Modifier.align(Alignment.TopEnd),
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.close),
-                    contentDescription = stringResource(R.string.premium_promo_dismiss),
-                    tint = WiwyMuted,
-                    modifier = Modifier.size(18.dp),
+            val adSize = minOf(maxWidth * 0.94f, maxHeight * 0.82f)
+            Box(modifier = Modifier.size(adSize)) {
+                Image(
+                    painter = painterResource(R.drawable.wiwymusic_premium_launch),
+                    contentDescription = imageDescription,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.fillMaxSize(),
                 )
-            }
-
-            Column(
-                modifier = Modifier.padding(start = 20.dp, top = 18.dp, end = 52.dp, bottom = 14.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.premium_promo_title),
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = adSize * 0.055f)
+                        .fillMaxWidth(0.66f)
+                        .height(adSize * 0.115f)
+                        .clip(RoundedCornerShape(adSize * 0.04f))
+                        .clickable(onClick = onObtain)
+                        .semantics {
+                            contentDescription = obtainDescription
+                            role = Role.Button
+                        },
                 )
-                Spacer(Modifier.height(5.dp))
-                Text(
-                    text = stringResource(R.string.premium_promo_message),
-                    color = WiwyMuted,
-                    fontSize = 13.sp,
-                )
-                Spacer(Modifier.height(10.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                IconButton(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = 0.72f)),
                 ) {
-                    Text(
-                        text = stringResource(R.string.premium_promo_price),
-                        color = WiwyOrange,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
+                    Icon(
+                        painter = painterResource(R.drawable.close),
+                        contentDescription = stringResource(R.string.premium_promo_dismiss),
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp),
                     )
-                    TextButton(onClick = onObtain) {
-                        Text(
-                            text = stringResource(R.string.premium_promo_obtain),
-                            color = WiwyOrange,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
                 }
             }
         }
@@ -212,19 +197,25 @@ fun WiwyHomeScreen(
     val continueSongs = recentEvents.map { it.song }.distinctBy { it.song.id }.take(12)
 
     val insets = LocalPlayerAwareWindowInsets.current.asPaddingValues()
-    var showPremiumPromo by remember(supabaseSession?.userId) { mutableStateOf(false) }
-    LaunchedEffect(supabaseSession?.userId, isPremium) {
-        showPremiumPromo = false
-        if (supabaseSession == null || isPremium != false) return@LaunchedEffect
-
-        val today = LocalDate.now().toEpochDay()
-        val lastShown = context.dataStore.getAsync(PremiumPromoLastShownEpochDayKey, Long.MIN_VALUE)
-        if (shouldShowPremiumPromo(isPremium, lastShown, today)) {
-            context.dataStore.edit { preferences ->
-                preferences[PremiumPromoLastShownEpochDayKey] = today
-            }
+    val premiumPromoGeneration by PremiumLaunchPromo.foregroundGeneration.collectAsState()
+    var showPremiumPromo by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        PremiumLaunchPromo.initialize()
+    }
+    LaunchedEffect(premiumPromoGeneration, supabaseSession?.userId, isPremium) {
+        if (PremiumLaunchPromo.claimIfFree(supabaseSession != null, isPremium)) {
             showPremiumPromo = true
         }
+    }
+
+    if (showPremiumPromo) {
+        PremiumPromoDialog(
+            onDismiss = { showPremiumPromo = false },
+            onObtain = {
+                PremiumContact.open(context)
+                showPremiumPromo = false
+            },
+        )
     }
 
     // Fase B: inicio personalizado según artistas preferidos (Supabase)
@@ -286,19 +277,7 @@ fun WiwyHomeScreen(
             }
         }
 
-        if (showPremiumPromo) {
-            item(key = "premium_promo") {
-                PremiumPromoCard(
-                    onDismiss = { showPremiumPromo = false },
-                    onObtain = {
-                        PremiumContact.open(context)
-                        showPremiumPromo = false
-                    },
-                )
-            }
-        }
-
-        // Carrusel destacado (se mantiene)
+        // Carrusel destacado
         quickPicks?.takeIf { it.isNotEmpty() }?.let { songs ->
             item { FeaturedCarousel(songs.take(5), playerConnection) }
         }
