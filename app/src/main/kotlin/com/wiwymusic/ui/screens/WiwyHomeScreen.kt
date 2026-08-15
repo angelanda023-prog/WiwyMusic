@@ -30,8 +30,12 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -45,18 +49,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.datastore.preferences.core.edit
 import coil3.compose.AsyncImage
 import com.wiwymusic.LocalDatabase
 import com.wiwymusic.LocalPlayerAwareWindowInsets
 import com.wiwymusic.LocalPlayerConnection
 import com.wiwymusic.R
+import com.wiwymusic.constants.PremiumPromoLastShownEpochDayKey
 import com.wiwymusic.db.entities.Song
 import com.wiwymusic.innertube.YouTube
 import com.wiwymusic.innertube.models.AlbumItem
@@ -69,6 +77,10 @@ import com.wiwymusic.models.toMediaMetadata
 import com.wiwymusic.playback.queues.YouTubeQueue
 import com.wiwymusic.utils.SupabaseAuth
 import com.wiwymusic.utils.UserPrefs
+import com.wiwymusic.utils.PremiumContact
+import com.wiwymusic.utils.dataStore
+import com.wiwymusic.utils.getAsync
+import com.wiwymusic.utils.shouldShowPremiumPromo
 import com.wiwymusic.viewmodels.HomeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -76,6 +88,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import java.util.Calendar
+import java.time.LocalDate
 
 private val WiwyOrange = Color(0xFFF5791F)
 private val WiwyBg = Color(0xFF0A0A0C)
@@ -103,6 +116,80 @@ private fun greeting(): String = when (Calendar.getInstance().get(Calendar.HOUR_
 }
 
 @Composable
+private fun PremiumPromoCard(
+    onDismiss: () -> Unit,
+    onObtain: () -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 10.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = WiwyCard),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(WiwyOrange.copy(alpha = 0.18f), Color.Transparent),
+                    ),
+                ),
+        ) {
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier.align(Alignment.TopEnd),
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.close),
+                    contentDescription = stringResource(R.string.premium_promo_dismiss),
+                    tint = WiwyMuted,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+
+            Column(
+                modifier = Modifier.padding(start = 20.dp, top = 18.dp, end = 52.dp, bottom = 14.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.premium_promo_title),
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(Modifier.height(5.dp))
+                Text(
+                    text = stringResource(R.string.premium_promo_message),
+                    color = WiwyMuted,
+                    fontSize = 13.sp,
+                )
+                Spacer(Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = stringResource(R.string.premium_promo_price),
+                        color = WiwyOrange,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    TextButton(onClick = onObtain) {
+                        Text(
+                            text = stringResource(R.string.premium_promo_obtain),
+                            color = WiwyOrange,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun WiwyHomeScreen(
     navController: NavController,
     viewModel: HomeViewModel = hiltViewModel(),
@@ -115,6 +202,8 @@ fun WiwyHomeScreen(
     val accountName by viewModel.accountName.collectAsState()
     val supabaseSession by SupabaseAuth.session.collectAsState()
     val onboardingCompleted by UserPrefs.onboarded.collectAsState()
+    val isPremium by UserPrefs.isPremium.collectAsState()
+    val context = LocalContext.current
 
     // Continuar escuchando: historial real de reproducción
     val database = LocalDatabase.current
@@ -123,6 +212,20 @@ fun WiwyHomeScreen(
     val continueSongs = recentEvents.map { it.song }.distinctBy { it.song.id }.take(12)
 
     val insets = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+    var showPremiumPromo by remember(supabaseSession?.userId) { mutableStateOf(false) }
+    LaunchedEffect(supabaseSession?.userId, isPremium) {
+        showPremiumPromo = false
+        if (supabaseSession == null || isPremium != false) return@LaunchedEffect
+
+        val today = LocalDate.now().toEpochDay()
+        val lastShown = context.dataStore.getAsync(PremiumPromoLastShownEpochDayKey, Long.MIN_VALUE)
+        if (shouldShowPremiumPromo(isPremium, lastShown, today)) {
+            context.dataStore.edit { preferences ->
+                preferences[PremiumPromoLastShownEpochDayKey] = today
+            }
+            showPremiumPromo = true
+        }
+    }
 
     // Fase B: inicio personalizado según artistas preferidos (Supabase)
     var personalized by remember { mutableStateOf<List<Pair<String, List<SongItem>>>>(emptyList()) }
@@ -180,6 +283,18 @@ fun WiwyHomeScreen(
                     fontWeight = FontWeight.ExtraBold,
                 )
                 Text("Disfruta tu música favorita", color = WiwyMuted, fontSize = 14.sp)
+            }
+        }
+
+        if (showPremiumPromo) {
+            item(key = "premium_promo") {
+                PremiumPromoCard(
+                    onDismiss = { showPremiumPromo = false },
+                    onObtain = {
+                        PremiumContact.open(context)
+                        showPremiumPromo = false
+                    },
+                )
             }
         }
 

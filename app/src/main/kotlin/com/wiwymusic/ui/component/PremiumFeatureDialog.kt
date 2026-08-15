@@ -12,16 +12,19 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.wiwymusic.R
+import com.wiwymusic.utils.PremiumContact
 
 @Composable
 fun PremiumFeatureDialog(
     featureName: String,
     onDismiss: () -> Unit,
 ) {
+    val context = LocalContext.current
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = {
@@ -35,8 +38,18 @@ fun PremiumFeatureDialog(
             Text(stringResource(R.string.premium_feature_message, featureName))
         },
         confirmButton = {
+            TextButton(
+                onClick = {
+                    PremiumContact.open(context)
+                    onDismiss()
+                },
+            ) {
+                Text(stringResource(R.string.premium_feature_obtain))
+            }
+        },
+        dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.premium_feature_confirm))
+                Text(stringResource(R.string.premium_feature_later))
             }
         },
     )

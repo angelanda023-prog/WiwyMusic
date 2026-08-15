@@ -1,12 +1,49 @@
 # WiwyMusic — project context and durable AI handoff
 
-Last updated: 2026-08-12 (America/Mexico_City)
+Last updated: 2026-08-15 (America/Mexico_City)
 
 This is the single source of truth for any editor, IDE assistant, or AI working on WiwyMusic.
 Read it completely before inspecting or changing code. Update it after every meaningful change,
 build, deployment, migration, or release. Do not create competing project-memory documents.
 
 ## Current source state
+
+- Cross-platform download update on 2026-08-13: the Download action in the full player now shows
+  an animated in-progress state on Android, macOS, and Windows. The user explicitly scoped this
+  change to the full player and confirmed it does not apply to the mini-player. macOS `v1.0.6`
+  and Windows `v1.0.2` are published; the Android source change remains local and unpublished.
+- Android modifies only the protected `ui/player/PlayerComponents.kt`, with explicit user
+  authorization in this conversation. Every player style rotates the existing downloading glyph
+  only while Media3 reports queued/downloading. Existing tap behavior still cancels queued/active
+  downloads and removes completed downloads. Playback, mini-player, queue, service, dimensions,
+  and player connection are unchanged. Debug Kotlin compilation and all universal debug unit
+  tests pass.
+- macOS full-player Download now renders `ProgressView` while its observable `DownloadStore`
+  contains the current video ID, shows a completed mark afterward, and removes the stored offline
+  file when that completed action is tapped. Library > Downloads also has a visible trash action
+  for every downloaded song. A real M4A download succeeded using the bundled universal `yt-dlp`
+  2026.07.04. All 11 Swift tests pass, the arm64/x86_64 production app and DMG build pass, and
+  strict deep code-signature verification passes.
+- Windows now tracks download IDs in progress, prevents duplicate concurrent downloads, displays
+  an indeterminate progress indicator, verifies a non-empty output before cataloging it, deletes a
+  failed target, and removes the offline copy when the completed full-player action is tapped.
+  Library > Downloads also has a visible trash action for every downloaded song.
+  The bundled PE32+ x86-64 `yt-dlp.exe` is refreshed into `%APPDATA%\\WiwyMusic` when the packaged
+  copy changes instead of being installed only once. Tests and `createDistributable` pass; the
+  generated application JAR contains the exact bundled executable digest. Native MSI/EXE execution
+  still requires Windows and was not claimed from the macOS workstation.
+- Desktop lyrics no longer send the placeholder album `YouTube Music` to LRCLIB as a real album.
+  macOS and Windows try an exact album only when meaningful, retry without album, then fall back to
+  LRCLIB search. Both projects include and pass a live regression test for a known YouTube Music
+  track.
+- New public landing source lives in `website/`. It presents WiwyMusic, Free/Premium,
+  Android installation, and independent macOS/Windows downloads. It is complete and locally
+  validated but has not been deployed.
+- Android Free accounts now receive a restrained Premium promotion: a dismissible Home card
+  appears at most once per local calendar day, and existing Premium-feature dialogs offer an
+  `Obtener Premium` action. Both open the same prefilled WhatsApp request for `$30 MXN al mes`.
+  Premium and unknown/loading plans never show the Home promotion. This change is local and
+  unpublished.
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
@@ -65,12 +102,63 @@ build, deployment, migration, or release. Do not create competing project-memory
   later published OTAs).
 - Production APK is `v1.1.14`, `versionCode` 61, distributed through Cloudflare R2.
 
-## macOS automatic OTA installer — published in v1.0.4
+## Public product website — prepared 2026-08-15
+
+- Static landing source: `/Users/wiwyzho/Documents/Web/WiwyMusic/website`.
+- Visual direction adapts the supplied Qwen cinematic-timeline specification to WiwyMusic: pure
+  black canvas, liquid-glass surfaces, gold/orange accents, a scroll-drawn vertical timeline, large
+  Playfair headings, compact Apple-like copy, and four alternating experience stages. No reference
+  asset or old application mockup is copied.
+- Five original cinematic images were generated for the site: headphones/vinyl hero, discovery
+  sphere, audio-wave filaments, glass lyric ribbons, and an offline sound capsule. Each has a
+  matching 6-second, 1280 × 720 H.264 MP4 loop generated locally with the reusable
+  `website/tools/make_loop.swift` AVFoundation tool. PNG posters remain available when video is
+  unavailable or has not yet been lazy-loaded.
+- The original APK artwork from `assets/icon.png` is copied as
+  `website/assets/wiwymusic-icon.png` and used for the browser favicon, Apple touch icon, navbar,
+  and footer brand.
+- Primary Android actions point to the stable Cloudflare endpoint `/api/ota/download`. Runtime
+  release text reads `/api/ota/releases` with `v1.1.14` as a resilient fallback. Separate macOS
+  DMG and Windows EXE actions use their existing independent endpoints.
+- Sections: cinematic hero, four-step experience timeline, Free/Premium plans,
+  final Android/macOS/Windows download call-to-action, and footer. Premium activation wording
+  accurately requires a valid code and shows the user-supplied price of `$30 MXN / mes`; the
+  Premium card opens WhatsApp at Mexican number `+52 81 3689 9880` with a prefilled request
+  message through a CTA labeled `Obtener`. The page does not claim that payment processing is
+  implemented.
+- Site uses plain HTML, CSS, and JavaScript with no package dependency. It includes accessible
+  navigation, keyboard Escape handling, responsive menu, reduced-motion support, scroll reveal,
+  semantic headings, and a skip link.
+- Local browser validation passed at desktop and 390 x 844 mobile sizes. Mobile has no horizontal
+  overflow (`scrollWidth = innerWidth = 390`), menu opens/closes and navigates correctly, and the
+  console has no errors or warnings. HTML parsing, JavaScript syntax check, `git diff --check`,
+  and public download-link checks pass. The website is not yet hosted or publicly deployed.
+
+## Android Free-to-Premium promotion — prepared 2026-08-15
+
+- `WiwyHomeScreen` shows a quiet orange-accented Premium card only after the account is confirmed
+  Free. It advertises offline downloads, synchronized lyrics, and the user-supplied `$30 MXN al
+  mes` price. It has an accessible close action and no modal, countdown, autoplay, or playback
+  interruption.
+- `PremiumPromoLastShownEpochDayKey` records the local calendar day as soon as the Home card is
+  shown. The card therefore appears at most once per device per day, including after navigation or
+  app restart. Premium and unknown/loading states fail closed and do not render it.
+- Existing `PremiumFeatureDialog` callers now show `Obtener Premium` and `Ahora no`. The obtain
+  action opens `https://wa.me/528136899880` with the prefilled request for the `$30 MXN al mes`
+  plan, then closes the dialog.
+- Shared contact constants and intent handling live in `utils/PremiumContact.kt`; the daily
+  eligibility rule lives in `utils/PremiumPromoPolicy.kt` and has unit coverage for Free,
+  Premium, unknown, same-day, next-day, phone number, and message behavior.
+- Validation passed: `:app:compileUniversalDebugKotlin`, all universal debug unit tests, and
+  `git diff --check`. No mini-player, player, playback, queue, service, dimensions, animations,
+  or player-connection file was modified. The Android change is not published as OTA.
+
+## macOS automatic OTA installer — current stable v1.0.6
 
 - macOS source lives independently at `/Users/wiwyzho/Documents/Web/WiwyMusic-macOS`; this
   change does not modify the Android project, APK, playback service, or Android mini-player.
-- Current stable macOS version is `1.0.4` (`CFBundleVersion` 5), published through the independent
-  Cloudflare R2 macOS OTA channel on 2026-08-12.
+- Current stable macOS version is `1.0.6` (`CFBundleVersion` 7), published through the independent
+  Cloudflare R2 macOS OTA channel on 2026-08-13.
 - `MacUpdater` still downloads only through HTTPS and verifies the complete DMG against the
   SHA-256 published in the Cloudflare manifest before installation begins.
 - After verification it mounts the DMG read-only, requires `WiwyMusic.app`, validates bundle ID
@@ -85,15 +173,15 @@ build, deployment, migration, or release. Do not create competing project-memory
   install and restart automatically.
 - Existing public `1.0.3` clients contain the older download-only updater. Therefore `1.0.4` must
   be installed manually once; automatic replacement applies to releases after `1.0.4` is installed.
-- Validation passed: `plutil`, all 10 Swift tests, universal release build for arm64 and x86_64,
+- Validation passed: `plutil`, all 11 Swift tests, universal release build for arm64 and x86_64,
   DMG checksum verification, embedded version/build/bundle inspection, and strict code-signature
   verification. The immutable R2 archive and public download both match SHA-256
-  `05ad448d3565a781cc5c34ec40511fddaae83fb30c3274073cb1022e5d9558a1`.
-- Public endpoints report `v1.0.4` and serve the verified universal DMG:
+  `b0dc63f43178442fa75db208b65477bb180d400b03097ca1ef34776e302fba7b`.
+- Public endpoints report `v1.0.6` and serve the verified universal DMG:
   `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/macos/releases` and
   `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/macos/download`.
 
-## Independent Windows application — published in v1.0.0
+## Independent Windows application — current stable v1.0.2
 
 - Windows source lives at `/Users/wiwyzho/Documents/Web/WiwyMusic-Windows`. It is a separate
   Kotlin/JVM and Compose Desktop project; it does not modify or depend on Android or macOS source.
@@ -114,15 +202,18 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Native MSI/EXE packaging runs on Windows by design. GitHub Actions run `31645649058` built and
   validated the first x64 MSI and EXE from source commit `c713ed6`; the Windows source is stored
   in the private `angelanda023-prog/WiwyMusic-Windows` repository.
-- Current stable Windows version is `v1.0.0`, published through its independent Cloudflare R2
-  channel on 2026-08-12. The immutable archive and public download are valid PE32+ x86-64
+- Current stable Windows version is `v1.0.2`, published through its independent Cloudflare R2
+  channel on 2026-08-13. GitHub Actions run `31735771008` built and validated the x64 MSI and EXE
+  from source commit `42432b3`. The immutable archive and public download are valid PE32+ x86-64
   executables and match SHA-256
-  `dc32e011408a88114e7c96bf15fb958bc1d69e1121c868ee3adb3e628b5b1bb4`.
+  `9291e47a777f865afc096c4c7ca24f826d1a2375cd14a8b71b26aae5c4d94813`.
 - Public endpoints are
   `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/windows/releases` and
   `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/windows/download`.
 - Admin Settings now presents separate Mac and Windows download buttons. This deployment did not
   modify Android or macOS source, playback, OTA files, or their published versions.
+- Windows currently exposes the stable channel as a manual installer download; its Settings
+  update button is not yet wired to an automatic installer flow.
 - For later Windows releases, use `scripts/build-windows.ps1` or the Windows GitHub Actions
   workflow, verify the EXE digest, upload the immutable archive first, and publish
   `ota/windows/releases.json` last.

@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="WiwyMusic: descubre, escucha y descarga tu música. Disponible para Android, macOS y Windows.">
+  <title>WiwyMusic — La música, viva</title>
+  <link rel="icon" href="assets/wiwymusic-icon.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/wiwymusic-icon.png">
+  <meta property="og:image" content="assets/hero-cinematic.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+  <header class="navbar glass" data-header>
+    <a class="brand" href="#inicio" aria-label="WiwyMusic, inicio">
+      <img class="brand-icon" src="assets/wiwymusic-icon.png" alt="">
+      <span><b>Wiwy</b><em>Music</em></span>
+    </a>
+    <nav class="nav-links" id="nav-links" aria-label="Navegación principal" data-nav>
+      <a href="#proceso">Experiencia</a>
+      <a href="#planes">Planes</a>
+      <a href="#descargar">Descargar</a>
+    </nav>
+    <a class="nav-download" href="https://wiwymusic-admin.angelanda023.workers.dev/api/ota/download">Obtener APK <span>↗</span></a>
+    <button class="menu-button" type="button" aria-expanded="false" aria-controls="nav-links" data-menu-button>
+      <span></span><span></span><span class="sr-only">Abrir menú</span>
+    </button>
+  </header>
+
+  <main id="contenido">
+    <section class="hero" id="inicio" aria-labelledby="hero-title">
+      <video class="hero-video" autoplay muted loop playsinline preload="auto" poster="assets/hero-cinematic.png" aria-hidden="true">
+        <source src="assets/hero-cinematic.mp4" type="video/mp4">
+      </video>
+      <div class="hero-vignette"></div>
+      <div class="hero-content" data-reveal>
+        <p class="overline">Una experiencia WiwyMusic</p>
+        <h1 id="hero-title">La música.<br><i>Viva.</i></h1>
+        <p class="hero-subtitle">Personal. Cinemática. Tuya.</p>
+        <div class="hero-actions">
+          <a class="glass-button primary" href="https://wiwymusic-admin.angelanda023.workers.dev/api/ota/download">Descargar APK <span>↓</span></a>
+          <a class="glass-button" href="#proceso">Descubre la experiencia</a>
+        </div>
+        <p class="release-status"><span></span><b data-release-label>Versión estable v1.1.14</b> · Android 8+</p>
+      </div>
+      <a class="scroll-cue" href="#proceso" aria-label="Ir a la experiencia">
+        <span>Explorar</span><b>↓</b>
+      </a>
+    </section>
+
+    <section class="timeline-section" id="proceso" aria-labelledby="timeline-title">
+      <div class="section-heading" data-reveal>
+        <p class="overline">01 · La experiencia</p>
+        <h2 id="timeline-title">Todo fluye.<br><i>Todo suena.</i></h2>
+        <p>Cuatro pasos. Una sola sensación.</p>
+      </div>
+
+      <div class="timeline" data-timeline>
+        <div class="timeline-track" aria-hidden="true"><span data-timeline-progress></span></div>
+
+        <article class="timeline-item media-left" data-timeline-item>
+          <div class="motion-frame" data-parallax data-reveal>
+            <video muted loop playsinline preload="none" poster="assets/discover-cinematic.png" data-cinematic-video aria-label="Visual cinematográfico de descubrimiento musical">
+              <source data-src="assets/discover-cinematic.mp4" type="video/mp4">
+            </video>
+            <span class="frame-label">DESCUBRIMIENTO · 01</span>
+          </div>
+          <span class="timeline-node" aria-hidden="true"><b>01</b></span>
+          <div class="timeline-copy glass" data-reveal>
+            <span class="step">01 · DESCUBRE</span>
+            <h3>Un mundo nuevo.</h3>
+            <p>Artistas. Lanzamientos. Tu próximo favorito.</p>
+            <small>Recomendaciones hechas para ti.</small>
+          </div>
+        </article>
+
+        <article class="timeline-item media-right" data-timeline-item>
+          <div class="timeline-copy glass" data-reveal>
+            <span class="step">02 · ESCUCHA</span>
+            <h3>Sonido puro.</h3>
+            <p>Hasta 320 kbps. Cada detalle vivo.</p>
+            <small>Calidad que sigue tu conexión.</small>
+          </div>
+          <span class="timeline-node" aria-hidden="true"><b>02</b></span>
+          <div class="motion-frame" data-parallax data-reveal>
+            <video muted loop playsinline preload="none" poster="assets/listen-cinematic.png" data-cinematic-video aria-label="Visual cinematográfico de ondas de audio">
+              <source data-src="assets/listen-cinematic.mp4" type="video/mp4">
+            </video>
+            <span class="frame-label">ALTA CALIDAD · 02</span>
+          </div>
+        </article>
+
+        <article class="timeline-item media-left" data-timeline-item>
+          <div class="motion-frame" data-parallax data-reveal>
+            <video muted loop playsinline preload="none" poster="assets/lyrics-cinematic.png" data-cinematic-video aria-label="Visual cinematográfico de letras sincronizadas">
+              <source data-src="assets/lyrics-cinematic.mp4" type="video/mp4">
+            </video>
+            <span class="frame-label">LETRAS · 03</span>
+          </div>
+          <span class="timeline-node" aria-hidden="true"><b>03</b></span>
+          <div class="timeline-copy glass" data-reveal>
+            <span class="step">03 · SIENTE</span>
+            <h3>Cada palabra.</h3>
+            <p>Letras sincronizadas. Emoción completa.</p>
+            <small>Canta justo a tiempo.</small>
+          </div>
+        </article>
+
+        <article class="timeline-item media-right" data-timeline-item>
+          <div class="timeline-copy glass" data-reveal>
+            <span class="step">04 · LLEVA</span>
+            <h3>Internet opcional.</h3>
+            <p>Descarga. Sal. Sigue escuchando.</p>
+            <small>Disponible con Premium.</small>
+          </div>
+          <span class="timeline-node" aria-hidden="true"><b>04</b></span>
+          <div class="motion-frame" data-parallax data-reveal>
+            <video muted loop playsinline preload="none" poster="assets/offline-cinematic.png" data-cinematic-video aria-label="Visual cinematográfico de reproducción sin conexión">
+              <source data-src="assets/offline-cinematic.mp4" type="video/mp4">
+            </video>
+            <span class="frame-label">OFFLINE · 04</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="plans" id="planes" aria-labelledby="plans-title">
+      <div class="section-heading compact" data-reveal>
+        <p class="overline">02 · Tu acceso</p>
+        <h2 id="plans-title">Elige cómo<br><i>escuchar.</i></h2>
+      </div>
+      <div class="plan-grid">
+        <article class="plan glass" data-reveal>
+          <span>01 · EMPIEZA</span><h3>Free</h3><p>Explora sin límites.</p>
+          <ul><li>Reproducción online</li><li>Favoritos y playlists</li><li>Biblioteca personal</li></ul>
+          <a href="https://wiwymusic-admin.angelanda023.workers.dev/api/ota/download">Descargar gratis <b>↗</b></a>
+        </article>
+        <article class="plan glass featured" data-reveal>
+          <span>02 · COMPLETA</span><h3>Premium</h3><p>Más control. Más música.</p>
+          <p class="plan-price"><strong>$30</strong><span>MXN / mes</span></p>
+          <ul><li>Descargas offline</li><li>Letras sincronizadas</li><li>Ecualizador y temporizador</li></ul>
+          <a class="whatsapp-link" href="https://wa.me/528136899880?text=Hola%2C%20quiero%20solicitar%20el%20plan%20Premium%20de%20WiwyMusic%20por%20%2430%20MXN%20al%20mes." target="_blank" rel="noopener noreferrer">Obtener <b>↗</b></a>
+        </article>
+      </div>
+      <p class="plan-caption">Solicita Premium por WhatsApp y actívalo dentro de WiwyMusic mediante un código válido.</p>
+    </section>
+
+    <section class="download" id="descargar" aria-labelledby="download-title">
+      <video class="download-video" autoplay muted loop playsinline preload="metadata" poster="assets/hero-cinematic.png" aria-hidden="true">
+        <source src="assets/hero-cinematic.mp4" type="video/mp4">
+      </video>
+      <div class="download-content glass" data-reveal>
+        <p class="overline">03 · Empieza ahora</p>
+        <h2 id="download-title">¿Listo para<br><i>escuchar?</i></h2>
+        <p>Una descarga. Miles de momentos.</p>
+        <a class="glass-button primary gold" href="https://wiwymusic-admin.angelanda023.workers.dev/api/ota/download">Descargar APK oficial <span>↓</span></a>
+        <div class="platform-links">
+          <a href="https://wiwymusic-admin.angelanda023.workers.dev/api/ota/macos/download"><span>macOS</span><small>DMG universal</small><b>↗</b></a>
+          <a href="https://wiwymusic-admin.angelanda023.workers.dev/api/ota/windows/download"><span>Windows</span><small>Instalador x64</small><b>↗</b></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand" href="#inicio"><img class="brand-icon" src="assets/wiwymusic-icon.png" alt=""><span><b>Wiwy</b><em>Music</em></span></a>
+    <p>Música increíble. Hecha personal.</p>
+    <nav aria-label="Enlaces del pie"><a href="#proceso">Experiencia</a><a href="#planes">Planes</a><a href="#descargar">Descargar</a></nav>
+    <small>© 2026 WiwyMusic. Todos los derechos reservados.</small>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

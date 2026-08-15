@@ -99,6 +99,7 @@ core.*
 *.so
 *.bin
 /.trae
+/.wrangler/
 
 # Node server
 /server/node_modules/

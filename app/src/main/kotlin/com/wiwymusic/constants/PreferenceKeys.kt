@@ -120,6 +120,7 @@ val SupabaseAccessTokenKey = stringPreferencesKey("supabaseAccessToken")
 val SupabaseRefreshTokenKey = stringPreferencesKey("supabaseRefreshToken")
 val SupabaseUserIdKey = stringPreferencesKey("supabaseUserId")
 val SupabaseUserEmailKey = stringPreferencesKey("supabaseUserEmail")
+val PremiumPromoLastShownEpochDayKey = longPreferencesKey("premiumPromoLastShownEpochDay")
 
 enum class AudioQuality {
     LOW,

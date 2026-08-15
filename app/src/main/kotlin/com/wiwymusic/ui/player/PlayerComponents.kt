@@ -281,6 +281,22 @@ fun PlayerTopActions(
         Download.STATE_QUEUED, Download.STATE_DOWNLOADING -> R.drawable.downloading
         else -> R.drawable.download
     }
+    val isDownloadInProgress = download?.state == Download.STATE_QUEUED ||
+        download?.state == Download.STATE_DOWNLOADING
+    val downloadIconRotation = if (isDownloadInProgress) {
+        rememberInfiniteTransition(label = "downloadIconRotation")
+            .animateFloat(
+                initialValue = 0f,
+                targetValue = 360f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = 900, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart,
+                ),
+                label = "downloadIconRotationValue",
+            ).value
+    } else {
+        0f
+    }
     val performDownloadClick = {
         when (download?.state) {
             Download.STATE_COMPLETED,
@@ -349,6 +365,9 @@ fun PlayerTopActions(
                         contentDescription = null,
                         tint = iconButtonColor,
                         modifier = Modifier
+                            .graphicsLayer {
+                                rotationZ = if (isDownloadInProgress) downloadIconRotation else 0f
+                            }
                             .align(Alignment.Center)
                             .size(24.dp)
                     )
@@ -398,7 +417,11 @@ fun PlayerTopActions(
                         painter = painterResource(downloadIconRes),
                         contentDescription = null,
                         tint = textBackgroundColor.copy(alpha = 0.7f),
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier
+                            .graphicsLayer {
+                                rotationZ = if (isDownloadInProgress) downloadIconRotation else 0f
+                            }
+                            .size(20.dp)
                     )
                     if (isPremium != true) {
                         PremiumLockBadge(Modifier.align(Alignment.TopEnd))
@@ -444,7 +467,11 @@ fun PlayerTopActions(
                             painter = painterResource(downloadIconRes),
                             contentDescription = null,
                             tint = textBackgroundColor,
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier
+                                .graphicsLayer {
+                                    rotationZ = if (isDownloadInProgress) downloadIconRotation else 0f
+                                }
+                                .size(22.dp)
                         )
                         if (isPremium != true) {
                             PremiumLockBadge(Modifier.align(Alignment.TopEnd))
@@ -529,6 +556,9 @@ fun PlayerTopActions(
                     colorFilter = ColorFilter.tint(iconButtonColor),
                     modifier =
                         Modifier
+                            .graphicsLayer {
+                                rotationZ = if (isDownloadInProgress) downloadIconRotation else 0f
+                            }
                             .align(Alignment.Center)
                             .size(24.dp),
                 )
@@ -593,7 +623,11 @@ fun PlayerTopActions(
                             painter = painterResource(downloadIconRes),
                             contentDescription = null,
                             tint = textBackgroundColor,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier
+                                .graphicsLayer {
+                                    rotationZ = if (isDownloadInProgress) downloadIconRotation else 0f
+                                }
+                                .size(20.dp)
                         )
                         if (isPremium != true) {
                             PremiumLockBadge(Modifier.align(Alignment.TopEnd))
@@ -703,7 +737,11 @@ fun PlayerTopActions(
                         painter = painterResource(downloadIconRes),
                         contentDescription = null,
                         tint = textBackgroundColor.copy(alpha = 0.7f),
-                        modifier = Modifier.size(22.dp),
+                        modifier = Modifier
+                            .graphicsLayer {
+                                rotationZ = if (isDownloadInProgress) downloadIconRotation else 0f
+                            }
+                            .size(22.dp),
                     )
                     if (isPremium != true) {
                         PremiumLockBadge(Modifier.align(Alignment.TopEnd))
@@ -778,7 +816,11 @@ fun PlayerTopActions(
                         painter = painterResource(downloadIconRes),
                         contentDescription = null,
                         tint = textBackgroundColor.copy(alpha = 0.7f),
-                        modifier = Modifier.size(22.dp),
+                        modifier = Modifier
+                            .graphicsLayer {
+                                rotationZ = if (isDownloadInProgress) downloadIconRotation else 0f
+                            }
+                            .size(22.dp),
                     )
                     if (isPremium != true) {
                         PremiumLockBadge(Modifier.align(Alignment.TopEnd))
