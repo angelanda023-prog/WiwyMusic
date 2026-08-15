@@ -48,8 +48,8 @@ build, deployment, migration, or release. Do not create competing project-memory
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
-- Current Android prepared source commit: `4f1f448` (`feat: replace Premium card with launch
-  dialog`, not yet published as OTA).
+- Current Android prepared source commit: `86f8de1` (`fix: keep Premium artwork unobstructed`,
+  following `4f1f448`; not yet published as OTA).
 - Current Android production source commit: `297c8c8` (`fix: correct Premium price`).
 - Registration password visibility is published in OTA `v1.1.14`.
 - Playlist import lock visibility commit: `d70de59` (`fix(library): show playlist import lock`).
@@ -168,8 +168,8 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Validation passed: all 43 universal debug unit tests, debug Kotlin compilation, exact source/
   packaged-image digest comparison, `git diff --check`, and production website/WhatsApp redirect
   checks. No mini-player, protected player, playback, queue, service, dimensions, animations, or
-  player-connection file was modified. Android commit `4f1f448` is prepared locally; production
-  OTA remains signed `v1.1.16`, `versionCode` 63, source commit `297c8c8`.
+  player-connection file was modified. Android commits `4f1f448` and `86f8de1` are prepared;
+  production OTA remains signed `v1.1.16`, `versionCode` 63, source commit `297c8c8`.
 
 ## macOS automatic OTA installer — current stable v1.0.6
 
