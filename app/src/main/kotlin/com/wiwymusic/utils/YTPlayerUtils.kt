@@ -113,16 +113,26 @@ object YTPlayerUtils {
         streamUrlCache.keys.removeIf { it.startsWith(prefix) }
     }
 
-    fun markStreamClientFailed(videoId: String, clientKey: String?, httpStatusCode: Int?) {
-        if (httpStatusCode != 403) return
+    fun markStreamClientFailed(
+        videoId: String,
+        clientKey: String?,
+        httpStatusCode: Int?,
+        force: Boolean = false,
+    ) {
+        if (!force && httpStatusCode != 403) return
         val normalizedClientKey = normalizeStreamClientKey(clientKey)
         if (normalizedClientKey.isEmpty()) return
         failedStreamClientsUntil[buildFailedClientKey(videoId, normalizedClientKey)] =
             System.currentTimeMillis() + FAILED_CLIENT_BACKOFF_MS
     }
 
-    fun markPreferredClientFailed(videoId: String, client: PlayerStreamClient, httpStatusCode: Int?) {
-        markStreamClientFailed(videoId, client.name, httpStatusCode)
+    fun markPreferredClientFailed(
+        videoId: String,
+        client: PlayerStreamClient,
+        httpStatusCode: Int?,
+        force: Boolean = false,
+    ) {
+        markStreamClientFailed(videoId, client.name, httpStatusCode, force)
     }
 
     private fun isStreamClientTemporarilyBlocked(videoId: String, clientKey: String?): Boolean {

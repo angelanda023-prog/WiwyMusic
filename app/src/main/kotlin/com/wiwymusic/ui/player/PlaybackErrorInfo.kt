@@ -23,6 +23,7 @@ internal enum class PlaybackErrorKind {
     NoStream,
     MalformedStream,
     Decoder,
+    Source,
     Http,
     Unknown,
 }
@@ -50,6 +51,8 @@ internal fun PlaybackException.toPlaybackErrorInfo(currentMediaId: String? = nul
                 PlaybackException.ERROR_CODE_DECODING_FAILED,
                 PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED,
             ) -> PlaybackErrorKind.Decoder
+            hasPlaybackErrorCode(PlaybackException.ERROR_CODE_IO_UNSPECIFIED) ||
+                hasCauseNamed("UnexpectedLoaderException") -> PlaybackErrorKind.Source
             httpCode != null -> PlaybackErrorKind.Http
             else -> PlaybackErrorKind.Unknown
         }
@@ -59,6 +62,15 @@ internal fun PlaybackException.toPlaybackErrorInfo(currentMediaId: String? = nul
         httpCode = httpCode,
         loginRecoveryUrl = loginRecoveryUrl,
     )
+}
+
+private fun Throwable.hasCauseNamed(simpleName: String): Boolean {
+    var throwable: Throwable? = this
+    while (throwable != null) {
+        if (throwable.javaClass.simpleName == simpleName) return true
+        throwable = throwable.cause
+    }
+    return false
 }
 
 private fun Throwable.hasPlaybackErrorCode(errorCode: Int): Boolean {

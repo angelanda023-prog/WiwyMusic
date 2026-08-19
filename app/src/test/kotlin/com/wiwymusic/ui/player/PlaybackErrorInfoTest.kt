@@ -42,6 +42,18 @@ class PlaybackErrorInfoTest {
         assertEquals(PlaybackErrorKind.Timeout, wrappedError.toPlaybackErrorInfo().kind)
     }
 
+    @Test
+    fun unspecifiedIoErrorIsShownAsRecoverableSourceFailure() {
+        val error =
+            TestPlaybackException(
+                "Source error",
+                null,
+                PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
+            )
+
+        assertEquals(PlaybackErrorKind.Source, error.toPlaybackErrorInfo().kind)
+    }
+
     private class TestPlaybackException(
         message: String,
         cause: Throwable?,

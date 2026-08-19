@@ -293,6 +293,8 @@ class MusicService :
     )
     private val playbackUrlCache = ConcurrentHashMap<String, Pair<String, Long>>()
     private val streamRecoveryState = ConcurrentHashMap<String, Pair<Int, Long>>()
+    private val playbackCodecCache = ConcurrentHashMap<String, String>()
+    private val streamRecoveryAvoidCodecs = ConcurrentHashMap<String, Set<String>>()
     @Volatile
     private var pendingStreamRefreshValidationMediaId: String? = null
     @Volatile
@@ -3722,17 +3724,18 @@ class MusicService :
 
     val activeMediaId = player.currentMediaItem?.mediaId
     clearStreamRefreshGuards(activeMediaId)
-    if (
+        if (
         playbackState == Player.STATE_READY &&
         player.playWhenReady &&
         player.isPlaying &&
         activeMediaId != null &&
         pendingStreamRefreshValidationMediaId == activeMediaId
-    ) {
-        refreshValidatedPlayingMediaId = activeMediaId
-        pendingStreamRefreshValidationMediaId = null
-        streamRecoveryState.remove(activeMediaId)
-        Timber.tag("MusicService").i("Stream refresh validated and playback resumed for $activeMediaId")
+        ) {
+            refreshValidatedPlayingMediaId = activeMediaId
+            pendingStreamRefreshValidationMediaId = null
+            streamRecoveryState.remove(activeMediaId)
+            streamRecoveryAvoidCodecs.remove(activeMediaId)
+            Timber.tag("MusicService").i("Stream refresh validated and playback resumed for $activeMediaId")
     }
 
     scope.launch {
@@ -3753,7 +3756,7 @@ class MusicService :
         dataStore.get(AutoLoadMoreKey, true) &&
         player.repeatMode == REPEAT_MODE_OFF &&
         player.currentMediaItem != null
-    ) {
+        ) {
         scope.launch(SilentHandler) {
             if (suppressAutoPlayback || player.playbackState == STATE_IDLE || player.mediaItemCount == 0) return@launch
             val lastMediaMetadata = player.currentMetadata
@@ -3804,7 +3807,7 @@ class MusicService :
                 }
             }
         }
-    }
+        }
 
     ensurePresenceManager()
     scope.launch {
@@ -4143,6 +4146,10 @@ class MusicService :
 
         val currentMediaId = player.currentMediaItem?.mediaId
         val httpStatusCode = error.httpStatusCodeOrNull()
+        val isRecoverableRemoteSourceError =
+            currentMediaId != null &&
+                !player.currentMediaItem.isLocalPlaybackItem() &&
+                error.isRecoverableSourceLoaderError()
 
         if (currentMediaId != null && YTPlayerUtils.isBotDetectionException(error)) {
             if (markAndCheckRecoveryAllowance(currentMediaId)) {
@@ -4163,6 +4170,7 @@ class MusicService :
                 error.errorCode == PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS ||
                     error.errorCode == PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND ||
                     error.errorCode == PlaybackException.ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE ||
+                    isRecoverableRemoteSourceError ||
                     httpStatusCode in setOf(403, 404, 410, 416, 429, 500, 502, 503)
                 )
 
@@ -4184,6 +4192,13 @@ class MusicService :
         }
 
         if (shouldAttemptStreamRefresh && currentMediaId != null && markAndCheckRecoveryAllowance(currentMediaId)) {
+            if (isRecoverableRemoteSourceError) {
+                playbackCodecCache[currentMediaId]?.let { failedCodec ->
+                    streamRecoveryAvoidCodecs.compute(currentMediaId) { _, codecs ->
+                        codecs?.takeIf { it.isNotEmpty() } ?: setOf(failedCodec)
+                    }
+                }
+            }
             val failingStreamClientKey =
                 playbackUrlCache[currentMediaId]
                     ?.first
@@ -4194,14 +4209,33 @@ class MusicService :
             Timber.tag("MusicService").w(
                 "Attempting stream refresh for $currentMediaId (http=$httpStatusCode, code=${error.errorCode}, client=${failingStreamClientKey ?: "unknown"})"
             )
-            YTPlayerUtils.markStreamClientFailed(currentMediaId, failingStreamClientKey, httpStatusCode)
-            YTPlayerUtils.markPreferredClientFailed(currentMediaId, preferredStreamClient, httpStatusCode)
+            YTPlayerUtils.markStreamClientFailed(
+                currentMediaId,
+                failingStreamClientKey,
+                httpStatusCode,
+                force = isRecoverableRemoteSourceError,
+            )
+            YTPlayerUtils.markPreferredClientFailed(
+                currentMediaId,
+                preferredStreamClient,
+                httpStatusCode,
+                force = isRecoverableRemoteSourceError,
+            )
             YTPlayerUtils.invalidateCachedStreamUrls(currentMediaId)
             playbackUrlCache.remove(currentMediaId)
             pendingStreamRefreshValidationMediaId = currentMediaId
             player.prepare()
             player.playWhenReady = true
             return
+        }
+
+        if (isRecoverableRemoteSourceError && currentMediaId != null) {
+            // Retries exhausted. Leave the manual Retry action with a clean resolver state.
+            YTPlayerUtils.invalidateCachedStreamUrls(currentMediaId)
+            playbackUrlCache.remove(currentMediaId)
+            streamRecoveryState.remove(currentMediaId)
+            streamRecoveryAvoidCodecs.remove(currentMediaId)
+            pendingStreamRefreshValidationMediaId = null
         }
 
         val skipSilenceCurrentlyEnabled = dataStore.get(SkipSilenceKey, false)
@@ -4386,7 +4420,7 @@ class MusicService :
                         audioQuality = audioQuality,
                         connectivityManager = connectivityManager,
                         preferredStreamClient = preferredStreamClient,
-                        avoidCodecs = avoidStreamCodecs,
+                        avoidCodecs = avoidStreamCodecs + streamRecoveryAvoidCodecs[mediaId].orEmpty(),
                     )
                 }.getOrElse { throwable ->
                     when (throwable) {
@@ -4430,6 +4464,18 @@ class MusicService :
                 }
 
                 val format = nonNullPlayback.format
+                val selectedCodec =
+                    format.mimeType
+                        .substringAfter("codecs=\"", "")
+                        .substringBefore('"')
+                        .substringBefore(',')
+                        .trim()
+                        .lowercase()
+                if (selectedCodec.isNotBlank()) {
+                    playbackCodecCache[mediaId] = selectedCodec
+                } else {
+                    playbackCodecCache.remove(mediaId)
+                }
                 val loudnessDb = nonNullPlayback.audioConfig?.loudnessDb
                 val perceptualLoudnessDb = nonNullPlayback.audioConfig?.perceptualLoudnessDb
 
@@ -4587,6 +4633,26 @@ class MusicService :
             t = t.cause
         }
         return null
+    }
+
+    private fun PlaybackException.isRecoverableSourceLoaderError(): Boolean {
+        var throwable: Throwable? = this
+        while (throwable != null) {
+            if (
+                throwable is PlaybackException &&
+                throwable.errorCode == PlaybackException.ERROR_CODE_IO_UNSPECIFIED
+            ) {
+                return true
+            }
+            if (throwable.javaClass.simpleName == "UnexpectedLoaderException") return true
+            throwable = throwable.cause
+        }
+        return false
+    }
+
+    private fun MediaItem?.isLocalPlaybackItem(): Boolean {
+        val scheme = this?.localConfiguration?.uri?.scheme
+        return scheme == "content" || scheme == "file"
     }
 
     private fun markAndCheckRecoveryAllowance(mediaId: String): Boolean {

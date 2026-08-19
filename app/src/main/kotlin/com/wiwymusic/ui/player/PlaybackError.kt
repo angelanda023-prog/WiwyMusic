@@ -59,6 +59,7 @@ fun PlaybackError(
     val fallbackNoStream = stringResource(R.string.error_no_stream)
     val retryText = stringResource(R.string.retry)
     val fallbackMalformedStream = stringResource(R.string.error_malformed_stream)
+    val fallbackSource = stringResource(R.string.error_playback_temporarily_unavailable)
     val copyText = stringResource(R.string.copy)
     val copiedText = stringResource(R.string.copied)
     val openYouTubeMusicText = stringResource(R.string.open_youtube_music)
@@ -72,6 +73,7 @@ fun PlaybackError(
         when (errorInfo.kind) {
             PlaybackErrorKind.LoginRefreshRequired -> stringResource(R.string.playback_login_refresh_required)
             PlaybackErrorKind.ConfirmationRequired -> stringResource(R.string.playback_confirmation_required)
+            PlaybackErrorKind.Source -> fallbackSource
             else -> fallbackUnknown
         }
     val reason =
@@ -83,6 +85,7 @@ fun PlaybackError(
             PlaybackErrorKind.NoStream -> fallbackNoStream
             PlaybackErrorKind.MalformedStream -> fallbackMalformedStream
             PlaybackErrorKind.Decoder -> "$fallbackUnknown (code ${error.errorCode})"
+            PlaybackErrorKind.Source -> fallbackSource
             PlaybackErrorKind.Http -> "$fallbackUnknown (HTTP $httpCode)"
             PlaybackErrorKind.Unknown -> error.cause?.message?.takeIf { it.isNotBlank() }
                 ?: error.message?.takeIf { it.isNotBlank() }
@@ -91,6 +94,7 @@ fun PlaybackError(
 
     val details =
         remember(error, reason, httpCode) {
+            if (errorInfo.kind == PlaybackErrorKind.Source) return@remember reason
             buildString {
                 appendLine(reason)
                 appendLine("Code: ${error.errorCode}")
@@ -150,19 +154,21 @@ fun PlaybackError(
                 }
             }
 
-            Surface(
-                shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.06f),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    text = details,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.92f),
-                    modifier = Modifier.padding(12.dp),
-                    maxLines = 12,
-                    overflow = TextOverflow.Clip,
-                )
+            if (errorInfo.kind != PlaybackErrorKind.Source) {
+                Surface(
+                    shape = MaterialTheme.shapes.large,
+                    color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.06f),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = details,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.92f),
+                        modifier = Modifier.padding(12.dp),
+                        maxLines = 12,
+                        overflow = TextOverflow.Clip,
+                    )
+                }
             }
 
             errorInfo.loginRecoveryUrl?.let { targetUrl ->
@@ -211,24 +217,26 @@ fun PlaybackError(
                     Text(text = retryText)
                 }
 
-                Button(
-                    onClick = {
-                        clipboard.setText(AnnotatedString(details))
-                        Toast.makeText(context, copiedText, Toast.LENGTH_SHORT).show()
-                    },
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                            contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                        ),
-                    shapes = ButtonDefaults.shapes(),
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.select_all),
-                        contentDescription = null,
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(text = copyText)
+                if (errorInfo.kind != PlaybackErrorKind.Source) {
+                    Button(
+                        onClick = {
+                            clipboard.setText(AnnotatedString(details))
+                            Toast.makeText(context, copiedText, Toast.LENGTH_SHORT).show()
+                        },
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                            ),
+                        shapes = ButtonDefaults.shapes(),
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.select_all),
+                            contentDescription = null,
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(text = copyText)
+                    }
                 }
             }
         }
