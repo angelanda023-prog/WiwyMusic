@@ -1,6 +1,6 @@
 # WiwyMusic — project context and durable AI handoff
 
-Last updated: 2026-08-15 (America/Mexico_City)
+Last updated: 2026-08-19 (America/Mexico_City)
 
 This is the single source of truth for any editor, IDE assistant, or AI working on WiwyMusic.
 Read it completely before inspecting or changing code. Update it after every meaningful change,
@@ -11,7 +11,7 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Cross-platform download update on 2026-08-13: the Download action in the full player now shows
   an animated in-progress state on Android, macOS, and Windows. The user explicitly scoped this
   change to the full player and confirmed it does not apply to the mini-player. macOS `v1.0.6`,
-  Windows `v1.0.2`, and Android `v1.1.18` are published.
+  Windows `v1.0.2`, and Android `v1.1.19` are published.
 - Android modifies only the protected `ui/player/PlayerComponents.kt`, with explicit user
   authorization in this conversation. Every player style rotates the existing downloading glyph
   only while Media3 reports queued/downloading. Existing tap behavior still cancels queued/active
@@ -52,11 +52,19 @@ build, deployment, migration, or release. Do not create competing project-memory
   `$40 MXN al mes` message. The Home carousel now falls back from personal quick picks to playback
   history and then real YouTube Home songs, fixing its absence on new or sparse installations.
   This follow-up is published in OTA `v1.1.18`.
+- Android `v1.1.19` recovers remote Media3 source failures, including wrapped
+  `ERROR_CODE_IO_UNSPECIFIED` / code 2000 errors, before exposing an error to the user. Recovery
+  invalidates the failed URL, temporarily avoids the failed client and first failed codec, and
+  allows two bounded fresh-stream retries. Local `content` and `file` items are excluded. After
+  retries are exhausted, the full player shows only the friendly temporary-unavailability message;
+  manual Retry starts with clean resolver state. The user explicitly authorized changes to the
+  protected `MusicService.kt` and full-player playback error UI; mini-player files are unchanged.
+  All universal debug unit tests and signed R8 release assembly pass.
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
-- Current Android production source commit: `0e43e42` (`build: prepare Android v1.1.18`),
-  following promotion/carousel commit `198f3dd`.
+- Current Android production source commit: `2705c15` (`build: prepare Android v1.1.19`),
+  following playback recovery commit `f21f26f`.
 - Registration password visibility is published in OTA `v1.1.14`.
 - Playlist import lock visibility commit: `d70de59` (`fix(library): show playlist import lock`).
 - Playlist import Premium gate commit: `1429cc5` (`feat(library): gate playlist import`).
@@ -67,7 +75,7 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Premium session fix commit: `7385e6b` (`fix: persist premium plan across sessions`).
 - Previous hardening commit: `654626c` (`security: hide OTA repository details`).
 - Admin repository: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`.
-- Admin OTA metadata commit: `cd74db0` (`chore(ota): publish Android v1.1.18`, local; the admin
+- Admin OTA metadata commit: `152e498` (`chore(ota): publish Android v1.1.19`, local; the admin
   repository has no Git remote configured).
 - Admin Windows download commit: `3c18510` (`feat(admin): add Windows app download`, local;
   deployed Worker version `47dd057a-f636-4710-af74-ff5d5d15b362`; the admin repository has no
@@ -109,7 +117,7 @@ build, deployment, migration, or release. Do not create competing project-memory
   Git remote configured).
 - Three-plan Android commit: `cdf177c` (`feat(account): show three plan tiers`, included in
   later published OTAs).
-- Production APK is `v1.1.18`, `versionCode` 65, distributed through Cloudflare R2.
+- Production APK is `v1.1.19`, `versionCode` 66, distributed through Cloudflare R2.
 
 ## Public product website — published 2026-08-15
 
@@ -713,19 +721,19 @@ admin panel.
 
 - Android app written in Kotlin and Jetpack Compose with Material Design 3.
 - Application ID: `com.wiwymusic`.
-- Production release: `v1.1.18` (R2 stable OTA).
-- `versionName`: `1.1.18`.
-- `versionCode`: `65`.
-- Production commit: `0e43e42` (`build: prepare Android v1.1.18`).
+- Production release: `v1.1.19` (R2 stable OTA).
+- `versionName`: `1.1.19`.
+- `versionCode`: `66`.
+- Production commit: `2705c15` (`build: prepare Android v1.1.19`).
 - Last GitHub bridge release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.42>
 - OTA asset name: `WiwyMusic.apk`.
-- Production APK SHA-256: `6278c2298ed3ccc77dfe6a2de1e77c64e9c4ffa36a64680fc7adb7e386b68de4`.
-- Previous production baseline: `v1.1.17`, commit `ae7e3b8`, SHA-256
-  `28607371b774c2ee204548403f76650dab0bf7478a3c1742f4b7937fa7254005`.
+- Production APK SHA-256: `9781a63c1b2ad3f027d0fc494deea6c1ce1664ad8279e97ee1fa56f6a730d100`.
+- Previous production baseline: `v1.1.18`, commit `0e43e42`, SHA-256
+  `6278c2298ed3ccc77dfe6a2de1e77c64e9c4ffa36a64680fc7adb7e386b68de4`.
 
 The bridge release was published through both GitHub and R2. Clients upgrading from `v1.0.41`
 can discover `v1.0.42` through the old GitHub updater; after installation, the Cloudflare
-endpoint offers current stable `v1.1.18`.
+endpoint offers current stable `v1.1.19`.
 
 ## APK hardening and rollback baseline — published in v1.0.42
 
@@ -747,11 +755,11 @@ Rollback is fixed to the unchanged production release:
   `ota/archive/v1.1.11/WiwyMusic.apk`, `ota/archive/v1.1.12/WiwyMusic.apk`,
   `ota/archive/v1.1.13/WiwyMusic.apk`, `ota/archive/v1.1.14/WiwyMusic.apk`,
   `ota/archive/v1.1.15/WiwyMusic.apk`, `ota/archive/v1.1.16/WiwyMusic.apk`, and
-  `ota/archive/v1.1.17/WiwyMusic.apk`, and `ota/archive/v1.1.18/WiwyMusic.apk`;
-  current `v1.1.18`
+  `ota/archive/v1.1.17/WiwyMusic.apk`, `ota/archive/v1.1.18/WiwyMusic.apk`, and
+  `ota/archive/v1.1.19/WiwyMusic.apk`; current `v1.1.19`
   is served from its immutable archive
   through `/api/ota/download`.
-- R2 metadata `ota/releases.json` points to `v1.1.18` with the generic improvements message.
+- R2 metadata `ota/releases.json` points to `v1.1.19` with the generic improvements message.
 - Public repository-neutral endpoints:
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/releases`
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/download`
