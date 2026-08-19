@@ -84,8 +84,8 @@ android {
         applicationId = "com.wiwymusic"
         minSdk = 26
         targetSdk = 36
-        versionCode = 65
-        versionName = "1.1.18"
+        versionCode = 66
+        versionName = "1.1.19"
 //        versionName = "3.0.2-$gitCommit"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
