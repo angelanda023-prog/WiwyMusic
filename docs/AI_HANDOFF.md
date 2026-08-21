@@ -11,7 +11,7 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Cross-platform download update on 2026-08-13: the Download action in the full player now shows
   an animated in-progress state on Android, macOS, and Windows. The user explicitly scoped this
   change to the full player and confirmed it does not apply to the mini-player. macOS `v1.0.6`,
-  Windows `v1.0.2`, and Android `v1.1.19` are published.
+  Windows `v1.0.2`, and Android `v1.1.20` are published.
 - Android modifies only the protected `ui/player/PlayerComponents.kt`, with explicit user
   authorization in this conversation. Every player style rotates the existing downloading glyph
   only while Media3 reports queued/downloading. Existing tap behavior still cancels queued/active
@@ -60,7 +60,7 @@ build, deployment, migration, or release. Do not create competing project-memory
   manual Retry starts with clean resolver state. The user explicitly authorized changes to the
   protected `MusicService.kt` and full-player playback error UI; mini-player files are unchanged.
   All universal debug unit tests and signed R8 release assembly pass.
-- Android `v1.1.20` release candidate adds the authenticated Premium expiration display
+- Android `v1.1.20` adds the authenticated Premium expiration display
   in Account Settings and an opt-in top playback overlay called `Isla dinámica de reproducción`.
   Remaining days render as a larger orange bordered chip. The island is Premium-only: Free and
   unknown accounts see a lock and the standard obtain-Premium dialog. Android requests overlay
@@ -74,10 +74,10 @@ build, deployment, migration, or release. Do not create competing project-memory
   background binding restrictions cannot suppress the overlay. It appears only while the app is
   in background and no `MusicService.kt`, PlayerConnection, or mini-player file is modified.
   Kotlin compilation, all universal debug unit tests, signed R8 release assembly, and APK Signature
-  Scheme v2 verification pass. Local test APK SHA-256 is
-  `0de2111372efd8fc29f1bcc95c6931ca0f439431e29707deb2a484beaf44a87d` at
-  `/Users/wiwyzho/Desktop/WiwyMusic-prueba-isla.apk`. Production `v1.1.19` remains unchanged and
-  the stable rollback point is tag `snapshot-before-account-expiry-island-v1.1.19`.
+  Scheme v2 verification pass. Production APK SHA-256 is
+  `a944846ad38c48de6b076571718018adc12de3816e532e29b89ada24f9e103cd`.
+  It is published through the immutable R2 archive and public OTA endpoint; the previous stable
+  rollback remains tag `snapshot-before-account-expiry-island-v1.1.19` and archive `v1.1.19`.
 - The Admin Worker now exposes authenticated `/api/mobile/premium-status`: it derives the user ID
   from the supplied Supabase access token, reads only that user's active subscription with the
   server-side service role, and returns expiration/days with `Cache-Control: no-store`. The route
@@ -87,8 +87,7 @@ build, deployment, migration, or release. Do not create competing project-memory
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
-- Current Android production source commit: `2705c15` (`build: prepare Android v1.1.19`),
-  following playback recovery commit `f21f26f`.
+- Current Android production source commit: `278d86a` (`feat(android): add premium dynamic island`).
 - Registration password visibility is published in OTA `v1.1.14`.
 - Playlist import lock visibility commit: `d70de59` (`fix(library): show playlist import lock`).
 - Playlist import Premium gate commit: `1429cc5` (`feat(library): gate playlist import`).
@@ -99,7 +98,7 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Premium session fix commit: `7385e6b` (`fix: persist premium plan across sessions`).
 - Previous hardening commit: `654626c` (`security: hide OTA repository details`).
 - Admin repository: `/Users/wiwyzho/Documents/Web/WiwyMusic-Admin`.
-- Admin OTA metadata commit: `152e498` (`chore(ota): publish Android v1.1.19`, local; the admin
+- Admin OTA metadata commit: `dcb4db4` (`chore(ota): publish Android v1.1.20`, local; the admin
   repository has no Git remote configured).
 - Admin Windows download commit: `3c18510` (`feat(admin): add Windows app download`, local;
   deployed Worker version `47dd057a-f636-4710-af74-ff5d5d15b362`; the admin repository has no
@@ -141,7 +140,7 @@ build, deployment, migration, or release. Do not create competing project-memory
   Git remote configured).
 - Three-plan Android commit: `cdf177c` (`feat(account): show three plan tiers`, included in
   later published OTAs).
-- Production APK is `v1.1.19`, `versionCode` 66, distributed through Cloudflare R2.
+- Production APK is `v1.1.20`, `versionCode` 67, distributed through Cloudflare R2.
 
 ## Public product website — published 2026-08-15
 
@@ -745,19 +744,19 @@ admin panel.
 
 - Android app written in Kotlin and Jetpack Compose with Material Design 3.
 - Application ID: `com.wiwymusic`.
-- Production release: `v1.1.19` (R2 stable OTA).
-- `versionName`: `1.1.19`.
-- `versionCode`: `66`.
-- Production commit: `2705c15` (`build: prepare Android v1.1.19`).
+- Production release: `v1.1.20` (R2 stable OTA).
+- `versionName`: `1.1.20`.
+- `versionCode`: `67`.
+- Production commit: `278d86a` (`feat(android): add premium dynamic island`).
 - Last GitHub bridge release: <https://github.com/angelanda023-prog/WiwyMusic/releases/tag/v1.0.42>
 - OTA asset name: `WiwyMusic.apk`.
-- Production APK SHA-256: `9781a63c1b2ad3f027d0fc494deea6c1ce1664ad8279e97ee1fa56f6a730d100`.
-- Previous production baseline: `v1.1.18`, commit `0e43e42`, SHA-256
-  `6278c2298ed3ccc77dfe6a2de1e77c64e9c4ffa36a64680fc7adb7e386b68de4`.
+- Production APK SHA-256: `a944846ad38c48de6b076571718018adc12de3816e532e29b89ada24f9e103cd`.
+- Previous production baseline: `v1.1.19`, commit `2705c15`, SHA-256
+  `9781a63c1b2ad3f027d0fc494deea6c1ce1664ad8279e97ee1fa56f6a730d100`.
 
 The bridge release was published through both GitHub and R2. Clients upgrading from `v1.0.41`
 can discover `v1.0.42` through the old GitHub updater; after installation, the Cloudflare
-endpoint offers current stable `v1.1.19`.
+endpoint offers current stable `v1.1.20`.
 
 ## APK hardening and rollback baseline — published in v1.0.42
 
@@ -780,10 +779,10 @@ Rollback is fixed to the unchanged production release:
   `ota/archive/v1.1.13/WiwyMusic.apk`, `ota/archive/v1.1.14/WiwyMusic.apk`,
   `ota/archive/v1.1.15/WiwyMusic.apk`, `ota/archive/v1.1.16/WiwyMusic.apk`, and
   `ota/archive/v1.1.17/WiwyMusic.apk`, `ota/archive/v1.1.18/WiwyMusic.apk`, and
-  `ota/archive/v1.1.19/WiwyMusic.apk`; current `v1.1.19`
+  `ota/archive/v1.1.19/WiwyMusic.apk`, and `ota/archive/v1.1.20/WiwyMusic.apk`; current `v1.1.20`
   is served from its immutable archive
   through `/api/ota/download`.
-- R2 metadata `ota/releases.json` points to `v1.1.19` with the generic improvements message.
+- R2 metadata `ota/releases.json` points to `v1.1.20` with the generic improvements message.
 - Public repository-neutral endpoints:
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/releases`
   - `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/download`
