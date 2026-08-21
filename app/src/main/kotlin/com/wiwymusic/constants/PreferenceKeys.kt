@@ -31,6 +31,7 @@ val PlayerDesignStyleKey = stringPreferencesKey("playerDesignStyle")
 val UseNewLibraryDesignKey = booleanPreferencesKey("useNewLibraryDesign")
 val UseNewMiniPlayerDesignKey = booleanPreferencesKey("useNewMiniPlayerDesign")
 val HidePlayerThumbnailKey = booleanPreferencesKey("hidePlayerThumbnail")
+val DynamicIslandEnabledKey = booleanPreferencesKey("dynamic_island_enabled")
 val OpenTuneCanvasKey = booleanPreferencesKey("OpenTuneCanvas")
 
 // Fuente del canvas: AUTO, APPLE_MUSIC, OPENTUNE, TIDAL

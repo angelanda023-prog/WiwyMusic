@@ -160,6 +160,7 @@ fun AccountSettings(
     val supaAvatar by com.wiwymusic.utils.UserPrefs.avatarUrl.collectAsState()
     val supaIsPremium by com.wiwymusic.utils.UserPrefs.isPremium.collectAsState()
     val supaSubscriptionTier by com.wiwymusic.utils.UserPrefs.subscriptionTier.collectAsState()
+    val supaPremiumExpiry by com.wiwymusic.utils.UserPrefs.premiumExpiry.collectAsState()
 
     LaunchedEffect(supaSession?.userId, supaSession?.accessToken) {
         if (supaSession != null) {
@@ -200,6 +201,7 @@ fun AccountSettings(
                 accountImageUrl = supaAvatar,
                 isPremium = supaIsPremium,
                 subscriptionTier = supaSubscriptionTier,
+                premiumExpiry = supaPremiumExpiry,
                 onAvatarClick = { if (supaLoggedIn) showAvatarPicker = true },
                 onAccountClick = {
                     if (!supaLoggedIn) {
@@ -293,6 +295,7 @@ private fun AccountCard(
     onAvatarClick: () -> Unit = {},
     isPremium: Boolean? = null,
     subscriptionTier: SubscriptionTier? = null,
+    premiumExpiry: com.wiwymusic.utils.UserPrefs.PremiumExpiry? = null,
 ) {
     val cardColor by animateColorAsState(
         targetValue = if (isPremium == true) {
@@ -475,6 +478,38 @@ private fun AccountCard(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                            if (premium) {
+                                premiumExpiry?.let { expiry ->
+                                    val remainingText = when {
+                                        expiry.unlimited -> stringResource(R.string.account_premium_no_expiry)
+                                        expiry.daysRemaining != null -> androidx.compose.ui.res.pluralStringResource(
+                                            R.plurals.account_premium_days_remaining,
+                                            expiry.daysRemaining,
+                                            expiry.daysRemaining,
+                                        )
+                                        else -> null
+                                    }
+                                    remainingText?.let {
+                                        Surface(
+                                            modifier = Modifier.padding(top = 8.dp),
+                                            shape = RoundedCornerShape(10.dp),
+                                            color = WiwyAccountOrange.copy(alpha = 0.14f),
+                                            border = androidx.compose.foundation.BorderStroke(
+                                                1.dp,
+                                                WiwyAccountOrange.copy(alpha = 0.55f),
+                                            ),
+                                        ) {
+                                            Text(
+                                                text = it,
+                                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = WiwyAccountOrange,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

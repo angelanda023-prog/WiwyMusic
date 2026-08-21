@@ -55,12 +55,19 @@ enum class SubscriptionTier(val wireValue: String, val displayName: String) {
 object UserPrefs {
 
     private const val BASE_URL = "https://yfthptxqqazqyngfjpvp.supabase.co"
+    private const val PREMIUM_STATUS_URL =
+        "https://wiwymusic-admin.angelanda023.workers.dev/api/mobile/premium-status"
     private const val ANON_KEY = "sb_publishable_Y7BpaQliciyuNM3gEJjinw_2v7Xh4Po"
     private val CachedPremiumUserIdKey = stringPreferencesKey("cached_premium_user_id")
     private val CachedPremiumStatusKey = booleanPreferencesKey("cached_premium_status")
     private val CachedSubscriptionTierKey = stringPreferencesKey("cached_subscription_tier")
 
     data class ArtistPick(val id: String, val name: String, val thumbnailUrl: String?)
+    data class PremiumExpiry(
+        val expiresAt: String?,
+        val daysRemaining: Int?,
+        val unlimited: Boolean,
+    )
 
     // null = desconocido/aún no consultado
     private val _onboarded = MutableStateFlow<Boolean?>(null)
@@ -76,12 +83,15 @@ object UserPrefs {
     val isPremium: StateFlow<Boolean?> = _isPremium.asStateFlow()
     private val _subscriptionTier = MutableStateFlow<SubscriptionTier?>(null)
     val subscriptionTier: StateFlow<SubscriptionTier?> = _subscriptionTier.asStateFlow()
+    private val _premiumExpiry = MutableStateFlow<PremiumExpiry?>(null)
+    val premiumExpiry: StateFlow<PremiumExpiry?> = _premiumExpiry.asStateFlow()
 
     fun reset() {
         _onboarded.value = null
         _avatarUrl.value = null
         _isPremium.value = null
         _subscriptionTier.value = null
+        _premiumExpiry.value = null
         stopPremiumRealtimeSync()
     }
 
@@ -117,6 +127,7 @@ object UserPrefs {
         val tier = SubscriptionTier.fromWire(tierValue, trustedPremium)
         _isPremium.value = tier.hasPremiumAccess
         _subscriptionTier.value = tier
+        if (!tier.hasPremiumAccess) _premiumExpiry.value = null
         App.instance.dataStore.edit { preferences ->
             preferences[CachedPremiumUserIdKey] = userId
             preferences[CachedPremiumStatusKey] = tier.hasPremiumAccess
@@ -159,6 +170,7 @@ object UserPrefs {
                         o.optBoolean("is_premium", false),
                         o.optString("subscription_tier").takeIf { it.isNotBlank() && it != "null" },
                     )
+                    if (_isPremium.value == true) refreshPremiumExpiry(session)
                     _onboarded.value = o.optBoolean("onboarded", false)
                     _avatarUrl.value = o.optString("avatar_url").takeIf { it.isNotBlank() && it != "null" }
                 } else {
@@ -170,6 +182,32 @@ object UserPrefs {
             // Código de error HTTP: no tocamos _onboarded, se reintentará en el próximo refresh().
         }.onFailure { e ->
             timber.log.Timber.w(e, "UserPrefs.refresh: fallo de red")
+        }
+        Unit
+    }
+
+    private suspend fun refreshPremiumExpiry(session: SupabaseAuth.Session) = withContext(Dispatchers.IO) {
+        runCatching {
+            val conn = open(PREMIUM_STATUS_URL, "GET", session)
+            val code = conn.responseCode
+            val text = (if (code in 200..299) conn.inputStream else conn.errorStream)
+                ?.bufferedReader()?.use { it.readText() }.orEmpty()
+            conn.disconnect()
+            if (code !in 200..299) error("Premium expiry request failed ($code)")
+
+            val result = JSONObject(text)
+            _premiumExpiry.value = PremiumExpiry(
+                expiresAt = result.optString("expires_at")
+                    .takeIf { it.isNotBlank() && it != "null" },
+                daysRemaining = if (result.isNull("days_remaining")) {
+                    null
+                } else {
+                    result.optInt("days_remaining").coerceAtLeast(0)
+                },
+                unlimited = result.optBoolean("unlimited", false),
+            )
+        }.onFailure { error ->
+            timber.log.Timber.w(error, "UserPrefs.refreshPremiumExpiry: failed")
         }
         Unit
     }
@@ -502,6 +540,9 @@ object UserPrefs {
                         },
                         record.optString("subscription_tier")
                             .takeIf { it.isNotBlank() && it != "null" },
+                    )
+                    if (_isPremium.value == true) refreshPremiumExpiry(
+                        SupabaseAuth.session.value ?: continue,
                     )
                 }
             }

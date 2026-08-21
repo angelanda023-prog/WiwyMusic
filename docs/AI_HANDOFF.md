@@ -1,6 +1,6 @@
 # WiwyMusic — project context and durable AI handoff
 
-Last updated: 2026-08-19 (America/Mexico_City)
+Last updated: 2026-08-20 (America/Mexico_City)
 
 This is the single source of truth for any editor, IDE assistant, or AI working on WiwyMusic.
 Read it completely before inspecting or changing code. Update it after every meaningful change,
@@ -60,6 +60,30 @@ build, deployment, migration, or release. Do not create competing project-memory
   manual Retry starts with clean resolver state. The user explicitly authorized changes to the
   protected `MusicService.kt` and full-player playback error UI; mini-player files are unchanged.
   All universal debug unit tests and signed R8 release assembly pass.
+- Android `v1.1.20` release candidate adds the authenticated Premium expiration display
+  in Account Settings and an opt-in top playback overlay called `Isla dinámica de reproducción`.
+  Remaining days render as a larger orange bordered chip. The island is Premium-only: Free and
+  unknown accounts see a lock and the standard obtain-Premium dialog. Android requests overlay
+  permission only after an eligible user enables the setting. Its 320 x 42 dp black capsule is
+  centered below the notification/status bar and before the first launcher widget, slides down
+  from above, and shows artwork,
+  title/artist, and orange play/pause. Its lateral interaction mirrors the mini-player effect
+  without touching mini-player code: content follows the finger, reveals an orange direction icon,
+  changes at the threshold, and eases back to center. Swiping right advances; swiping left returns
+  to the previous song; tapping opens WiwyMusic. The MediaSession controller connects while foregrounded so OEM
+  background binding restrictions cannot suppress the overlay. It appears only while the app is
+  in background and no `MusicService.kt`, PlayerConnection, or mini-player file is modified.
+  Kotlin compilation, all universal debug unit tests, signed R8 release assembly, and APK Signature
+  Scheme v2 verification pass. Local test APK SHA-256 is
+  `0de2111372efd8fc29f1bcc95c6931ca0f439431e29707deb2a484beaf44a87d` at
+  `/Users/wiwyzho/Desktop/WiwyMusic-prueba-isla.apk`. Production `v1.1.19` remains unchanged and
+  the stable rollback point is tag `snapshot-before-account-expiry-island-v1.1.19`.
+- The Admin Worker now exposes authenticated `/api/mobile/premium-status`: it derives the user ID
+  from the supplied Supabase access token, reads only that user's active subscription with the
+  server-side service role, and returns expiration/days with `Cache-Control: no-store`. The route
+  is deployed as Worker version `a46d647b-ff49-4887-a24b-81b4f1edd350`; an unauthenticated
+  production request correctly returns JSON HTTP 401 instead of redirecting to the admin login.
+  No database migration was required.
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.

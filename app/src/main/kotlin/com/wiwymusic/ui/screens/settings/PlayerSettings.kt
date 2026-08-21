@@ -8,6 +8,11 @@
 
 package com.wiwymusic.ui.screens.settings
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -29,11 +35,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -43,6 +52,7 @@ import com.wiwymusic.R
 import com.wiwymusic.constants.ArtistSeparatorsKey
 import com.wiwymusic.constants.ExternalDownloaderEnabledKey
 import com.wiwymusic.constants.ExternalDownloaderPackageKey
+import com.wiwymusic.constants.DynamicIslandEnabledKey
 import com.wiwymusic.constants.AudioNormalizationKey
 import com.wiwymusic.constants.AudioOffload
 import com.wiwymusic.constants.AudioQuality
@@ -74,9 +84,13 @@ import com.wiwymusic.ui.component.PreferenceGroupTitle
 import com.wiwymusic.ui.component.SliderPreference
 import com.wiwymusic.ui.component.CrossfadeSliderPreference
 import com.wiwymusic.ui.component.SwitchPreference
+import com.wiwymusic.ui.component.PremiumFeatureDialog
+import com.wiwymusic.ui.component.PremiumLockBadge
 import com.wiwymusic.ui.utils.backToMain
 import com.wiwymusic.utils.rememberEnumPreference
 import com.wiwymusic.utils.rememberPreference
+import com.wiwymusic.utils.DynamicIslandController
+import com.wiwymusic.utils.UserPrefs
 import com.wiwymusic.LocalDatabase
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,6 +99,26 @@ fun PlayerSettings(
     navController: NavController,
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
+    val context = LocalContext.current
+    val isPremium by UserPrefs.isPremium.collectAsState()
+    var showDynamicIslandPremiumDialog by remember { mutableStateOf(false) }
+    val (dynamicIslandEnabled, onDynamicIslandEnabledChange) = rememberPreference(
+        DynamicIslandEnabledKey,
+        defaultValue = false,
+    )
+    val overlayPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+    ) {
+        val granted = Settings.canDrawOverlays(context)
+        onDynamicIslandEnabledChange(granted)
+        DynamicIslandController.onPreferenceChanged(granted)
+    }
+    if (showDynamicIslandPremiumDialog) {
+        PremiumFeatureDialog(
+            featureName = stringResource(R.string.dynamic_island_title),
+            onDismiss = { showDynamicIslandPremiumDialog = false },
+        )
+    }
     val (audioQuality, onAudioQualityChange) = rememberEnumPreference(
         AudioQualityKey,
         defaultValue = AudioQuality.AUTO
@@ -304,6 +338,42 @@ fun PlayerSettings(
             icon = { Icon(painterResource(R.drawable.volume_up), null) },
             checked = audioNormalization,
             onCheckedChange = onAudioNormalizationChange
+        )
+
+        SwitchPreference(
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(stringResource(R.string.dynamic_island_title))
+                    if (isPremium != true) {
+                        Spacer(Modifier.width(7.dp))
+                        PremiumLockBadge()
+                    }
+                }
+            },
+            description = stringResource(R.string.dynamic_island_description),
+            icon = { Icon(painterResource(R.drawable.music_note), null) },
+            checked =
+                isPremium == true &&
+                    dynamicIslandEnabled &&
+                    Settings.canDrawOverlays(context),
+            onCheckedChange = { enabled ->
+                if (isPremium != true) {
+                    showDynamicIslandPremiumDialog = true
+                } else if (!enabled) {
+                    onDynamicIslandEnabledChange(false)
+                    DynamicIslandController.onPreferenceChanged(false)
+                } else if (Settings.canDrawOverlays(context)) {
+                    onDynamicIslandEnabledChange(true)
+                    DynamicIslandController.onPreferenceChanged(true)
+                } else {
+                    overlayPermissionLauncher.launch(
+                        Intent(
+                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            Uri.parse("package:${context.packageName}"),
+                        ),
+                    )
+                }
+            },
         )
 
         CrossfadeSliderPreference(

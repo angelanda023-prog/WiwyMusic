@@ -377,6 +377,13 @@
     <string name="account_plan_free">Plan Free</string>
     <string name="account_premium_active_desc">Tu cuenta tiene todos los beneficios Premium.</string>
     <string name="account_premium_plus_active_desc">Beneficios Premium activos de por vida.</string>
+    <plurals name="account_premium_days_remaining">
+        <item quantity="one">Queda 1 día</item>
+        <item quantity="other">Quedan %1$d días</item>
+    </plurals>
+    <string name="account_premium_no_expiry">Sin vencimiento</string>
+    <string name="dynamic_island_title">Isla dinámica de reproducción</string>
+    <string name="dynamic_island_description">Muestra un reproductor compacto arriba cuando WiwyMusic está en segundo plano. Requiere permiso para mostrarse sobre otras apps.</string>
     <string name="redeem_code_title">Canjear código</string>
     <string name="redeem_code_description">Ingresa un código generado por el administrador.</string>
     <string name="redeem_code_label">Código Premium</string>
