@@ -60,11 +60,51 @@ object SupabaseAuth {
 
     /** Carga la sesión guardada al iniciar la app. */
     suspend fun loadSession() {
-        val ds = App.instance.dataStore
-        val at = ds.getAsync(SupabaseAccessTokenKey)
-        val rt = ds.getAsync(SupabaseRefreshTokenKey)
-        val uid = ds.getAsync(SupabaseUserIdKey)
-        val email = ds.getAsync(SupabaseUserEmailKey)
+        val context = App.instance
+        val authStore = context.authSessionDataStore
+        var at = authStore.getAsync(SupabaseAccessTokenKey)
+        var rt = authStore.getAsync(SupabaseRefreshTokenKey)
+        var uid = authStore.getAsync(SupabaseUserIdKey)
+        var email = authStore.getAsync(SupabaseUserEmailKey)
+
+        // Versions anteriores guardaban la sesión junto con los ajustes respaldables. Sólo la
+        // migramos durante una actualización real. En una instalación nueva, cualquier valor que
+        // aparezca aquí proviene de una restauración y debe descartarse.
+        val legacyStore = context.dataStore
+        val legacyAt = legacyStore.getAsync(SupabaseAccessTokenKey)
+        val legacyRt = legacyStore.getAsync(SupabaseRefreshTokenKey)
+        val legacyUid = legacyStore.getAsync(SupabaseUserIdKey)
+        val legacyEmail = legacyStore.getAsync(SupabaseUserEmailKey)
+        val legacySession =
+            if (!legacyAt.isNullOrBlank() && !legacyRt.isNullOrBlank() && !legacyUid.isNullOrBlank()) {
+                Session(legacyAt, legacyRt, legacyUid, legacyEmail.orEmpty())
+            } else {
+                null
+            }
+        val hasCurrentSession = !at.isNullOrBlank() && !rt.isNullOrBlank() && !uid.isNullOrBlank()
+
+        if (!hasCurrentSession && legacySession != null && context.shouldMigrateLegacySession()) {
+            authStore.edit { prefs ->
+                prefs[SupabaseAccessTokenKey] = legacySession.accessToken
+                prefs[SupabaseRefreshTokenKey] = legacySession.refreshToken
+                prefs[SupabaseUserIdKey] = legacySession.userId
+                prefs[SupabaseUserEmailKey] = legacySession.email
+            }
+            at = legacySession.accessToken
+            rt = legacySession.refreshToken
+            uid = legacySession.userId
+            email = legacySession.email
+        }
+
+        if (legacyAt != null || legacyRt != null || legacyUid != null || legacyEmail != null) {
+            legacyStore.edit { prefs ->
+                prefs.remove(SupabaseAccessTokenKey)
+                prefs.remove(SupabaseRefreshTokenKey)
+                prefs.remove(SupabaseUserIdKey)
+                prefs.remove(SupabaseUserEmailKey)
+            }
+        }
+
         if (!at.isNullOrBlank() && !rt.isNullOrBlank() && !uid.isNullOrBlank()) {
             _session.value = Session(at, rt, uid, email ?: "")
             // El token guardado puede llevar horas o días sin usarse (app cerrada) y
@@ -138,6 +178,13 @@ object SupabaseAuth {
         refreshJob?.cancel()
         refreshJob = null
         _session.value = null
+        App.instance.authSessionDataStore.edit { prefs ->
+            prefs.remove(SupabaseAccessTokenKey)
+            prefs.remove(SupabaseRefreshTokenKey)
+            prefs.remove(SupabaseUserIdKey)
+            prefs.remove(SupabaseUserEmailKey)
+        }
+        // Limpia también una posible sesión heredada de versiones antiguas.
         App.instance.dataStore.edit { prefs ->
             prefs.remove(SupabaseAccessTokenKey)
             prefs.remove(SupabaseRefreshTokenKey)
@@ -293,7 +340,7 @@ object SupabaseAuth {
         val userId = user.getString("id")
         val email = user.optString("email")
 
-        App.instance.dataStore.edit { prefs ->
+        App.instance.authSessionDataStore.edit { prefs ->
             prefs[SupabaseAccessTokenKey] = accessToken
             prefs[SupabaseRefreshTokenKey] = refreshToken
             prefs[SupabaseUserIdKey] = userId

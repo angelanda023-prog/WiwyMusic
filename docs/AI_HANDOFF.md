@@ -84,6 +84,13 @@ build, deployment, migration, or release. Do not create competing project-memory
   is deployed as Worker version `a46d647b-ff49-4887-a24b-81b4f1edd350`; an unauthenticated
   production request correctly returns JSON HTTP 401 instead of redirecting to the admin login.
   No database migration was required.
+- Android authentication sessions now use the dedicated `auth_session` Preferences DataStore,
+  which is excluded from cloud backup and device-to-device transfer. An in-place APK update
+  migrates the legacy session once and removes its old keys from the backed-up `settings` store;
+  a fresh installation rejects and clears legacy tokens restored by Android. Consequently,
+  uninstalling and reinstalling requires login while ordinary updates preserve the active session.
+  Debug Kotlin compilation and all universal debug unit tests pass. This correction is prepared
+  in source but is not yet published through OTA.
 
 - Android repository: `/Users/wiwyzho/Documents/Web/WiwyMusic`.
 - Android branch: `main`.
