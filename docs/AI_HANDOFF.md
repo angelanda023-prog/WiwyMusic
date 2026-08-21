@@ -180,6 +180,10 @@ build, deployment, migration, or release. Do not create competing project-memory
   explicitly acquire a Premium code and is published at immutable deployment
   <https://2b5c5f83.wiwymusic.pages.dev>; production matches it at
   <https://wiwymusic.pages.dev>.
+- Android `v1.1.20` download fallback/version text is published at immutable Pages deployment
+  <https://50af38e8.wiwymusic.pages.dev> and production <https://wiwymusic.pages.dev>. Production
+  HTML returns HTTP 200, contains only the `v1.1.20` fallback, and all Android download actions
+  target the verified public OTA download endpoint.
 
 ## Android Free-to-Premium promotion — published in v1.1.17
 
