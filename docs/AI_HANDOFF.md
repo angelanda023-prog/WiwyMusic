@@ -205,6 +205,10 @@ build, deployment, migration, or release. Do not create competing project-memory
   <https://ef03bb1c.wiwymusic.pages.dev> and production <https://wiwymusic.pages.dev>. Production
   HTML returns HTTP 200, contains only the `v1.1.21` fallback, and all Android download actions
   target the verified public OTA download endpoint.
+- Desktop download labels now show macOS `v1.0.7 · DMG universal` and Windows
+  `v1.0.3 · Instalador x64`, retaining their verified independent OTA endpoints. Published at
+  immutable Pages deployment <https://c976a969.wiwymusic.pages.dev> and production
+  <https://wiwymusic.pages.dev> on 2026-08-26.
 
 ## Android Free-to-Premium promotion — published in v1.1.17
 
