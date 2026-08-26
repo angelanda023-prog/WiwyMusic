@@ -8,14 +8,16 @@ build, deployment, migration, or release. Do not create competing project-memory
 
 ## Current source state
 
-- Desktop playback recovery published on 2026-08-26. macOS `v1.0.7` and Windows `v1.0.3`
+- Desktop playback recovery published on 2026-08-26. macOS `v1.0.8` and Windows `v1.0.4`
   bundle verified yt-dlp `2026.08.19`, retry fresh YouTube sources with compatible clients and
   formats, and hide technical source errors until bounded recovery is exhausted. macOS falls back
   to its internal YouTube player when AVPlayer rejects a resolved stream. Windows preserves
   required HTTP headers and byte ranges through a loopback audio proxy. Both engines can refresh
-  their writable yt-dlp copy without replacing the whole app. macOS OTA DMG SHA-256 is
-  `9dba2e19b267f0c251147474a0b521f0847d9160baa7860e01f0a3f134a19cd6`; Windows OTA EXE SHA-256 is
-  `12b40c59f8f6b4c62b4a4babd5b358e5eda2e752d4820837f4ae1dc1025cfdec`.
+  their writable yt-dlp copy without replacing the whole app. The follow-up moves update checks
+  out of the playback critical path, caches streams until shortly before expiration, and preloads
+  the next queued track. macOS OTA DMG SHA-256 is
+  `0b102cdcbb7936c65d3e83cf5b94aeec404fce2975b173efa983c72525d32a96`; Windows OTA EXE SHA-256 is
+  `03069e7fb2b7b70c801cfb8ccef49979fd526fa1f95bff39fd2a89d2cea01b13`.
 - Cross-platform download update on 2026-08-13: the Download action in the full player now shows
   an animated in-progress state on Android, macOS, and Windows. The user explicitly scoped this
   change to the full player and confirmed it does not apply to the mini-player. macOS `v1.0.6`,
@@ -205,9 +207,9 @@ build, deployment, migration, or release. Do not create competing project-memory
   <https://ef03bb1c.wiwymusic.pages.dev> and production <https://wiwymusic.pages.dev>. Production
   HTML returns HTTP 200, contains only the `v1.1.21` fallback, and all Android download actions
   target the verified public OTA download endpoint.
-- Desktop download labels now show macOS `v1.0.7 · DMG universal` and Windows
-  `v1.0.3 · Instalador x64`, retaining their verified independent OTA endpoints. Published at
-  immutable Pages deployment <https://c976a969.wiwymusic.pages.dev> and production
+- Desktop download labels now show macOS `v1.0.8 · DMG universal` and Windows
+  `v1.0.4 · Instalador x64`, retaining their verified independent OTA endpoints. Published at
+  immutable Pages deployment <https://2d980878.wiwymusic.pages.dev> and production
   <https://wiwymusic.pages.dev> on 2026-08-26.
 
 ## Android Free-to-Premium promotion — published in v1.1.17
@@ -273,11 +275,11 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Rollback tag `snapshot-before-premium-pacing-v1.1.17` points to feature source commit `198f3dd`
   and is pushed to `origin`.
 
-## macOS automatic OTA installer — current stable v1.0.7
+## macOS automatic OTA installer — current stable v1.0.8
 
 - macOS source lives independently at `/Users/wiwyzho/Documents/Web/WiwyMusic-macOS`; this
   change does not modify the Android project, APK, playback service, or Android mini-player.
-- Current stable macOS version is `1.0.7` (`CFBundleVersion` 8), published through the independent
+- Current stable macOS version is `1.0.8` (`CFBundleVersion` 9), published through the independent
   Cloudflare R2 macOS OTA channel on 2026-08-26.
 - `MacUpdater` still downloads only through HTTPS and verifies the complete DMG against the
   SHA-256 published in the Cloudflare manifest before installation begins.
@@ -293,15 +295,15 @@ build, deployment, migration, or release. Do not create competing project-memory
   install and restart automatically.
 - Existing public `1.0.3` clients contain the older download-only updater. Therefore `1.0.4` must
   be installed manually once; automatic replacement applies to releases after `1.0.4` is installed.
-- Validation passed: live YouTube Music resolution, `plutil`, all 11 Swift tests, universal release build for arm64 and x86_64,
+- Validation passed: live YouTube Music resolution, `plutil`, all 12 Swift tests, universal release build for arm64 and x86_64,
   DMG checksum verification, embedded version/build/bundle inspection, and strict code-signature
   verification. The immutable R2 archive and public download both match SHA-256
-  `9dba2e19b267f0c251147474a0b521f0847d9160baa7860e01f0a3f134a19cd6`.
-- Public endpoints report `v1.0.7` and serve the verified universal DMG:
+  `0b102cdcbb7936c65d3e83cf5b94aeec404fce2975b173efa983c72525d32a96`.
+- Public endpoints report `v1.0.8` and serve the verified universal DMG:
   `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/macos/releases` and
   `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/macos/download`.
 
-## Independent Windows application — current stable v1.0.3
+## Independent Windows application — current stable v1.0.4
 
 - Windows source lives at `/Users/wiwyzho/Documents/Web/WiwyMusic-Windows`. It is a separate
   Kotlin/JVM and Compose Desktop project; it does not modify or depend on Android or macOS source.
@@ -322,11 +324,11 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Native MSI/EXE packaging runs on Windows by design. GitHub Actions run `31645649058` built and
   validated the first x64 MSI and EXE from source commit `c713ed6`; the Windows source is stored
   in the private `angelanda023-prog/WiwyMusic-Windows` repository.
-- Current stable Windows version is `v1.0.3`, published through its independent Cloudflare R2
-  channel on 2026-08-26. GitHub Actions run `33000163530` built and validated the x64 MSI and EXE
-  from source commit `2be075e`. The immutable archive and public download are valid PE32+ x86-64
+- Current stable Windows version is `v1.0.4`, published through its independent Cloudflare R2
+  channel on 2026-08-26. GitHub Actions run `33003275616` built and validated the x64 MSI and EXE
+  from source commit `85fef1e`. The immutable archive and public download are valid PE32+ x86-64
   executables and match SHA-256
-  `12b40c59f8f6b4c62b4a4babd5b358e5eda2e752d4820837f4ae1dc1025cfdec`.
+  `03069e7fb2b7b70c801cfb8ccef49979fd526fa1f95bff39fd2a89d2cea01b13`.
 - Public endpoints are
   `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/windows/releases` and
   `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/windows/download`.
