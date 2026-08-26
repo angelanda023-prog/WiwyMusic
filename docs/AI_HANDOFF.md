@@ -1,6 +1,6 @@
 # WiwyMusic — project context and durable AI handoff
 
-Last updated: 2026-08-20 (America/Mexico_City)
+Last updated: 2026-08-26 (America/Mexico_City)
 
 This is the single source of truth for any editor, IDE assistant, or AI working on WiwyMusic.
 Read it completely before inspecting or changing code. Update it after every meaningful change,
@@ -8,6 +8,14 @@ build, deployment, migration, or release. Do not create competing project-memory
 
 ## Current source state
 
+- Desktop playback recovery published on 2026-08-26. macOS `v1.0.7` and Windows `v1.0.3`
+  bundle verified yt-dlp `2026.08.19`, retry fresh YouTube sources with compatible clients and
+  formats, and hide technical source errors until bounded recovery is exhausted. macOS falls back
+  to its internal YouTube player when AVPlayer rejects a resolved stream. Windows preserves
+  required HTTP headers and byte ranges through a loopback audio proxy. Both engines can refresh
+  their writable yt-dlp copy without replacing the whole app. macOS OTA DMG SHA-256 is
+  `9dba2e19b267f0c251147474a0b521f0847d9160baa7860e01f0a3f134a19cd6`; Windows OTA EXE SHA-256 is
+  `12b40c59f8f6b4c62b4a4babd5b358e5eda2e752d4820837f4ae1dc1025cfdec`.
 - Cross-platform download update on 2026-08-13: the Download action in the full player now shows
   an animated in-progress state on Android, macOS, and Windows. The user explicitly scoped this
   change to the full player and confirmed it does not apply to the mini-player. macOS `v1.0.6`,
@@ -261,12 +269,12 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Rollback tag `snapshot-before-premium-pacing-v1.1.17` points to feature source commit `198f3dd`
   and is pushed to `origin`.
 
-## macOS automatic OTA installer — current stable v1.0.6
+## macOS automatic OTA installer — current stable v1.0.7
 
 - macOS source lives independently at `/Users/wiwyzho/Documents/Web/WiwyMusic-macOS`; this
   change does not modify the Android project, APK, playback service, or Android mini-player.
-- Current stable macOS version is `1.0.6` (`CFBundleVersion` 7), published through the independent
-  Cloudflare R2 macOS OTA channel on 2026-08-13.
+- Current stable macOS version is `1.0.7` (`CFBundleVersion` 8), published through the independent
+  Cloudflare R2 macOS OTA channel on 2026-08-26.
 - `MacUpdater` still downloads only through HTTPS and verifies the complete DMG against the
   SHA-256 published in the Cloudflare manifest before installation begins.
 - After verification it mounts the DMG read-only, requires `WiwyMusic.app`, validates bundle ID
@@ -281,15 +289,15 @@ build, deployment, migration, or release. Do not create competing project-memory
   install and restart automatically.
 - Existing public `1.0.3` clients contain the older download-only updater. Therefore `1.0.4` must
   be installed manually once; automatic replacement applies to releases after `1.0.4` is installed.
-- Validation passed: `plutil`, all 11 Swift tests, universal release build for arm64 and x86_64,
+- Validation passed: live YouTube Music resolution, `plutil`, all 11 Swift tests, universal release build for arm64 and x86_64,
   DMG checksum verification, embedded version/build/bundle inspection, and strict code-signature
   verification. The immutable R2 archive and public download both match SHA-256
-  `b0dc63f43178442fa75db208b65477bb180d400b03097ca1ef34776e302fba7b`.
-- Public endpoints report `v1.0.6` and serve the verified universal DMG:
+  `9dba2e19b267f0c251147474a0b521f0847d9160baa7860e01f0a3f134a19cd6`.
+- Public endpoints report `v1.0.7` and serve the verified universal DMG:
   `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/macos/releases` and
   `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/macos/download`.
 
-## Independent Windows application — current stable v1.0.2
+## Independent Windows application — current stable v1.0.3
 
 - Windows source lives at `/Users/wiwyzho/Documents/Web/WiwyMusic-Windows`. It is a separate
   Kotlin/JVM and Compose Desktop project; it does not modify or depend on Android or macOS source.
@@ -310,11 +318,11 @@ build, deployment, migration, or release. Do not create competing project-memory
 - Native MSI/EXE packaging runs on Windows by design. GitHub Actions run `31645649058` built and
   validated the first x64 MSI and EXE from source commit `c713ed6`; the Windows source is stored
   in the private `angelanda023-prog/WiwyMusic-Windows` repository.
-- Current stable Windows version is `v1.0.2`, published through its independent Cloudflare R2
-  channel on 2026-08-13. GitHub Actions run `31735771008` built and validated the x64 MSI and EXE
-  from source commit `42432b3`. The immutable archive and public download are valid PE32+ x86-64
+- Current stable Windows version is `v1.0.3`, published through its independent Cloudflare R2
+  channel on 2026-08-26. GitHub Actions run `33000163530` built and validated the x64 MSI and EXE
+  from source commit `2be075e`. The immutable archive and public download are valid PE32+ x86-64
   executables and match SHA-256
-  `9291e47a777f865afc096c4c7ca24f826d1a2375cd14a8b71b26aae5c4d94813`.
+  `12b40c59f8f6b4c62b4a4babd5b358e5eda2e752d4820837f4ae1dc1025cfdec`.
 - Public endpoints are
   `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/windows/releases` and
   `https://wiwymusic-admin.angelanda023.workers.dev/api/ota/windows/download`.
